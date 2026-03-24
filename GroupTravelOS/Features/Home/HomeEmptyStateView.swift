@@ -1,7 +1,10 @@
 import SwiftUI
 
+/// Empty state shown when user has no active trips.
+/// Friendly, not pushy — per design-system.md.
 struct HomeEmptyStateView: View {
-    @Binding var showingNewTrip: Bool
+    let onCreateTrip: () -> Void
+    let onJoinTrip: () -> Void
 
     var body: some View {
         VStack(spacing: 24) {
@@ -21,18 +24,14 @@ struct HomeEmptyStateView: View {
                 .padding(.horizontal, 40)
 
             VStack(spacing: 12) {
-                Button {
-                    showingNewTrip = true
-                } label: {
+                Button(action: onCreateTrip) {
                     Text("Create Trip")
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderedProminent)
                 .controlSize(.large)
 
-                Button {
-                    // Join trip flow — Phase 1 follow-up
-                } label: {
+                Button(action: onJoinTrip) {
                     Text("Join a Trip")
                         .frame(maxWidth: .infinity)
                 }

@@ -48,3 +48,26 @@ globs: "**/DesignSystem/**,**/Views/**,**/*View.swift,**/*Sheet.swift,**/*Card.s
 - Use SF Pro / system font for consistency
 - Maintain generous touch targets (min 44pt)
 - Keep information density calm — whitespace is a feature
+
+## Loading & Transition States
+- Never show a blank screen while loading — always show skeleton placeholders or cached content
+- Skeleton shimmer for cards: use rounded rects matching the card layout with a subtle pulse animation
+- Skeleton shimmer for text: use rounded rects at approximate text height and width
+- Use SwiftUI .redacted(reason: .placeholder) for simple skeleton states where appropriate
+- Prefer skeletons over spinners — spinners feel slower and draw attention to the wait
+- Only use a spinner for short, focused actions (sign in, creating a trip, sending a post) — centered, no blocking overlay
+- Never use full-screen blocking loaders — the app should always feel interactive
+- Sheet presentations: use SwiftUI .sheet with smooth spring animation, no custom hacks
+- Navigation transitions: use default SwiftUI push/pop — do not override with custom transitions in V1
+- Content that loads progressively should fade in with .opacity animation (0.2s ease)
+- Pull-to-refresh: use native SwiftUI .refreshable — no custom pull indicators
+- Optimistic UI: after a user action (create trip, add post, add bill), show the result immediately from local data — don't wait for server confirmation
+- If a network request fails silently (non-critical), don't interrupt the user — retry in background
+- If a network request fails critically (auth, trip creation), show a calm inline error — never an alert unless user action is needed
+
+## Animation Rules
+- Keep animations under 0.3s — anything longer feels sluggish
+- Use spring(response: 0.3, dampingFraction: 0.8) as the default spring
+- Only animate meaningful state changes — don't animate decoratively
+- Respect user's Reduce Motion setting — wrap animations in UIAccessibility.isReduceMotionEnabled check
+- No bouncing, no elastic overshoot, no playful physics — calm and smooth only
