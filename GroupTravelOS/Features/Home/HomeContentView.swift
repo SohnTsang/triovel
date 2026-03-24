@@ -6,13 +6,14 @@ struct HomeContentView: View {
     @EnvironmentObject private var router: Router
 
     @State private var showingNewTrip = false
+    @State private var showingJoinTrip = false
 
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
             if viewModel.activeTrips.isEmpty {
                 HomeEmptyStateView(
                     onCreateTrip: { attemptCreateTrip() },
-                    onJoinTrip: { /* Join trip flow — Phase 1 follow-up */ }
+                    onJoinTrip: { showingJoinTrip = true }
                 )
             } else {
                 ScrollView {
@@ -65,7 +66,14 @@ struct HomeContentView: View {
             }
         }
         .sheet(isPresented: $showingNewTrip) {
-            TripSetupView()
+            TripSetupView { tripId in
+                router.push(.tripTimeline(tripId: tripId))
+            }
+        }
+        .sheet(isPresented: $showingJoinTrip) {
+            JoinTripView { tripId in
+                router.push(.tripTimeline(tripId: tripId))
+            }
         }
         .alert(
             "Trip limit reached",
