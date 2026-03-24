@@ -22,6 +22,7 @@ enum Destination: Hashable {
     case tripTimeline(tripId: String)
     case blockDetail(blockId: String)
     case tripSummary(tripId: String)
+    case tripMembers(tripId: String, members: [TripMemberDisplay], inviteLink: String?)
     case archivedTrips
     case settings
 }

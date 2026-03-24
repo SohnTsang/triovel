@@ -16,6 +16,8 @@ struct HomeView: View {
                         BlockDetailView(blockId: blockId)
                     case .tripSummary(let tripId):
                         TripSummaryView(tripId: tripId)
+                    case .tripMembers(let tripId, let members, let inviteLink):
+                        TripMembersView(tripId: tripId, members: members, inviteLink: inviteLink)
                     case .archivedTrips:
                         ArchivedTripsView(trips: viewModel.archivedTrips)
                     case .settings:
