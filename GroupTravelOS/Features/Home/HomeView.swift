@@ -17,6 +17,8 @@ struct HomeView: View {
                         TripSummaryView(tripId: tripId)
                     case .archivedTrips:
                         ArchivedTripsView()
+                    case .settings:
+                        SettingsView()
                     }
                 }
         }
@@ -65,6 +67,13 @@ private struct HomeContentView: View {
         }
         .navigationTitle("Triovel")
         .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button {
+                    router.push(.settings)
+                } label: {
+                    Image(systemName: "person.circle")
+                }
+            }
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
                     router.push(.archivedTrips)
