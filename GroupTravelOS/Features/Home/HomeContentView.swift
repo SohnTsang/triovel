@@ -1,0 +1,85 @@
+import SwiftUI
+
+/// Inner content for the Home screen, extracted from HomeView to stay under 200 lines.
+struct HomeContentView: View {
+    @ObservedObject var viewModel: HomeViewModel
+    @EnvironmentObject private var router: Router
+
+    @State private var showingNewTrip = false
+
+    var body: some View {
+        ZStack(alignment: .bottomTrailing) {
+            if viewModel.activeTrips.isEmpty {
+                HomeEmptyStateView(
+                    onCreateTrip: { attemptCreateTrip() },
+                    onJoinTrip: { /* Join trip flow — Phase 1 follow-up */ }
+                )
+            } else {
+                ScrollView {
+                    LazyVStack(spacing: 16) {
+                        ForEach(viewModel.activeTrips) { trip in
+                            TripCardView(
+                                trip: trip,
+                                members: viewModel.membersByTrip[trip.id] ?? []
+                            )
+                            .contentShape(Rectangle())
+                            .onTapGesture {
+                                router.push(.tripTimeline(tripId: trip.id))
+                            }
+                        }
+                    }
+                    .padding(.horizontal)
+                    .padding(.top, 8)
+                    .padding(.bottom, 80) // Space for FAB
+                }
+            }
+
+            // Floating + New Trip button
+            Button {
+                attemptCreateTrip()
+            } label: {
+                Image(systemName: "plus")
+                    .font(.title2.weight(.semibold))
+                    .foregroundStyle(.white)
+                    .frame(width: 56, height: 56)
+                    .background(Color.accentColor, in: Circle())
+                    .shadow(color: .black.opacity(0.15), radius: 8, y: 4)
+            }
+            .padding(24)
+        }
+        .navigationTitle("Triovel")
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button {
+                    router.push(.settings)
+                } label: {
+                    Image(systemName: "person.circle")
+                }
+            }
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    router.push(.archivedTrips)
+                } label: {
+                    Image(systemName: "archivebox")
+                }
+            }
+        }
+        .sheet(isPresented: $showingNewTrip) {
+            TripSetupView()
+        }
+        .alert(
+            "Trip limit reached",
+            isPresented: $viewModel.showingTripLimitAlert
+        ) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("You can have up to \(HomeViewModel.activeOwnedTripLimit) active trips. Archive a trip to make room.")
+        }
+    }
+
+    private func attemptCreateTrip() {
+        if viewModel.requestCreateTrip() {
+            showingNewTrip = true
+        }
+    }
+}
