@@ -6,6 +6,8 @@ struct TripTimelineView: View {
     @EnvironmentObject private var router: Router
     @StateObject private var viewModel = TripTimelineViewModel()
 
+    @Environment(\.horizontalSizeClass) private var sizeClass
+
     @State private var showingAddMoment = false
     @State private var addMomentGhostLabel: GhostBlockLabel?
     @State private var addMomentDayDate: Date?
@@ -43,6 +45,8 @@ struct TripTimelineView: View {
                         }
                         .padding(.vertical, 12)
                         .padding(.bottom, 80)
+                        .frame(maxWidth: sizeClass == .regular ? 600 : .infinity)
+                        .frame(maxWidth: .infinity)
                     }
                     .onChange(of: viewModel.selectedDayIndex) { _, newIndex in
                         let dayNumber = filteredDays.indices.contains(newIndex)

@@ -2,6 +2,7 @@ import SwiftUI
 
 struct JoinTripView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.horizontalSizeClass) private var sizeClass
     @EnvironmentObject private var appState: AppState
 
     /// Called with the joined trip ID on success.
@@ -72,6 +73,7 @@ struct JoinTripView: View {
             .interactiveDismissDisabled(isJoining)
             .onAppear { codeFocused = true }
         }
+        .presentationDetents(sizeClass == .regular ? [.medium, .large] : [.medium])
     }
 
     private func joinTrip() {

@@ -37,9 +37,9 @@ globs: "**/*.entitlements,**/Info.plist,**/*.xcconfig,**/Fastfile,**/Matchfile,*
 - Bundle Identifier: com.triovel.app
 - Display Name: Triovel
 - Deployment Target: iOS 17.0
-- Device Orientation: Portrait only (lock in Info.plist and project settings)
+- Device Orientation: iPhone = portrait only, iPad = all orientations
 - Status Bar: default (light/dark auto)
-- Supported Destinations: iPhone only (no iPad in V1)
+- Supported Destinations: iPhone + iPad (universal app)
 
 ## App Icon
 - Provide a single 1024x1024 PNG (no transparency, no alpha channel)

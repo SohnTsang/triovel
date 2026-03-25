@@ -4,6 +4,7 @@ import SwiftUI
 struct AuthView: View {
     @EnvironmentObject private var appState: AppState
     @StateObject private var appleCoordinator = AppleSignInCoordinator()
+    @Environment(\.horizontalSizeClass) private var sizeClass
 
     @State private var showEmailForm = false
     @State private var email = ""
@@ -87,6 +88,8 @@ struct AuthView: View {
             Spacer()
                 .frame(height: 32)
         }
+        .frame(maxWidth: sizeClass == .regular ? 500 : .infinity)
+        .frame(maxWidth: .infinity)
         .onAppear {
             setupAppleCoordinator()
         }

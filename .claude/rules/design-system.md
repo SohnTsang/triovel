@@ -71,3 +71,39 @@ globs: "**/DesignSystem/**,**/Views/**,**/*View.swift,**/*Sheet.swift,**/*Card.s
 - Only animate meaningful state changes — don't animate decoratively
 - Respect user's Reduce Motion setting — wrap animations in UIAccessibility.isReduceMotionEnabled check
 - No bouncing, no elastic overshoot, no playful physics — calm and smooth only
+
+## Adaptive Layout — iPhone + iPad
+Apple rejects apps that look broken on iPad. Every screen must work on both.
+
+### Layout Rules
+- Never use fixed widths — use relative sizing (percentage, flexible frames, maxWidth)
+- Use .frame(maxWidth: 600) on main content containers to prevent ultra-wide stretching on iPad
+- Cards and list rows should have a max width and center on wider screens, not stretch edge-to-edge
+- Use GeometryReader sparingly — prefer SwiftUI's built-in adaptive layout
+- Use .dynamicTypeSize to support all text sizes — never hardcode font sizes with fixed points
+- NavigationSplitView: use on iPad for master-detail (trip list -> timeline), NavigationStack on iPhone
+- Use horizontalSizeClass environment variable to adapt layout between compact (iPhone) and regular (iPad)
+
+### Common Rejection Traps to Avoid
+- Text or buttons that overflow on iPad landscape — always test both orientations
+- Sheets and popovers that render full-screen on iPad when they should be popover-sized
+- Tiny centered content with massive empty margins — fill the space meaningfully
+- Tab bars or toolbars that look absurdly spaced out on 12.9" screens
+- Keyboard avoidance that breaks on iPad floating keyboard
+
+### Testing Checklist
+- Test every screen on: iPhone SE (small), iPhone 16 (standard), iPad (regular width)
+- Test both portrait and landscape on iPad
+- Test with Dynamic Type at largest accessibility size
+- Test with Split View / Slide Over on iPad
+- Sheets must use .presentationDetents appropriately — half-sheet on iPhone, popover on iPad
+
+### Implementation Pattern
+```swift
+@Environment(\.horizontalSizeClass) private var sizeClass
+
+var body: some View {
+    content
+        .frame(maxWidth: sizeClass == .regular ? 600 : .infinity)
+}
+```

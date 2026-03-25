@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ArchivedTripsView: View {
     let trips: [Trip]
+    @Environment(\.horizontalSizeClass) private var sizeClass
 
     var body: some View {
         Group {
@@ -20,6 +21,8 @@ struct ArchivedTripsView: View {
                     }
                     .padding(.horizontal)
                     .padding(.top, 8)
+                    .frame(maxWidth: sizeClass == .regular ? 600 : .infinity)
+                    .frame(maxWidth: .infinity)
                 }
             }
         }

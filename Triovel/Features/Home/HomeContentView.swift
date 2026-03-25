@@ -4,6 +4,7 @@ import SwiftUI
 struct HomeContentView: View {
     @ObservedObject var viewModel: HomeViewModel
     @EnvironmentObject private var router: Router
+    @Environment(\.horizontalSizeClass) private var sizeClass
 
     @State private var showingNewTrip = false
     @State private var showingJoinTrip = false
@@ -31,7 +32,9 @@ struct HomeContentView: View {
                     }
                     .padding(.horizontal)
                     .padding(.top, 8)
-                    .padding(.bottom, 80) // Space for FAB
+                    .padding(.bottom, 80)
+                    .frame(maxWidth: sizeClass == .regular ? 600 : .infinity)
+                    .frame(maxWidth: .infinity) // Center on iPad
                 }
             }
 
