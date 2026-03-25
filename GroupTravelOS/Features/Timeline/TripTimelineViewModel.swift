@@ -13,10 +13,35 @@ final class TripTimelineViewModel: ObservableObject {
     /// All blocks for the trip, before filtering.
     private var allBlocks: [Block] = []
 
+    private let blockRepository = BlockRepository()
+    private var currentTripId: String?
+    private var currentUserId: String?
+
     // MARK: - Load
 
     func load(tripId: String, userId: String) {
+        currentTripId = tripId
+        currentUserId = userId
         loadMockData(tripId: tripId, userId: userId)
+    }
+
+    /// Refresh blocks from Supabase after a new block is created.
+    func refreshBlocks() async {
+        guard let tripId = currentTripId else { return }
+        do {
+            let blocks = try await blockRepository.fetchBlocks(tripId: tripId)
+            allBlocks = blocks
+            if let trip {
+                days = generateDays(for: trip)
+            }
+        } catch {
+            // Silently fail — keep showing existing data
+        }
+    }
+
+    /// Find creator display name for a block.
+    func creatorName(for block: Block) -> String? {
+        members.first(where: { $0.userId == block.createdBy })?.displayName
     }
 
     // MARK: - Filtered Days

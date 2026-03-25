@@ -3,6 +3,7 @@ import SwiftUI
 /// A single day's content in the timeline: ghost blocks + time slots with real blocks.
 struct DaySectionView: View {
     let day: TimelineDay
+    var creatorNameForBlock: ((Block) -> String?)? = nil
     let onGhostTap: (GhostBlock) -> Void
     let onBlockTap: (Block) -> Void
 
@@ -30,12 +31,16 @@ struct DaySectionView: View {
                     .padding(.horizontal)
 
                 case .timeSlot(let slot):
-                    TimeSlotView(slot: slot, onBlockTap: onBlockTap)
-                        .padding(.horizontal)
+                    TimeSlotView(
+                        slot: slot,
+                        creatorNameForBlock: creatorNameForBlock,
+                        onBlockTap: onBlockTap
+                    )
+                    .padding(.horizontal)
                 }
             }
 
-            // If no content at all (no blocks, no ghosts), show minimal empty state
+            // If no content at all, show minimal empty state
             if day.blocks.isEmpty && day.ghostBlocks.isEmpty {
                 Text("No moments yet")
                     .font(.subheadline)
@@ -51,7 +56,6 @@ struct DaySectionView: View {
     private func buildTimelineItems() -> [TimelineItem] {
         var items: [TimelineItem] = []
 
-        // Add ghost blocks
         for ghost in day.ghostBlocks {
             items.append(TimelineItem(
                 sortTime: ghost.suggestedTime,
@@ -59,7 +63,6 @@ struct DaySectionView: View {
             ))
         }
 
-        // Add time slots (clusters of real blocks)
         for slot in day.timeSlots {
             items.append(TimelineItem(
                 sortTime: slot.time,
@@ -67,7 +70,6 @@ struct DaySectionView: View {
             ))
         }
 
-        // Sort chronologically
         return items.sorted { $0.sortTime < $1.sortTime }
     }
 }
@@ -89,6 +91,7 @@ private struct TimelineItem: Identifiable {
 
 private struct TimeSlotView: View {
     let slot: TimeSlot
+    var creatorNameForBlock: ((Block) -> String?)?
     let onBlockTap: (Block) -> Void
 
     var body: some View {
@@ -100,11 +103,14 @@ private struct TimeSlotView: View {
 
             // Stacked block cards — full-width, never tiny side-by-side
             ForEach(slot.blocks) { block in
-                BlockCardView(block: block)
-                    .contentShape(Rectangle())
-                    .onTapGesture {
-                        onBlockTap(block)
-                    }
+                BlockCardView(
+                    block: block,
+                    creatorName: creatorNameForBlock?(block)
+                )
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    onBlockTap(block)
+                }
             }
         }
     }

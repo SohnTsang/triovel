@@ -2,49 +2,55 @@ import SwiftUI
 
 struct BlockDetailView: View {
     let blockId: String
+    @EnvironmentObject private var appState: AppState
+    @StateObject private var viewModel = BlockDetailViewModel()
 
     var body: some View {
         VStack(spacing: 0) {
-            // Header section — will show title, context chip, time, location
-            BlockDetailHeaderView()
+            if let block = viewModel.block {
+                BlockDetailHeaderView(
+                    block: block,
+                    canEdit: viewModel.canEditHeader,
+                    isEditing: $viewModel.isEditingHeader,
+                    editTitle: $viewModel.editTitle,
+                    editLocation: $viewModel.editLocation,
+                    onSave: { viewModel.saveHeaderEdits() }
+                )
 
-            Divider()
+                Divider()
 
-            // Unified memory stream — posts, bills, media states
-            ScrollView {
-                LazyVStack(spacing: 12) {
-                    // Placeholder for stream items
-                    Text("No posts yet")
-                        .foregroundStyle(.secondary)
-                        .padding(.top, 40)
+                // Unified memory stream — Phase 2
+                ScrollView {
+                    LazyVStack(spacing: 12) {
+                        Text("No posts yet")
+                            .foregroundStyle(.tertiary)
+                            .padding(.top, 40)
+                    }
+                    .padding()
                 }
-                .padding()
+
+                Divider()
+
+                // Composer area — Phase 2
+                ComposerPlaceholderView()
+            } else if viewModel.isLoading {
+                Spacer()
+                ProgressView()
+                Spacer()
+            } else if let error = viewModel.errorMessage {
+                Spacer()
+                Text(error)
+                    .foregroundStyle(.secondary)
+                Spacer()
             }
-
-            Divider()
-
-            // Composer area — Phase 2
-            ComposerPlaceholderView()
         }
-        .navigationTitle("Block Detail")
+        .navigationTitle(viewModel.block?.title ?? "Block")
         .navigationBarTitleDisplayMode(.inline)
-    }
-}
-
-private struct BlockDetailHeaderView: View {
-    var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text("Block Title")
-                .font(.title2.weight(.semibold))
-            Text("Group")
-                .font(.caption.weight(.medium))
-                .foregroundStyle(.secondary)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 2)
-                .background(Color(.systemGray6), in: Capsule())
+        .task {
+            if let userId = appState.currentUserId {
+                await viewModel.load(blockId: blockId, userId: userId)
+            }
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding()
     }
 }
 

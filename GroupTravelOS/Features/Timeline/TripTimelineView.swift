@@ -15,22 +15,20 @@ struct TripTimelineView: View {
 
         ZStack(alignment: .bottomTrailing) {
             VStack(spacing: 0) {
-                // Sticky day ribbon
                 DayRibbonView(
                     days: filteredDays,
                     selectedIndex: $viewModel.selectedDayIndex
                 )
 
-                // Filter bar — session-only, resets on leave
                 FilterBarView(activeFilter: $viewModel.activeFilter)
 
-                // Day content
                 ScrollViewReader { proxy in
                     ScrollView {
                         LazyVStack(spacing: 24) {
                             ForEach(filteredDays) { day in
                                 DaySectionView(
                                     day: day,
+                                    creatorNameForBlock: { viewModel.creatorName(for: $0) },
                                     onGhostTap: { ghost in
                                         addMomentGhostLabel = ghost.label
                                         addMomentDayDate = ghost.dayDate
@@ -47,9 +45,8 @@ struct TripTimelineView: View {
                         .padding(.bottom, 80)
                     }
                     .onChange(of: viewModel.selectedDayIndex) { _, newIndex in
-                        let dayNumber = (filteredDays.indices.contains(newIndex))
-                            ? filteredDays[newIndex].dayNumber
-                            : 1
+                        let dayNumber = filteredDays.indices.contains(newIndex)
+                            ? filteredDays[newIndex].dayNumber : 1
                         withAnimation(.easeInOut(duration: 0.2)) {
                             proxy.scrollTo(dayNumber, anchor: .top)
                         }
@@ -57,11 +54,10 @@ struct TripTimelineView: View {
                 }
             }
 
-            // Floating + Add Moment button
+            // Floating + Add Moment
             Button {
                 let currentDay = filteredDays.indices.contains(viewModel.selectedDayIndex)
-                    ? filteredDays[viewModel.selectedDayIndex]
-                    : nil
+                    ? filteredDays[viewModel.selectedDayIndex] : nil
                 addMomentDayDate = currentDay?.date
                 addMomentGhostLabel = nil
                 showingAddMoment = true
@@ -90,7 +86,6 @@ struct TripTimelineView: View {
                     } label: {
                         Image(systemName: "person.2")
                     }
-
                     Button {
                         router.push(.tripSummary(tripId: tripId))
                     } label: {
@@ -104,7 +99,14 @@ struct TripTimelineView: View {
                 tripId: tripId,
                 defaultDay: viewModel.selectedDayIndex + 1,
                 dayDate: addMomentDayDate,
-                ghostLabel: addMomentGhostLabel
+                ghostLabel: addMomentGhostLabel,
+                displayTimezone: viewModel.trip?.displayTimezone ?? TimeZone.current.identifier,
+                onBlockCreated: { blockId in
+                    // Refresh timeline to show new block (ghost disappears)
+                    Task { await viewModel.refreshBlocks() }
+                    // Navigate into the new block detail
+                    router.push(.blockDetail(blockId: blockId))
+                }
             )
         }
         .onAppear {
@@ -113,7 +115,6 @@ struct TripTimelineView: View {
             }
         }
         .onDisappear {
-            // Filters are session-only — reset on leave per blueprint
             viewModel.activeFilter = .all
         }
     }
