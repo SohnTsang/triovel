@@ -8,9 +8,6 @@ options:
   defaultConfig: Release
   developmentLanguage: en
 
-configFiles:
-  Debug: ""
-  Release: ""
 
 settings:
   base:
@@ -26,7 +23,10 @@ targets:
     type: application
     platform: iOS
     sources:
-      - Triovel
+      - path: Triovel
+        group: Triovel
+        excludes:
+          - "Info.plist"
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.triovel.app
