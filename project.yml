@@ -1,4 +1,4 @@
-name: GroupTravelOS
+name: Triovel
 options:
   bundleIdPrefix: com.triovel
   deploymentTarget:
@@ -12,20 +12,20 @@ settings:
     IPHONEOS_DEPLOYMENT_TARGET: "17.0"
     TARGETED_DEVICE_FAMILY: "1"
     SWIFT_STRICT_CONCURRENCY: complete
-    INFOPLIST_FILE: GroupTravelOS/Info.plist
-    CODE_SIGN_ENTITLEMENTS: GroupTravelOS/GroupTravelOS.entitlements
+    INFOPLIST_FILE: Triovel/Info.plist
+    CODE_SIGN_ENTITLEMENTS: Triovel/Triovel.entitlements
 
 targets:
-  GroupTravelOS:
+  Triovel:
     type: application
     platform: iOS
     sources:
-      - GroupTravelOS
+      - Triovel
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.triovel.app
-        INFOPLIST_FILE: GroupTravelOS/Info.plist
-        CODE_SIGN_ENTITLEMENTS: GroupTravelOS/GroupTravelOS.entitlements
+        INFOPLIST_FILE: Triovel/Info.plist
+        CODE_SIGN_ENTITLEMENTS: Triovel/Triovel.entitlements
         TARGETED_DEVICE_FAMILY: "1"
     dependencies:
       - package: supabase-swift

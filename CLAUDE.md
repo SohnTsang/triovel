@@ -18,7 +18,7 @@ One-liner: Plan the anchors. Capture the reality. Share the trip.
 
 ## Project Structure
 ```
-GroupTravelOS/
+Triovel/
 ├── App/                  # App entry, root navigation, DI
 ├── Features/
 │   ├── Home/             # Global home, active/archived trips
@@ -86,7 +86,7 @@ users, trips, trip_members, blocks, posts, post_media, bills, bill_shares, payme
 - Never commit directly to main -- always use a feature branch
 
 ## Commands
-- Build: xcodebuild -scheme GroupTravelOS -destination 'platform=iOS Simulator,name=iPhone 16'
+- Build: xcodebuild -scheme Triovel -destination 'platform=iOS Simulator,name=iPhone 16'
 - Supabase local: supabase start
 - Supabase migration: supabase migration new <name>
 - Supabase push: supabase db push

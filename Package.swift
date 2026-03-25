@@ -3,7 +3,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "GroupTravelOS",
+    name: "Triovel",
     platforms: [
         .iOS(.v17)
     ],
@@ -12,11 +12,11 @@ let package = Package(
     ],
     targets: [
         .executableTarget(
-            name: "GroupTravelOS",
+            name: "Triovel",
             dependencies: [
                 .product(name: "Supabase", package: "supabase-swift"),
             ],
-            path: "GroupTravelOS"
+            path: "Triovel"
         ),
     ]
 )
