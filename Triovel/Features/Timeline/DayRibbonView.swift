@@ -43,7 +43,7 @@ private struct DayChip: View {
 
     var body: some View {
         VStack(spacing: 2) {
-            Text("Day \(dayNumber)")
+            Text("timeline.day \(dayNumber)")
                 .font(.subheadline.weight(isSelected ? .semibold : .regular))
             Text(shortDate)
                 .font(.caption2)

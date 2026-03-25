@@ -21,14 +21,14 @@ struct TripMembersView: View {
                         UIPasteboard.general.string = link
                         showingCopied = true
                     } label: {
-                        Label("Copy invite link", systemImage: "link")
+                        Label(String(localized: "trip.members.copy.link"), systemImage: "link")
                     }
                 } footer: {
-                    Text("Share this link so others can join the trip.")
+                    Text("trip.members.share.footer")
                 }
             }
         }
-        .navigationTitle("Members")
+        .navigationTitle(String(localized: "trip.members.title"))
         .overlay {
             if showingCopied {
                 copiedToast
@@ -59,7 +59,7 @@ struct TripMembersView: View {
     private var copiedToast: some View {
         VStack {
             Spacer()
-            Text("Invite link copied")
+            Text("trip.members.link.copied")
                 .font(.subheadline.weight(.medium))
                 .foregroundStyle(.white)
                 .padding(.horizontal, 20)
@@ -100,7 +100,7 @@ private struct MemberRow: View {
                     .font(.body)
 
                 if member.role == .owner {
-                    Text("Organizer")
+                    Text("trip.members.role.organizer")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }

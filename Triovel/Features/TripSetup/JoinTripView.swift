@@ -22,14 +22,14 @@ struct JoinTripView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 24) {
-                Text("Enter the invite code shared by your trip organizer.")
+                Text("trip.join.instructions")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 24)
                     .padding(.top, 24)
 
-                TextField("Invite code", text: $inviteCode)
+                TextField(String(localized: "trip.join.code.placeholder"), text: $inviteCode)
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled()
                     .focused($codeFocused)
@@ -51,7 +51,7 @@ struct JoinTripView: View {
                         ProgressView()
                             .frame(maxWidth: .infinity)
                     } else {
-                        Text("Join Trip")
+                        Text("trip.join.button")
                             .frame(maxWidth: .infinity)
                     }
                 }
@@ -62,11 +62,11 @@ struct JoinTripView: View {
 
                 Spacer()
             }
-            .navigationTitle("Join a Trip")
+            .navigationTitle(String(localized: "trip.join.title"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
+                    Button(String(localized: "common.cancel")) { dismiss() }
                         .disabled(isJoining)
                 }
             }
@@ -98,7 +98,7 @@ struct JoinTripView: View {
                 errorMessage = error.localizedDescription
                 isJoining = false
             } catch {
-                errorMessage = "Could not join trip. Please check the code and try again."
+                errorMessage = String(localized: "trip.join.error")
                 isJoining = false
             }
         }

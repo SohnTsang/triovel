@@ -15,10 +15,10 @@ struct HomeEmptyStateView: View {
                 .font(.system(size: 48))
                 .foregroundStyle(.secondary)
 
-            Text("No trips yet")
+            Text("home.empty.title")
                 .font(.title2.weight(.medium))
 
-            Text("Create your first trip or join one from a friend.")
+            Text("home.empty.subtitle")
                 .font(.body)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
@@ -26,14 +26,14 @@ struct HomeEmptyStateView: View {
 
             VStack(spacing: 12) {
                 Button(action: onCreateTrip) {
-                    Text("Create Trip")
+                    Text("home.create.trip")
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderedProminent)
                 .controlSize(.large)
 
                 Button(action: onJoinTrip) {
-                    Text("Join a Trip")
+                    Text("home.join.trip")
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.bordered)

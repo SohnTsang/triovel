@@ -19,7 +19,7 @@ struct ProfileHeaderView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(displayName)
                     .font(.headline)
-                Text(user?.email ?? "No email")
+                Text(user?.email ?? String(localized: "settings.no.email"))
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
             }
@@ -33,6 +33,6 @@ struct ProfileHeaderView: View {
            !name.isEmpty {
             return name
         }
-        return user?.email ?? "User"
+        return user?.email ?? String(localized: "settings.default.name")
     }
 }

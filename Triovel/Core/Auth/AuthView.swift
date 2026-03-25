@@ -23,7 +23,7 @@ struct AuthView: View {
             VStack(spacing: 8) {
                 Text("Triovel")
                     .font(.largeTitle.weight(.bold))
-                Text("Group trips, shared memories.")
+                Text("auth.subtitle")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
             }
@@ -54,7 +54,7 @@ struct AuthView: View {
             // Divider
             HStack {
                 Rectangle().frame(height: 1).foregroundStyle(.quaternary)
-                Text("or")
+                Text("auth.or")
                     .font(.caption)
                     .foregroundStyle(.secondary)
                 Rectangle().frame(height: 1).foregroundStyle(.quaternary)
@@ -77,7 +77,7 @@ struct AuthView: View {
                         showEmailForm = true
                     }
                 } label: {
-                    Text("Continue with email")
+                    Text("auth.continue.email")
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.bordered)
@@ -110,13 +110,13 @@ struct AuthView: View {
                     try await authService.signInWithApple(idToken: idToken, nonce: nonce)
                     appState.completeSignIn()
                 } catch {
-                    errorMessage = "Apple sign-in failed. Please try again."
+                    errorMessage = String(localized: "auth.apple.failed")
                 }
                 isLoading = false
             }
         }
         appleCoordinator.onError = { error in
-            errorMessage = "Apple sign-in failed. Please try again."
+            errorMessage = String(localized: "auth.apple.failed")
         }
     }
 
@@ -153,7 +153,7 @@ private struct EmailAuthFormView: View {
 
     var body: some View {
         VStack(spacing: 12) {
-            TextField("Email", text: $email)
+            TextField("auth.email.placeholder", text: $email)
                 .textContentType(.emailAddress)
                 .keyboardType(.emailAddress)
                 .autocorrectionDisabled()
@@ -161,7 +161,7 @@ private struct EmailAuthFormView: View {
                 .padding()
                 .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 10))
 
-            SecureField("Password", text: $password)
+            SecureField("auth.password.placeholder", text: $password)
                 .textContentType(isSignUp ? .newPassword : .password)
                 .padding()
                 .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 10))
@@ -179,7 +179,7 @@ private struct EmailAuthFormView: View {
                     ProgressView()
                         .frame(maxWidth: .infinity)
                 } else {
-                    Text(isSignUp ? "Sign Up" : "Sign In")
+                    Text(isSignUp ? String(localized: "auth.sign.up") : String(localized: "auth.sign.in"))
                         .frame(maxWidth: .infinity)
                 }
             }
@@ -192,8 +192,8 @@ private struct EmailAuthFormView: View {
                 errorMessage = nil
             } label: {
                 Text(isSignUp
-                    ? "Already have an account? Sign In"
-                    : "Don't have an account? Sign Up")
+                    ? String(localized: "auth.switch.to.sign.in")
+                    : String(localized: "auth.switch.to.sign.up"))
                     .font(.subheadline)
             }
         }

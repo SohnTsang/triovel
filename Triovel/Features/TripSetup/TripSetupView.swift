@@ -24,19 +24,19 @@ struct TripSetupView: View {
         NavigationStack {
             Form {
                 Section {
-                    TextField("Trip title", text: $title)
+                    TextField(String(localized: "trip.setup.name.placeholder"), text: $title)
                         .font(.title3)
                         .focused($titleFocused)
                 }
 
                 Section {
                     DatePicker(
-                        "Start date",
+                        String(localized: "trip.setup.start.date"),
                         selection: $startDate,
                         displayedComponents: .date
                     )
                     DatePicker(
-                        "End date",
+                        String(localized: "trip.setup.end.date"),
                         selection: $endDate,
                         in: startDate...,
                         displayedComponents: .date
@@ -51,18 +51,18 @@ struct TripSetupView: View {
                     }
                 }
             }
-            .navigationTitle("New Trip")
+            .navigationTitle(String(localized: "trip.setup.title"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
+                    Button(String(localized: "common.cancel")) { dismiss() }
                         .disabled(isCreating)
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     if isCreating {
                         ProgressView()
                     } else {
-                        Button("Create") {
+                        Button(String(localized: "common.create")) {
                             createTrip()
                         }
                         .disabled(title.trimmingCharacters(in: .whitespaces).isEmpty)
@@ -104,7 +104,7 @@ struct TripSetupView: View {
                 try? await Task.sleep(for: .milliseconds(300))
                 onTripCreated?(tripId)
             } catch {
-                errorMessage = "Could not create trip. Please try again."
+                errorMessage = String(localized: "trip.setup.error")
                 isCreating = false
             }
         }

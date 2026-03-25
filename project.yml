@@ -5,6 +5,12 @@ options:
     iOS: "17.0"
   xcodeVersion: "15.0"
   generateEmptyDirectories: true
+  defaultConfig: Release
+  developmentLanguage: en
+
+configFiles:
+  Debug: ""
+  Release: ""
 
 settings:
   base:

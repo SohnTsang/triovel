@@ -8,9 +8,9 @@ struct ArchivedTripsView: View {
         Group {
             if trips.isEmpty {
                 ContentUnavailableView(
-                    "No archived trips",
+                    String(localized: "home.archived.empty"),
                     systemImage: "archivebox",
-                    description: Text("Trips you archive will appear here.")
+                    description: Text("home.archived.empty.description")
                 )
             } else {
                 ScrollView {
@@ -26,6 +26,6 @@ struct ArchivedTripsView: View {
                 }
             }
         }
-        .navigationTitle("Archived Trips")
+        .navigationTitle(String(localized: "home.archived.title"))
     }
 }

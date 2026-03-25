@@ -13,7 +13,7 @@ struct TripSummaryView: View {
                         .fill(Color(.systemGray5))
                         .frame(height: 120)
 
-                    Text("Trip Title")
+                    Text("summary.trip.title")
                         .font(.title2.weight(.semibold))
                 }
                 .padding(.horizontal)
@@ -23,7 +23,7 @@ struct TripSummaryView: View {
                     Image(systemName: "banknote")
                         .font(.title)
                         .foregroundStyle(.secondary)
-                    Text("No shared expenses yet")
+                    Text("summary.no.expenses")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
@@ -31,6 +31,6 @@ struct TripSummaryView: View {
             }
             .padding(.top)
         }
-        .navigationTitle("Summary")
+        .navigationTitle(String(localized: "summary.title"))
     }
 }
