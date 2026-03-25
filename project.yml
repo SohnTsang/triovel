@@ -10,7 +10,7 @@ settings:
   base:
     SWIFT_VERSION: "5.9"
     IPHONEOS_DEPLOYMENT_TARGET: "17.0"
-    TARGETED_DEVICE_FAMILY: "1"
+    TARGETED_DEVICE_FAMILY: "1,2"
     SWIFT_STRICT_CONCURRENCY: complete
     INFOPLIST_FILE: Triovel/Info.plist
     CODE_SIGN_ENTITLEMENTS: Triovel/Triovel.entitlements
@@ -26,7 +26,7 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.triovel.app
         INFOPLIST_FILE: Triovel/Info.plist
         CODE_SIGN_ENTITLEMENTS: Triovel/Triovel.entitlements
-        TARGETED_DEVICE_FAMILY: "1"
+        TARGETED_DEVICE_FAMILY: "1,2"
     dependencies:
       - package: supabase-swift
         product: Supabase

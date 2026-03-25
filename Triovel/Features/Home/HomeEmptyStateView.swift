@@ -5,6 +5,7 @@ import SwiftUI
 struct HomeEmptyStateView: View {
     let onCreateTrip: () -> Void
     let onJoinTrip: () -> Void
+    @Environment(\.horizontalSizeClass) private var sizeClass
 
     var body: some View {
         VStack(spacing: 24) {
@@ -42,5 +43,6 @@ struct HomeEmptyStateView: View {
 
             Spacer()
         }
+        .frame(maxWidth: sizeClass == .regular ? 600 : .infinity)
     }
 }

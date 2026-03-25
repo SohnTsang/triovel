@@ -5,7 +5,7 @@ Offline-first iOS app for group trip timelines, shared memories, and contextual 
 One-liner: Plan the anchors. Capture the reality. Share the trip.
 
 ## Stack
-- SwiftUI (iOS 17+, iPhone only for V1)
+- SwiftUI (iOS 17+, iPhone + iPad)
 - Supabase: Postgres, Auth (Apple Sign-In + Email/Password), Storage
 - PowerSync: local-first SQLite sync
 - Background URLSession: media upload queue (separate from data sync)

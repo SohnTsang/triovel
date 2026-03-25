@@ -3,6 +3,7 @@ import SwiftUI
 struct BlockDetailView: View {
     let blockId: String
     @EnvironmentObject private var appState: AppState
+    @Environment(\.horizontalSizeClass) private var sizeClass
     @StateObject private var viewModel = BlockDetailViewModel()
 
     var body: some View {
@@ -44,6 +45,8 @@ struct BlockDetailView: View {
                 Spacer()
             }
         }
+        .frame(maxWidth: sizeClass == .regular ? 600 : .infinity)
+        .frame(maxWidth: .infinity)
         .navigationTitle(viewModel.block?.title ?? "Block")
         .navigationBarTitleDisplayMode(.inline)
         .task {

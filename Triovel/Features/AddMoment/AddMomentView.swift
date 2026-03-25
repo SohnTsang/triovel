@@ -11,6 +11,7 @@ struct AddMomentView: View {
     var onBlockCreated: ((String) -> Void)?
 
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.horizontalSizeClass) private var sizeClass
     @EnvironmentObject private var appState: AppState
     @FocusState private var titleFocused: Bool
 
@@ -93,7 +94,7 @@ struct AddMomentView: View {
                 titleFocused = true
             }
         }
-        .presentationDetents([.medium])
+        .presentationDetents(sizeClass == .regular ? [.medium, .large] : [.medium])
     }
 
     private func createBlock() {
