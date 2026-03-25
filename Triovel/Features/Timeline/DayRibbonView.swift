@@ -7,28 +7,28 @@ struct DayRibbonView: View {
     var body: some View {
         ScrollViewReader { proxy in
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 10) {
+                HStack(spacing: 8) {
                     ForEach(Array(days.enumerated()), id: \.element.id) { index, day in
-                        DayChip(
+                        DayPill(
                             dayNumber: day.dayNumber,
                             shortDate: day.shortDate,
                             isSelected: index == selectedIndex
                         )
                         .id(day.dayNumber)
                         .onTapGesture {
-                            withAnimation(.easeInOut(duration: 0.2)) {
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
                                 selectedIndex = index
                             }
                         }
                     }
                 }
-                .padding(.horizontal)
+                .padding(.horizontal, 20)
             }
-            .padding(.vertical, 8)
-            .background(Color(.systemBackground))
+            .padding(.vertical, 10)
+            .background(ColorTokens.background)
             .onChange(of: selectedIndex) { _, newIndex in
                 let dayNumber = days.indices.contains(newIndex) ? days[newIndex].dayNumber : 1
-                withAnimation {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
                     proxy.scrollTo(dayNumber, anchor: .center)
                 }
             }
@@ -36,7 +36,7 @@ struct DayRibbonView: View {
     }
 }
 
-private struct DayChip: View {
+private struct DayPill: View {
     let dayNumber: Int
     let shortDate: String
     let isSelected: Bool
@@ -44,15 +44,15 @@ private struct DayChip: View {
     var body: some View {
         VStack(spacing: 2) {
             Text("timeline.day \(dayNumber)")
-                .font(.subheadline.weight(isSelected ? .semibold : .regular))
+                .font(.subheadline.weight(isSelected ? .bold : .medium))
             Text(shortDate)
                 .font(.caption2)
-                .foregroundStyle(isSelected ? .white.opacity(0.8) : .secondary)
+                .foregroundStyle(isSelected ? .white.opacity(0.8) : ColorTokens.secondaryLabel)
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 8)
-        .background(isSelected ? Color.accentColor : Color(.systemGray6))
-        .foregroundStyle(isSelected ? .white : .primary)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
+        .background(isSelected ? ColorTokens.accent : Color(.tertiarySystemBackground))
+        .foregroundStyle(isSelected ? .white : ColorTokens.label)
         .clipShape(Capsule())
     }
 }

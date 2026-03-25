@@ -6,25 +6,24 @@ struct ProfileHeaderView: View {
 
     var body: some View {
         HStack(spacing: 16) {
-            // Avatar placeholder
-            Circle()
-                .fill(Color(.systemGray4))
-                .frame(width: 56, height: 56)
-                .overlay {
-                    Image(systemName: "person.fill")
-                        .font(.title2)
-                        .foregroundStyle(.white)
-                }
+            // 64pt avatar with initials on colored background
+            AvatarView(
+                initials: avatarInitials,
+                userId: user?.id.uuidString ?? "default",
+                size: 64
+            )
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(displayName)
-                    .font(.headline)
+                    .font(TypographyTokens.sectionHeader)
+                    .foregroundStyle(ColorTokens.label)
+
                 Text(user?.email ?? String(localized: "settings.no.email"))
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .font(TypographyTokens.subheadline)
+                    .foregroundStyle(ColorTokens.secondaryLabel)
             }
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, 8)
     }
 
     private var displayName: String {
@@ -34,5 +33,14 @@ struct ProfileHeaderView: View {
             return name
         }
         return user?.email ?? String(localized: "settings.default.name")
+    }
+
+    private var avatarInitials: String {
+        let name = displayName
+        let parts = name.split(separator: " ")
+        if parts.count >= 2 {
+            return "\(parts[0].prefix(1))\(parts[1].prefix(1))".uppercased()
+        }
+        return String(name.prefix(1)).uppercased()
     }
 }

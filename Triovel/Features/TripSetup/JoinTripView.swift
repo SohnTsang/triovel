@@ -5,7 +5,6 @@ struct JoinTripView: View {
     @Environment(\.horizontalSizeClass) private var sizeClass
     @EnvironmentObject private var appState: AppState
 
-    /// Called with the joined trip ID on success.
     private let onTripJoined: ((String) -> Void)?
 
     init(onTripJoined: ((String) -> Void)? = nil) {
@@ -23,23 +22,23 @@ struct JoinTripView: View {
         NavigationStack {
             VStack(spacing: 24) {
                 Text("trip.join.instructions")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .font(TypographyTokens.subheadline)
+                    .foregroundStyle(ColorTokens.secondaryLabel)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 24)
                     .padding(.top, 24)
 
-                TextField(String(localized: "trip.join.code.placeholder"), text: $inviteCode)
-                    .textInputAutocapitalization(.never)
-                    .autocorrectionDisabled()
-                    .focused($codeFocused)
-                    .padding()
-                    .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 10))
-                    .padding(.horizontal, 24)
+                TriovelTextField(
+                    placeholder: "trip.join.code.placeholder",
+                    text: $inviteCode,
+                    autocapitalization: .never
+                )
+                .focused($codeFocused)
+                .padding(.horizontal, 24)
 
                 if let error = errorMessage {
                     Text(error)
-                        .font(.subheadline)
+                        .font(TypographyTokens.caption)
                         .foregroundStyle(.red)
                         .padding(.horizontal, 24)
                 }
@@ -49,14 +48,12 @@ struct JoinTripView: View {
                 } label: {
                     if isJoining {
                         ProgressView()
-                            .frame(maxWidth: .infinity)
+                            .tint(.white)
                     } else {
                         Text("trip.join.button")
-                            .frame(maxWidth: .infinity)
                     }
                 }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
+                .buttonStyle(.triovelPrimary)
                 .disabled(inviteCode.trimmingCharacters(in: .whitespaces).isEmpty || isJoining)
                 .padding(.horizontal, 24)
 
@@ -74,6 +71,7 @@ struct JoinTripView: View {
             .onAppear { codeFocused = true }
         }
         .presentationDetents(sizeClass == .regular ? [.medium, .large] : [.medium])
+        .presentationDragIndicator(.visible)
     }
 
     private func joinTrip() {

@@ -10,16 +10,17 @@ struct DaySectionView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             // Day header
-            HStack {
+            HStack(spacing: 8) {
                 Text("timeline.day \(day.dayNumber)")
-                    .font(.headline)
-                Text(day.shortDate)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-            }
-            .padding(.horizontal)
+                    .font(TypographyTokens.sectionHeader)
+                    .foregroundStyle(ColorTokens.label)
 
-            // Interleave ghost blocks and time slots chronologically
+                Text(day.shortDate)
+                    .font(TypographyTokens.caption)
+                    .foregroundStyle(ColorTokens.secondaryLabel)
+            }
+            .padding(.horizontal, 20)
+
             let items = buildTimelineItems()
 
             ForEach(items) { item in
@@ -28,7 +29,7 @@ struct DaySectionView: View {
                     GhostBlockView(ghost: ghost) {
                         onGhostTap(ghost)
                     }
-                    .padding(.horizontal)
+                    .padding(.horizontal, 20)
 
                 case .timeSlot(let slot):
                     TimeSlotView(
@@ -36,15 +37,14 @@ struct DaySectionView: View {
                         creatorNameForBlock: creatorNameForBlock,
                         onBlockTap: onBlockTap
                     )
-                    .padding(.horizontal)
+                    .padding(.horizontal, 20)
                 }
             }
 
-            // If no content at all, show minimal empty state
             if day.blocks.isEmpty && day.ghostBlocks.isEmpty {
                 Text("timeline.no.moments")
-                    .font(.subheadline)
-                    .foregroundStyle(.tertiary)
+                    .font(TypographyTokens.subheadline)
+                    .foregroundStyle(ColorTokens.tertiaryLabel)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 24)
             }
@@ -87,7 +87,7 @@ private struct TimelineItem: Identifiable {
     }
 }
 
-// MARK: - Time Slot View (handles same-time clustering)
+// MARK: - Time Slot View
 
 private struct TimeSlotView: View {
     let slot: TimeSlot
@@ -96,12 +96,10 @@ private struct TimeSlotView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            // Shared time label
             Text(slot.time, style: .time)
-                .font(.caption.weight(.medium))
-                .foregroundStyle(.secondary)
+                .font(TypographyTokens.captionMedium)
+                .foregroundStyle(ColorTokens.secondaryLabel)
 
-            // Stacked block cards — full-width, never tiny side-by-side
             ForEach(slot.blocks) { block in
                 BlockCardView(
                     block: block,

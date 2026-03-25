@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// Empty state shown when user has no active trips.
-/// Friendly, not pushy — per design-system.md.
+/// Centered, calm, two clear CTAs — per visual-design.md.
 struct HomeEmptyStateView: View {
     let onCreateTrip: () -> Void
     let onJoinTrip: () -> Void
@@ -13,36 +13,36 @@ struct HomeEmptyStateView: View {
 
             Image(systemName: "airplane.departure")
                 .font(.system(size: 48))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(ColorTokens.accent.opacity(0.5))
 
-            Text("home.empty.title")
-                .font(.title2.weight(.medium))
+            VStack(spacing: 8) {
+                Text("home.empty.title")
+                    .font(TypographyTokens.screenTitle)
+                    .foregroundStyle(ColorTokens.label)
 
-            Text("home.empty.subtitle")
-                .font(.body)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 40)
+                Text("home.empty.subtitle")
+                    .font(TypographyTokens.body)
+                    .foregroundStyle(ColorTokens.secondaryLabel)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 32)
+            }
 
             VStack(spacing: 12) {
                 Button(action: onCreateTrip) {
                     Text("home.create.trip")
-                        .frame(maxWidth: .infinity)
                 }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
+                .buttonStyle(.triovelPrimary)
 
                 Button(action: onJoinTrip) {
                     Text("home.join.trip")
-                        .frame(maxWidth: .infinity)
                 }
-                .buttonStyle(.bordered)
-                .controlSize(.large)
+                .buttonStyle(.triovelSecondary)
             }
-            .padding(.horizontal, 40)
+            .padding(.horizontal, 24)
 
             Spacer()
         }
-        .frame(maxWidth: sizeClass == .regular ? 600 : .infinity)
+        .frame(maxWidth: sizeClass == .regular ? 440 : .infinity)
+        .frame(maxWidth: .infinity)
     }
 }

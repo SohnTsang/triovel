@@ -6,52 +6,49 @@ struct BlockCardView: View {
     var syncState: SyncState = .synced
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                // Context chip for personal blocks
-                if block.context == .personal {
-                    ContextChip(
-                        context: .personal,
-                        userName: creatorName
-                    )
-                }
-                Spacer()
-                SyncStateIndicator(state: syncState)
-            }
-
-            Text(block.title)
-                .font(.headline)
-                .lineLimit(2)
-
-            HStack(spacing: 12) {
-                if let location = block.locationText {
-                    Label(location, systemImage: "mappin")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(1)
+        TriovelCard(background: cardBackground) {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    if block.context == .personal {
+                        ContextChip(
+                            context: .personal,
+                            userName: creatorName
+                        )
+                    }
+                    Spacer()
+                    SyncStateIndicator(state: syncState)
                 }
 
-                Text(block.startAt, style: .time)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                Text(block.title)
+                    .font(TypographyTokens.cardTitle)
+                    .foregroundStyle(ColorTokens.label)
+                    .lineLimit(2)
+
+                HStack(spacing: 12) {
+                    Label {
+                        Text(block.startAt, style: .time)
+                    } icon: {
+                        Image(systemName: "clock")
+                    }
+                    .font(TypographyTokens.caption)
+                    .foregroundStyle(ColorTokens.secondaryLabel)
+
+                    if let location = block.locationText {
+                        Label(location, systemImage: "mappin")
+                            .font(TypographyTokens.caption)
+                            .foregroundStyle(ColorTokens.secondaryLabel)
+                            .lineLimit(1)
+                    }
+                }
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(16)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding()
-        .background(
-            block.context == .personal
-                ? ColorTokens.personalBackground
-                : Color(.systemBackground)
-        )
-        .clipShape(RoundedRectangle(cornerRadius: 12))
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(
-                    block.context == .personal
-                        ? ColorTokens.personalBorder
-                        : Color(.systemGray5),
-                    lineWidth: 1
-                )
-        )
+    }
+
+    private var cardBackground: Color {
+        block.context == .personal
+            ? ColorTokens.personalBackground
+            : ColorTokens.cardBackground
     }
 }

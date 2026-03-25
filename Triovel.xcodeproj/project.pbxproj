@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 46;
+	objectVersion = 54;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -26,6 +26,7 @@
 		61B4FA0AE47C6AA942D27E13 /* BlockDetailHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 225102640530B9625A29CE70 /* BlockDetailHeaderView.swift */; };
 		674A53B3E41527330F7CDF6E /* DateExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46532593245246A2DEEA5ED6 /* DateExtensions.swift */; };
 		68EB4CD187B74C890764F49E /* HomeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3602147D540A67965076C5FA /* HomeViewModel.swift */; };
+		6A9AF8B62F74336C00FA1509 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 3582C5E841ADB159A873A6DE /* Supabase */; };
 		74C4661E07B14A12EAAD77DA /* HomeEmptyStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24D58EA476BBD36CD73C6B43 /* HomeEmptyStateView.swift */; };
 		7696F275C0123015D196F42C /* FilterBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0127D6C209C9C423380F35D /* FilterBarView.swift */; };
 		7FC3A59EEE627D6E59488A5E /* GhostBlock.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE731955CDB4DCBAE9CFE1AD /* GhostBlock.swift */; };
@@ -61,6 +62,11 @@
 		F7335C7E004072C81ADE5281 /* ArchivedTripsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFF23CF6BFDF870CF8270279 /* ArchivedTripsView.swift */; };
 		FA4839890F3393F7F303E1D6 /* TripSummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0302D2366046193707649197 /* TripSummaryView.swift */; };
 		FAECBBE4D697B0CE0E6D76CD /* Block.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72C620B88F9E9C13F81710B6 /* Block.swift */; };
+		A1B2C3D4E5F6A7B8C9D0E1F2 /* TriovelCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6A7B8C9D0E1F3 /* TriovelCard.swift */; };
+		A2B3C4D5E6F7A8B9C0D1E2F3 /* TriovelTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2B3C4D5E6F7A8B9C0D1E2F4 /* TriovelTextField.swift */; };
+		A3B4C5D6E7F8A9B0C1D2E3F4 /* TriovelButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3B4C5D6E7F8A9B0C1D2E3F5 /* TriovelButton.swift */; };
+		A4B5C6D7E8F9A0B1C2D3E4F5 /* AvatarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4B5C6D7E8F9A0B1C2D3E4F6 /* AvatarView.swift */; };
+		A5B6C7D8E9F0A1B2C3D4E5F6 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A5B6C7D8E9F0A1B2C3D4E5F7 /* Assets.xcassets */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -80,7 +86,7 @@
 		3920E78DE6024E98C1FF5F51 /* AuthService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AuthService.swift; sourceTree = "<group>"; };
 		3A0E074CBAFE87B4B48E2456 /* Post.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Post.swift; sourceTree = "<group>"; };
 		46532593245246A2DEEA5ED6 /* DateExtensions.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DateExtensions.swift; sourceTree = "<group>"; };
-		499DE72CECF55B1F2980F05D /* Localizable.xcstrings */ = {isa = PBXFileReference; includeInIndex = 1; path = Localizable.xcstrings; sourceTree = "<group>"; };
+		499DE72CECF55B1F2980F05D /* Localizable.xcstrings */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		4EB2D890509B59B8746832E4 /* TripSetupView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TripSetupView.swift; sourceTree = "<group>"; };
 		510B917DA42A782D527901E2 /* Trip.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Trip.swift; sourceTree = "<group>"; };
 		51491291130D54983174BA81 /* BlockCardView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = BlockCardView.swift; sourceTree = "<group>"; };
@@ -119,6 +125,11 @@
 		F498B6327B0111D589F53807 /* BlockDetailView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = BlockDetailView.swift; sourceTree = "<group>"; };
 		F9711E25A83250CBA563AC01 /* TripTimelineViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TripTimelineViewModel.swift; sourceTree = "<group>"; };
 		FBDFAB3E4FB960467628BC1A /* DayRibbonView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DayRibbonView.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F6A7B8C9D0E1F3 /* TriovelCard.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TriovelCard.swift; sourceTree = "<group>"; };
+		A2B3C4D5E6F7A8B9C0D1E2F4 /* TriovelTextField.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TriovelTextField.swift; sourceTree = "<group>"; };
+		A3B4C5D6E7F8A9B0C1D2E3F5 /* TriovelButton.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TriovelButton.swift; sourceTree = "<group>"; };
+		A4B5C6D7E8F9A0B1C2D3E4F6 /* AvatarView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AvatarView.swift; sourceTree = "<group>"; };
+		A5B6C7D8E9F0A1B2C3D4E5F7 /* Assets.xcassets */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -126,6 +137,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6A9AF8B62F74336C00FA1509 /* Supabase in Frameworks */,
 				961D77D5E83A9C4DDB7888EC /* Foundation.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -140,7 +152,6 @@
 				329E485AD1045A386B358254 /* SettingsView.swift */,
 				5AB324B137961413C9970DA2 /* SignInMethodRow.swift */,
 			);
-			name = Settings;
 			path = Settings;
 			sourceTree = "<group>";
 		};
@@ -154,7 +165,6 @@
 				3602147D540A67965076C5FA /* HomeViewModel.swift */,
 				EB0B419DC1B75D5FEB779903 /* TripCardView.swift */,
 			);
-			name = Home;
 			path = Home;
 			sourceTree = "<group>";
 		};
@@ -163,7 +173,6 @@
 			children = (
 				B962DAB0516BF50F160D2F93 /* TripMembersView.swift */,
 			);
-			name = TripMembers;
 			path = TripMembers;
 			sourceTree = "<group>";
 		};
@@ -172,7 +181,6 @@
 			children = (
 				11F9F5392F8B75CB4642083E /* AddMomentView.swift */,
 			);
-			name = AddMoment;
 			path = AddMoment;
 			sourceTree = "<group>";
 		};
@@ -181,7 +189,6 @@
 			children = (
 				C3C50AA31C183A3D539EF03F /* BillEntryView.swift */,
 			);
-			name = Bills;
 			path = Bills;
 			sourceTree = "<group>";
 		};
@@ -191,17 +198,19 @@
 				894704EF83672A3D88516AB3 /* JoinTripView.swift */,
 				4EB2D890509B59B8746832E4 /* TripSetupView.swift */,
 			);
-			name = TripSetup;
 			path = TripSetup;
 			sourceTree = "<group>";
 		};
 		334CD0A52EF7606B44085D2C /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				A4B5C6D7E8F9A0B1C2D3E4F6 /* AvatarView.swift */,
 				DC1D58EA79986593AD4C44C3 /* ContextChip.swift */,
 				5E6BA7EBB42B0BCEE5925692 /* SyncStateIndicator.swift */,
+				A3B4C5D6E7F8A9B0C1D2E3F5 /* TriovelButton.swift */,
+				A1B2C3D4E5F6A7B8C9D0E1F3 /* TriovelCard.swift */,
+				A2B3C4D5E6F7A8B9C0D1E2F4 /* TriovelTextField.swift */,
 			);
-			name = Components;
 			path = Components;
 			sourceTree = "<group>";
 		};
@@ -215,7 +224,6 @@
 				46250686AD8D112DC1148FE7 /* Resources */,
 				BE730DF66BC8B247E7A665CF /* Utilities */,
 			);
-			name = Triovel;
 			path = Triovel;
 			sourceTree = "<group>";
 		};
@@ -231,10 +239,10 @@
 		46250686AD8D112DC1148FE7 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				A5B6C7D8E9F0A1B2C3D4E5F7 /* Assets.xcassets */,
 				F466F7AEC7C1F82B6E0DD35B /* LaunchScreen.storyboard */,
 				499DE72CECF55B1F2980F05D /* Localizable.xcstrings */,
 			);
-			name = Resources;
 			path = Resources;
 			sourceTree = "<group>";
 		};
@@ -244,7 +252,6 @@
 				939B0D856EA38AD910DCCEBC /* BlockRepository.swift */,
 				BD7664E9FAAFA68499F1D014 /* TripRepository.swift */,
 			);
-			name = Networking;
 			path = Networking;
 			sourceTree = "<group>";
 		};
@@ -253,7 +260,6 @@
 			children = (
 				0302D2366046193707649197 /* TripSummaryView.swift */,
 			);
-			name = Summary;
 			path = Summary;
 			sourceTree = "<group>";
 		};
@@ -280,7 +286,6 @@
 				D7CD11E965B891561E15030A /* Models */,
 				6C55F458EEFB20B86878978F /* Networking */,
 			);
-			name = Core;
 			path = Core;
 			sourceTree = "<group>";
 		};
@@ -291,7 +296,6 @@
 				F498B6327B0111D589F53807 /* BlockDetailView.swift */,
 				C4F9CA9BE1235A18E57EC76A /* BlockDetailViewModel.swift */,
 			);
-			name = BlockDetail;
 			path = BlockDetail;
 			sourceTree = "<group>";
 		};
@@ -306,7 +310,6 @@
 				8167356960427FC857D632B1 /* TripTimelineView.swift */,
 				F9711E25A83250CBA563AC01 /* TripTimelineViewModel.swift */,
 			);
-			name = Timeline;
 			path = Timeline;
 			sourceTree = "<group>";
 		};
@@ -315,7 +318,6 @@
 			children = (
 				46532593245246A2DEEA5ED6 /* DateExtensions.swift */,
 			);
-			name = Utilities;
 			path = Utilities;
 			sourceTree = "<group>";
 		};
@@ -326,7 +328,6 @@
 				334CD0A52EF7606B44085D2C /* Components */,
 				8821F22E3D693DFF6F88F7DF /* TypographyTokens.swift */,
 			);
-			name = DesignSystem;
 			path = DesignSystem;
 			sourceTree = "<group>";
 		};
@@ -339,7 +340,6 @@
 				DE5290E37A76D261914B0148 /* Router.swift */,
 				09A598121B2D59CD5AE91B97 /* TriovelApp.swift */,
 			);
-			name = App;
 			path = App;
 			sourceTree = "<group>";
 		};
@@ -365,7 +365,6 @@
 				8F32AE2EC1F4BE47F95FA5F9 /* TripMember.swift */,
 				29C46787B3EBA9D054F24AEA /* User.swift */,
 			);
-			name = Models;
 			path = Models;
 			sourceTree = "<group>";
 		};
@@ -377,7 +376,6 @@
 				ED6ED6D9E9B46E87F71DBEAB /* AuthView.swift */,
 				5B0D78BBF0DA2C0EBCD74F37 /* SupabaseConfig.swift */,
 			);
-			name = Auth;
 			path = Auth;
 			sourceTree = "<group>";
 		};
@@ -394,7 +392,6 @@
 				124ED739D5119DD627A1DCC5 /* TripMembers */,
 				2D297E22D2BAE59C1928D643 /* TripSetup */,
 			);
-			name = Features;
 			path = Features;
 			sourceTree = "<group>";
 		};
@@ -439,11 +436,9 @@
 				Base,
 			);
 			mainGroup = 43BE3CE58A6C29AFDB0DB173;
-			minimizedProjectReferenceProxies = 0;
 			packageReferences = (
 				537F295E03B58576A0D45BB9 /* XCRemoteSwiftPackageReference "supabase-swift" */,
 			);
-			preferredProjectObjectVersion = 77;
 			productRefGroup = D08D3F8E6B34435A495B2D09 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -458,6 +453,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A5B6C7D8E9F0A1B2C3D4E5F6 /* Assets.xcassets in Resources */,
 				4A231D364F1D1D9432147ACB /* LaunchScreen.storyboard in Resources */,
 				CCF07928167DE668B44E0920 /* Localizable.xcstrings in Resources */,
 			);
@@ -521,6 +517,10 @@
 				B1C900F172372F5B94AACF30 /* JoinTripView.swift in Sources */,
 				06B77EFB5A50FE4C773356EC /* TripSetupView.swift in Sources */,
 				674A53B3E41527330F7CDF6E /* DateExtensions.swift in Sources */,
+				A1B2C3D4E5F6A7B8C9D0E1F2 /* TriovelCard.swift in Sources */,
+				A2B3C4D5E6F7A8B9C0D1E2F3 /* TriovelTextField.swift in Sources */,
+				A3B4C5D6E7F8A9B0C1D2E3F4 /* TriovelButton.swift in Sources */,
+				A4B5C6D7E8F9A0B1C2D3E4F5 /* AvatarView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -536,11 +536,16 @@
 				CODE_SIGN_ENTITLEMENTS = Triovel/Triovel.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = L9Z4A5S4H7;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Triovel/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Triovel;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.travel";
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
 				MARKETING_VERSION = 0.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.triovel.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -623,11 +628,16 @@
 				CODE_SIGN_ENTITLEMENTS = Triovel/Triovel.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = L9Z4A5S4H7;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Triovel/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Triovel;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.travel";
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
 				MARKETING_VERSION = 0.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.triovel.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";

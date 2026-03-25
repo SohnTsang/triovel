@@ -19,7 +19,7 @@ struct BlockDetailHeaderView: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding()
+        .padding(20)
     }
 
     // MARK: - Display Mode
@@ -36,14 +36,15 @@ struct BlockDetailHeaderView: View {
                     isEditing = true
                 } label: {
                     Image(systemName: "pencil")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                        .font(.subheadline.weight(.medium))
+                        .foregroundStyle(ColorTokens.secondaryLabel)
                 }
             }
         }
 
         Text(block.title)
-            .font(.title2.weight(.semibold))
+            .font(TypographyTokens.screenTitle)
+            .foregroundStyle(ColorTokens.label)
 
         HStack(spacing: 12) {
             Label {
@@ -51,13 +52,13 @@ struct BlockDetailHeaderView: View {
             } icon: {
                 Image(systemName: "clock")
             }
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
+            .font(TypographyTokens.caption)
+            .foregroundStyle(ColorTokens.secondaryLabel)
 
             if let location = block.locationText, !location.isEmpty {
                 Label(location, systemImage: "mappin")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .font(TypographyTokens.caption)
+                    .foregroundStyle(ColorTokens.secondaryLabel)
                     .lineLimit(1)
             }
         }
@@ -69,27 +70,30 @@ struct BlockDetailHeaderView: View {
     private var editingContent: some View {
         HStack {
             Text("block.edit.title")
-                .font(.subheadline.weight(.medium))
-                .foregroundStyle(.secondary)
+                .font(TypographyTokens.captionMedium)
+                .foregroundStyle(ColorTokens.secondaryLabel)
             Spacer()
             Button(String(localized: "common.cancel")) {
                 isEditing = false
             }
             .font(.subheadline)
+            .foregroundStyle(ColorTokens.accent)
+
             Button(String(localized: "common.save")) {
                 onSave()
             }
             .font(.subheadline.weight(.semibold))
+            .foregroundStyle(ColorTokens.accent)
         }
 
-        TextField(String(localized: "block.edit.title.placeholder"), text: $editTitle)
-            .font(.title3)
-            .padding(8)
-            .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 8))
+        TriovelTextField(
+            placeholder: "block.edit.title.placeholder",
+            text: $editTitle
+        )
 
-        TextField(String(localized: "block.edit.location.placeholder"), text: $editLocation)
-            .font(.subheadline)
-            .padding(8)
-            .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 8))
+        TriovelTextField(
+            placeholder: "block.edit.location.placeholder",
+            text: $editLocation
+        )
     }
 }

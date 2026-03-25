@@ -6,22 +6,30 @@ struct GhostBlockView: View {
 
     var body: some View {
         Button(action: onTap) {
-            HStack {
+            HStack(spacing: 12) {
                 Image(systemName: iconName)
-                    .foregroundStyle(.tertiary)
+                    .font(.body)
+                    .foregroundStyle(ColorTokens.tertiaryLabel)
+
                 Text(ghost.label.rawValue)
-                    .font(.subheadline)
-                    .foregroundStyle(.tertiary)
+                    .font(TypographyTokens.subheadline)
+                    .foregroundStyle(ColorTokens.tertiaryLabel)
+
                 Spacer()
+
+                Image(systemName: "plus")
+                    .font(.caption.weight(.medium))
+                    .foregroundStyle(ColorTokens.tertiaryLabel)
             }
-            .padding()
-            .background(Color(.systemGray6).opacity(0.5))
-            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .padding(16)
+            .background(Color(.tertiarySystemBackground).opacity(0.5))
+            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
             .overlay(
-                RoundedRectangle(cornerRadius: 12)
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
                     .strokeBorder(style: StrokeStyle(lineWidth: 1, dash: [6, 4]))
-                    .foregroundStyle(Color(.systemGray4))
+                    .foregroundStyle(ColorTokens.separator)
             )
+            .opacity(0.6)
         }
     }
 

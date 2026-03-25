@@ -28,6 +28,7 @@ struct TripMembersView: View {
                 }
             }
         }
+        .listStyle(.insetGrouped)
         .navigationTitle(String(localized: "trip.members.title"))
         .overlay {
             if showingCopied {
@@ -46,7 +47,6 @@ struct TripMembersView: View {
         }
     }
 
-    /// Owners first, then alphabetical by name.
     private var sortedMembers: [TripMemberDisplay] {
         members.sorted { a, b in
             if a.role != b.role {
@@ -64,11 +64,11 @@ struct TripMembersView: View {
                 .foregroundStyle(.white)
                 .padding(.horizontal, 20)
                 .padding(.vertical, 10)
-                .background(Color(.darkGray), in: Capsule())
+                .background(.black.opacity(0.75), in: Capsule())
                 .padding(.bottom, 32)
         }
         .transition(.move(edge: .bottom).combined(with: .opacity))
-        .animation(.easeInOut(duration: 0.2), value: showingCopied)
+        .animation(.spring(response: 0.3, dampingFraction: 0.8), value: showingCopied)
     }
 }
 
@@ -79,35 +79,26 @@ private struct MemberRow: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            // Avatar
-            ZStack {
-                if member.avatarPath != nil {
-                    Circle().fill(Color(.systemGray4))
-                } else {
-                    Circle()
-                        .fill(Color(.systemGray4))
-                        .overlay {
-                            Text(member.initials)
-                                .font(.subheadline.weight(.medium))
-                                .foregroundStyle(.white)
-                        }
-                }
-            }
-            .frame(width: 40, height: 40)
+            AvatarView(
+                initials: member.initials,
+                userId: member.userId,
+                size: 40
+            )
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(member.displayName)
-                    .font(.body)
+                    .font(TypographyTokens.body)
+                    .foregroundStyle(ColorTokens.label)
 
                 if member.role == .owner {
                     Text("trip.members.role.organizer")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .font(TypographyTokens.caption)
+                        .foregroundStyle(ColorTokens.accent)
                 }
             }
 
             Spacer()
         }
-        .padding(.vertical, 2)
+        .padding(.vertical, 4)
     }
 }

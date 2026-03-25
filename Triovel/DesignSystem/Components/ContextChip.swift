@@ -7,10 +7,10 @@ struct ContextChip: View {
 
     var body: some View {
         Text(label)
-            .font(.caption.weight(.medium))
+            .font(.caption.weight(.semibold))
             .foregroundStyle(foregroundColor)
-            .padding(.horizontal, 8)
-            .padding(.vertical, 3)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 4)
             .background(backgroundColor, in: Capsule())
     }
 
@@ -27,12 +27,12 @@ struct ContextChip: View {
     }
 
     private var foregroundColor: Color {
-        context == .personal ? ColorTokens.personalTint : .secondary
+        context == .personal ? ColorTokens.personalTint : ColorTokens.accent
     }
 
     private var backgroundColor: Color {
         context == .personal
             ? ColorTokens.personalTint.opacity(0.12)
-            : Color(.systemGray6)
+            : ColorTokens.accent.opacity(0.10)
     }
 }

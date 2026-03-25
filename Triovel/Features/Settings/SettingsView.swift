@@ -10,7 +10,7 @@ struct SettingsView: View {
 
     var body: some View {
         List {
-            // Profile section
+            // Profile section — avatar (large, 64pt) + name + email
             Section {
                 ProfileHeaderView(user: authService.currentUser)
             }
@@ -20,36 +20,41 @@ struct SettingsView: View {
                 SignInMethodRow(user: authService.currentUser)
             }
 
-            // Legal — placeholder slots per compliance.md
+            // Legal
             Section(String(localized: "settings.legal")) {
                 Button {
-                    // Privacy Policy — link to hosted page before App Store submission
+                    // Privacy Policy — hosted page before App Store
                 } label: {
                     Label(String(localized: "settings.privacy.policy"), systemImage: "hand.raised")
+                        .foregroundStyle(ColorTokens.label)
                 }
 
                 Button {
-                    // Terms of Service — link to hosted page before App Store submission
+                    // Terms of Service — hosted page before App Store
                 } label: {
                     Label(String(localized: "settings.terms"), systemImage: "doc.text")
+                        .foregroundStyle(ColorTokens.label)
                 }
             }
 
-            // Danger zone
+            // Danger zone — sign out + delete, plain red text
             Section {
-                Button(role: .destructive) {
+                Button {
                     showingSignOutConfirmation = true
                 } label: {
-                    Label(String(localized: "settings.sign.out"), systemImage: "rectangle.portrait.and.arrow.right")
+                    Text(String(localized: "settings.sign.out"))
+                        .foregroundStyle(.red)
                 }
 
-                Button(role: .destructive) {
+                Button {
                     showingDeleteConfirmation = true
                 } label: {
-                    Label(String(localized: "settings.delete.account"), systemImage: "trash")
+                    Text(String(localized: "settings.delete.account"))
+                        .foregroundStyle(.red)
                 }
             }
         }
+        .listStyle(.insetGrouped)
         .navigationTitle(String(localized: "settings.title"))
         .confirmationDialog(String(localized: "settings.sign.out.confirm"), isPresented: $showingSignOutConfirmation) {
             Button(String(localized: "settings.sign.out"), role: .destructive) {

@@ -7,7 +7,6 @@ struct AddMomentView: View {
     var ghostLabel: GhostBlockLabel?
     var displayTimezone: String = TimeZone.current.identifier
 
-    /// Called with the created block ID after successful creation.
     var onBlockCreated: ((String) -> Void)?
 
     @Environment(\.dismiss) private var dismiss
@@ -25,33 +24,44 @@ struct AddMomentView: View {
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 20) {
+            VStack(spacing: 24) {
                 // Title — large auto-focused input
-                TextField(String(localized: "block.add.placeholder"), text: $title)
-                    .font(.title3)
-                    .focused($titleFocused)
-                    .padding(.horizontal)
-                    .disabled(isSaving)
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("block.add.placeholder")
+                        .font(TypographyTokens.caption)
+                        .foregroundStyle(ColorTokens.secondaryLabel)
+                        .padding(.horizontal, 4)
 
-                // Context toggle — default Group
+                    TextField(String(localized: "block.add.placeholder"), text: $title)
+                        .font(.title3.weight(.medium))
+                        .focused($titleFocused)
+                        .disabled(isSaving)
+                }
+                .padding(.horizontal, 20)
+
+                // Context toggle
                 Picker("Context", selection: $context) {
                     Text("block.add.context.group").tag(BlockContext.group)
                     Text("block.add.context.personal").tag(BlockContext.personal)
                 }
                 .pickerStyle(.segmented)
-                .padding(.horizontal)
+                .padding(.horizontal, 20)
                 .disabled(isSaving)
 
                 // Time picker
-                DatePicker(String(localized: "block.add.time"), selection: $time, displayedComponents: .hourAndMinute)
-                    .padding(.horizontal)
-                    .disabled(isSaving)
+                DatePicker(
+                    String(localized: "block.add.time"),
+                    selection: $time,
+                    displayedComponents: .hourAndMinute
+                )
+                .padding(.horizontal, 20)
+                .disabled(isSaving)
 
                 if let error = errorMessage {
                     Text(error)
-                        .font(.caption)
+                        .font(TypographyTokens.caption)
                         .foregroundStyle(.red)
-                        .padding(.horizontal)
+                        .padding(.horizontal, 20)
                 }
 
                 Spacer()
@@ -67,10 +77,12 @@ struct AddMomentView: View {
                 ToolbarItem(placement: .confirmationAction) {
                     if isSaving {
                         ProgressView()
+                            .tint(ColorTokens.accent)
                     } else {
                         Button(String(localized: "common.save")) {
                             createBlock()
                         }
+                        .fontWeight(.semibold)
                         .disabled(title.trimmingCharacters(in: .whitespaces).isEmpty)
                     }
                 }
@@ -95,6 +107,7 @@ struct AddMomentView: View {
             }
         }
         .presentationDetents(sizeClass == .regular ? [.medium, .large] : [.medium])
+        .presentationDragIndicator(.visible)
     }
 
     private func createBlock() {
@@ -102,7 +115,6 @@ struct AddMomentView: View {
         guard !trimmedTitle.isEmpty else { return }
         guard let userId = appState.currentUserId else { return }
 
-        // Build the full startAt by combining dayDate with selected time
         let startAt = buildStartAt()
 
         isSaving = true
@@ -120,7 +132,6 @@ struct AddMomentView: View {
                 )
 
                 dismiss()
-                // Small delay for sheet dismiss animation
                 try? await Task.sleep(for: .milliseconds(300))
                 onBlockCreated?(block.id)
             } catch {
@@ -130,7 +141,6 @@ struct AddMomentView: View {
         }
     }
 
-    /// Combine the day date with the selected time.
     private func buildStartAt() -> Date {
         let cal = Calendar.current
         let timeComponents = cal.dateComponents([.hour, .minute], from: time)

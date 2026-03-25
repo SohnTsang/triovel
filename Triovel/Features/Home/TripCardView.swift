@@ -5,49 +5,44 @@ struct TripCardView: View {
     let members: [TripMemberDisplay]
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            // Cover image area
-            coverImage
+        TriovelCard {
+            VStack(alignment: .leading, spacing: 0) {
+                // Cover image — 16:9 aspect ratio, clipped to top corners
+                coverImage
 
-            VStack(alignment: .leading, spacing: 6) {
-                Text(trip.title)
-                    .font(.headline)
-                    .lineLimit(1)
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(trip.title)
+                        .font(TypographyTokens.cardTitle)
+                        .foregroundStyle(ColorTokens.label)
+                        .lineLimit(1)
 
-                Text(trip.formattedDateRange)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-            }
-            .padding(.horizontal, 4)
+                    Text(trip.formattedDateRange)
+                        .font(TypographyTokens.caption)
+                        .foregroundStyle(ColorTokens.secondaryLabel)
 
-            // Member avatars
-            if !members.isEmpty {
-                MemberAvatarRow(members: members)
-                    .padding(.horizontal, 4)
+                    if !members.isEmpty {
+                        MemberAvatarRow(members: members)
+                    }
+                }
+                .padding(16)
             }
         }
-        .padding(12)
-        .background(Color(.systemBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 16))
-        .shadow(color: .black.opacity(0.06), radius: 8, y: 2)
     }
 
     @ViewBuilder
     private var coverImage: some View {
-        RoundedRectangle(cornerRadius: 12)
-            .fill(Color(.systemGray5))
-            .frame(height: 140)
+        Rectangle()
+            .fill(Color(.tertiarySystemBackground))
+            .aspectRatio(16/9, contentMode: .fit)
             .overlay {
                 if trip.coverImagePath != nil {
-                    // Actual image loading comes with media pipeline (Phase 3)
                     Color.clear
                 } else {
-                    Image(systemName: "photo")
-                        .font(.title)
-                        .foregroundStyle(.quaternary)
+                    Image(systemName: "photo.on.rectangle.angled")
+                        .font(.title2)
+                        .foregroundStyle(ColorTokens.tertiaryLabel)
                 }
             }
-            .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 }
 
@@ -55,23 +50,26 @@ struct TripCardView: View {
 
 struct MemberAvatarRow: View {
     let members: [TripMemberDisplay]
-
-    /// Show at most 5 avatars, then a +N overflow chip.
-    private let maxVisible = 5
+    private let maxVisible = 4
 
     var body: some View {
         HStack(spacing: -8) {
             ForEach(visibleMembers) { member in
-                AvatarCircle(member: member)
+                AvatarView(
+                    initials: member.initials,
+                    userId: member.userId,
+                    size: 24
+                )
+                .overlay { Circle().stroke(ColorTokens.cardBackground, lineWidth: 2) }
             }
 
             if overflowCount > 0 {
                 Text("+\(overflowCount)")
-                    .font(.caption2.weight(.medium))
-                    .foregroundStyle(.secondary)
-                    .frame(width: 28, height: 28)
-                    .background(Color(.systemGray5), in: Circle())
-                    .overlay { Circle().stroke(.white, lineWidth: 2) }
+                    .font(.caption2.weight(.bold))
+                    .foregroundStyle(ColorTokens.secondaryLabel)
+                    .frame(width: 24, height: 24)
+                    .background(Color(.tertiarySystemBackground), in: Circle())
+                    .overlay { Circle().stroke(ColorTokens.cardBackground, lineWidth: 2) }
             }
         }
     }
@@ -82,31 +80,6 @@ struct MemberAvatarRow: View {
 
     private var overflowCount: Int {
         max(0, members.count - maxVisible)
-    }
-}
-
-// MARK: - Single Avatar
-
-private struct AvatarCircle: View {
-    let member: TripMemberDisplay
-
-    var body: some View {
-        ZStack {
-            if member.avatarPath != nil {
-                // Actual avatar loading comes with media pipeline
-                Circle().fill(Color(.systemGray4))
-            } else {
-                Circle()
-                    .fill(Color(.systemGray4))
-                    .overlay {
-                        Text(member.initials)
-                            .font(.caption2.weight(.medium))
-                            .foregroundStyle(.white)
-                    }
-            }
-        }
-        .frame(width: 28, height: 28)
-        .overlay { Circle().stroke(.white, lineWidth: 2) }
     }
 }
 

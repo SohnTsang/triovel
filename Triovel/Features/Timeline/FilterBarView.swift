@@ -24,7 +24,7 @@ struct FilterBarView: View {
             }
         }
         .pickerStyle(.segmented)
-        .padding(.horizontal)
+        .padding(.horizontal, 20)
         .padding(.vertical, 8)
     }
 }

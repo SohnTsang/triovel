@@ -30,15 +30,15 @@ struct HomeContentView: View {
                             }
                         }
                     }
-                    .padding(.horizontal)
+                    .padding(.horizontal, 20)
                     .padding(.top, 8)
                     .padding(.bottom, 80)
                     .frame(maxWidth: sizeClass == .regular ? 600 : .infinity)
-                    .frame(maxWidth: .infinity) // Center on iPad
+                    .frame(maxWidth: .infinity)
                 }
             }
 
-            // Floating + New Trip button
+            // FAB: 56pt circle, accent color, subtle shadow
             Button {
                 attemptCreateTrip()
             } label: {
@@ -46,8 +46,8 @@ struct HomeContentView: View {
                     .font(.title2.weight(.semibold))
                     .foregroundStyle(.white)
                     .frame(width: 56, height: 56)
-                    .background(Color.accentColor, in: Circle())
-                    .shadow(color: .black.opacity(0.15), radius: 8, y: 4)
+                    .background(ColorTokens.secondaryAccent, in: Circle())
+                    .shadow(color: ColorTokens.cardShadow, radius: 12, y: 4)
             }
             .padding(24)
         }
@@ -58,6 +58,7 @@ struct HomeContentView: View {
                     router.push(.settings)
                 } label: {
                     Image(systemName: "person.circle")
+                        .fontWeight(.medium)
                 }
             }
             ToolbarItem(placement: .topBarTrailing) {
@@ -65,6 +66,7 @@ struct HomeContentView: View {
                     router.push(.archivedTrips)
                 } label: {
                     Image(systemName: "archivebox")
+                        .fontWeight(.medium)
                 }
             }
         }

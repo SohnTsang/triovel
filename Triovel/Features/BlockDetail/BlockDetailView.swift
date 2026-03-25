@@ -19,29 +19,33 @@ struct BlockDetailView: View {
                 )
 
                 Divider()
+                    .padding(.horizontal, 20)
 
                 // Unified memory stream — Phase 2
                 ScrollView {
                     LazyVStack(spacing: 12) {
                         Text("block.detail.no.posts")
-                            .foregroundStyle(.tertiary)
-                            .padding(.top, 40)
+                            .font(TypographyTokens.subheadline)
+                            .foregroundStyle(ColorTokens.tertiaryLabel)
+                            .padding(.top, 48)
                     }
-                    .padding()
+                    .padding(20)
                 }
 
                 Divider()
 
-                // Composer area — Phase 2
+                // Composer — Phase 2
                 ComposerPlaceholderView()
             } else if viewModel.isLoading {
                 Spacer()
                 ProgressView()
+                    .tint(ColorTokens.accent)
                 Spacer()
             } else if let error = viewModel.errorMessage {
                 Spacer()
                 Text(error)
-                    .foregroundStyle(.secondary)
+                    .font(TypographyTokens.subheadline)
+                    .foregroundStyle(ColorTokens.secondaryLabel)
                 Spacer()
             }
         }
@@ -62,10 +66,12 @@ private struct ComposerPlaceholderView: View {
     var body: some View {
         HStack {
             Text("block.detail.composer.placeholder")
-                .foregroundStyle(.tertiary)
+                .font(TypographyTokens.subheadline)
+                .foregroundStyle(ColorTokens.tertiaryLabel)
             Spacer()
         }
-        .padding()
-        .background(Color(.systemGray6))
+        .padding(.horizontal, 20)
+        .padding(.vertical, 14)
+        .background(Color(.secondarySystemBackground))
     }
 }

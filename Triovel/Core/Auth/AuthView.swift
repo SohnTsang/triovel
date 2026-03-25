@@ -16,79 +16,76 @@ struct AuthView: View {
     private var authService: AuthService { appState.authService }
 
     var body: some View {
-        VStack(spacing: 24) {
+        VStack(spacing: 0) {
             Spacer()
 
-            // App branding
-            VStack(spacing: 8) {
+            // Top 40%: App branding — breathe
+            VStack(spacing: 12) {
                 Text("Triovel")
-                    .font(.largeTitle.weight(.bold))
+                    .font(TypographyTokens.appTitle)
+                    .foregroundStyle(ColorTokens.label)
+
                 Text("auth.subtitle")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .font(TypographyTokens.body)
+                    .foregroundStyle(ColorTokens.secondaryLabel)
             }
 
             Spacer()
+            Spacer()
 
-            // Primary: Sign in with Apple
-            SignInWithAppleButton(.signIn) { request in
-                request.requestedScopes = [.fullName, .email]
-            } onCompletion: { _ in
-                // The actual flow goes through AppleSignInCoordinator
-            }
-            .signInWithAppleButtonStyle(.black)
-            .frame(height: 50)
-            .cornerRadius(10)
-            .padding(.horizontal, 32)
-            .overlay {
-                // Invisible button to trigger our coordinator flow
-                Button {
-                    startAppleSignIn()
-                } label: {
-                    Color.clear
-                }
+            // Sign in with Apple — native, full-width, prominent
+            VStack(spacing: 20) {
+                SignInWithAppleButton(.signIn) { request in
+                    request.requestedScopes = [.fullName, .email]
+                } onCompletion: { _ in }
+                .signInWithAppleButtonStyle(.black)
                 .frame(height: 50)
-                .padding(.horizontal, 32)
-            }
+                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                .overlay {
+                    Button {
+                        startAppleSignIn()
+                    } label: {
+                        Color.clear
+                    }
+                    .frame(height: 50)
+                }
 
-            // Divider
-            HStack {
-                Rectangle().frame(height: 1).foregroundStyle(.quaternary)
-                Text("auth.or")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                Rectangle().frame(height: 1).foregroundStyle(.quaternary)
+                // Divider with "or"
+                HStack(spacing: 16) {
+                    Rectangle().frame(height: 0.5).foregroundStyle(ColorTokens.separator)
+                    Text("auth.or")
+                        .font(TypographyTokens.caption)
+                        .foregroundStyle(ColorTokens.tertiaryLabel)
+                    Rectangle().frame(height: 0.5).foregroundStyle(ColorTokens.separator)
+                }
+
+                // Email auth
+                if showEmailForm {
+                    EmailAuthFormView(
+                        email: $email,
+                        password: $password,
+                        isSignUp: $isSignUp,
+                        isLoading: $isLoading,
+                        errorMessage: $errorMessage,
+                        onSubmit: { authenticateWithEmail() }
+                    )
+                } else {
+                    Button {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                            showEmailForm = true
+                        }
+                    } label: {
+                        Text("auth.continue.email")
+                    }
+                    .buttonStyle(.triovelSecondary)
+                }
             }
             .padding(.horizontal, 32)
 
-            // Secondary: Email / Password
-            if showEmailForm {
-                EmailAuthFormView(
-                    email: $email,
-                    password: $password,
-                    isSignUp: $isSignUp,
-                    isLoading: $isLoading,
-                    errorMessage: $errorMessage,
-                    onSubmit: { authenticateWithEmail() }
-                )
-            } else {
-                Button {
-                    withAnimation(.easeInOut(duration: 0.2)) {
-                        showEmailForm = true
-                    }
-                } label: {
-                    Text("auth.continue.email")
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.bordered)
-                .controlSize(.large)
-                .padding(.horizontal, 32)
-            }
-
             Spacer()
-                .frame(height: 32)
+                .frame(height: 48)
         }
-        .frame(maxWidth: sizeClass == .regular ? 500 : .infinity)
+        .frame(maxWidth: sizeClass == .regular ? 440 : .infinity)
         .frame(maxWidth: .infinity)
         .onAppear {
             setupAppleCoordinator()
@@ -115,7 +112,7 @@ struct AuthView: View {
                 isLoading = false
             }
         }
-        appleCoordinator.onError = { error in
+        appleCoordinator.onError = { _ in
             errorMessage = String(localized: "auth.apple.failed")
         }
     }
@@ -141,7 +138,7 @@ struct AuthView: View {
     }
 }
 
-// MARK: - Email Form (extracted to stay under 200 lines)
+// MARK: - Email Form
 
 private struct EmailAuthFormView: View {
     @Binding var email: String
@@ -153,22 +150,24 @@ private struct EmailAuthFormView: View {
 
     var body: some View {
         VStack(spacing: 12) {
-            TextField("auth.email.placeholder", text: $email)
-                .textContentType(.emailAddress)
-                .keyboardType(.emailAddress)
-                .autocorrectionDisabled()
-                .textInputAutocapitalization(.never)
-                .padding()
-                .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 10))
+            TriovelTextField(
+                placeholder: "auth.email.placeholder",
+                text: $email,
+                textContentType: .emailAddress,
+                keyboardType: .emailAddress,
+                autocapitalization: .never
+            )
 
-            SecureField("auth.password.placeholder", text: $password)
-                .textContentType(isSignUp ? .newPassword : .password)
-                .padding()
-                .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 10))
+            TriovelTextField(
+                placeholder: "auth.password.placeholder",
+                text: $password,
+                isSecure: true,
+                textContentType: isSignUp ? .newPassword : .password
+            )
 
             if let error = errorMessage {
                 Text(error)
-                    .font(.caption)
+                    .font(TypographyTokens.caption)
                     .foregroundStyle(.red)
             }
 
@@ -177,14 +176,12 @@ private struct EmailAuthFormView: View {
             } label: {
                 if isLoading {
                     ProgressView()
-                        .frame(maxWidth: .infinity)
+                        .tint(.white)
                 } else {
                     Text(isSignUp ? String(localized: "auth.sign.up") : String(localized: "auth.sign.in"))
-                        .frame(maxWidth: .infinity)
                 }
             }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.large)
+            .buttonStyle(.triovelPrimary)
             .disabled(email.isEmpty || password.isEmpty || isLoading)
 
             Button {
@@ -194,9 +191,9 @@ private struct EmailAuthFormView: View {
                 Text(isSignUp
                     ? String(localized: "auth.switch.to.sign.in")
                     : String(localized: "auth.switch.to.sign.up"))
-                    .font(.subheadline)
+                    .font(TypographyTokens.subheadline)
+                    .foregroundStyle(ColorTokens.accent)
             }
         }
-        .padding(.horizontal, 32)
     }
 }

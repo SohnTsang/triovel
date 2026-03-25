@@ -43,7 +43,7 @@ struct TripTimelineView: View {
                                 .id(day.dayNumber)
                             }
                         }
-                        .padding(.vertical, 12)
+                        .padding(.vertical, 16)
                         .padding(.bottom, 80)
                         .frame(maxWidth: sizeClass == .regular ? 600 : .infinity)
                         .frame(maxWidth: .infinity)
@@ -51,14 +51,14 @@ struct TripTimelineView: View {
                     .onChange(of: viewModel.selectedDayIndex) { _, newIndex in
                         let dayNumber = filteredDays.indices.contains(newIndex)
                             ? filteredDays[newIndex].dayNumber : 1
-                        withAnimation(.easeInOut(duration: 0.2)) {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
                             proxy.scrollTo(dayNumber, anchor: .top)
                         }
                     }
                 }
             }
 
-            // Floating + Add Moment
+            // FAB: capsule with label
             Button {
                 let currentDay = filteredDays.indices.contains(viewModel.selectedDayIndex)
                     ? filteredDays[viewModel.selectedDayIndex] : nil
@@ -71,8 +71,8 @@ struct TripTimelineView: View {
                     .foregroundStyle(.white)
                     .padding(.horizontal, 20)
                     .padding(.vertical, 14)
-                    .background(Color.accentColor, in: Capsule())
-                    .shadow(color: .black.opacity(0.15), radius: 8, y: 4)
+                    .background(ColorTokens.secondaryAccent, in: Capsule())
+                    .shadow(color: ColorTokens.cardShadow, radius: 12, y: 4)
             }
             .padding(24)
         }
@@ -89,11 +89,13 @@ struct TripTimelineView: View {
                         ))
                     } label: {
                         Image(systemName: "person.2")
+                            .fontWeight(.medium)
                     }
                     Button {
                         router.push(.tripSummary(tripId: tripId))
                     } label: {
                         Image(systemName: "chart.bar")
+                            .fontWeight(.medium)
                     }
                 }
             }
@@ -106,9 +108,7 @@ struct TripTimelineView: View {
                 ghostLabel: addMomentGhostLabel,
                 displayTimezone: viewModel.trip?.displayTimezone ?? TimeZone.current.identifier,
                 onBlockCreated: { blockId in
-                    // Refresh timeline to show new block (ghost disappears)
                     Task { await viewModel.refreshBlocks() }
-                    // Navigate into the new block detail
                     router.push(.blockDetail(blockId: blockId))
                 }
             )
