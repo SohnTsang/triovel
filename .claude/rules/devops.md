@@ -32,3 +32,28 @@ globs: "**/*.entitlements,**/Info.plist,**/*.xcconfig,**/Fastfile,**/Matchfile,*
 - Use xcconfig files for environment-specific settings (API URLs, keys)
 - Separate Debug/Release/Staging schemes
 - Pin dependency versions explicitly in Package.swift
+
+## Xcode Project Settings
+- Bundle Identifier: com.triovel.app
+- Display Name: Triovel
+- Deployment Target: iOS 17.0
+- Device Orientation: Portrait only (lock in Info.plist and project settings)
+- Status Bar: default (light/dark auto)
+- Supported Destinations: iPhone only (no iPad in V1)
+
+## App Icon
+- Provide a single 1024x1024 PNG (no transparency, no alpha channel)
+- Xcode 15+ auto-generates all sizes from the single asset
+- Place in Assets.xcassets -> AppIcon
+- Design: keep it simple, recognizable at small sizes, no text
+
+## Launch Screen
+- Use a simple LaunchScreen storyboard (not SwiftUI) — Apple requires it
+- Match the app's background color (use system background for light/dark)
+- Center the app logo or a minimal icon — no text, no loading indicators
+- Keep it identical to the app's initial loaded state to feel instant
+- Set UILaunchStoryboardName in Info.plist
+
+## Accent Color
+- Set a global AccentColor in Assets.xcassets — applies to all tint colors, buttons, links
+- Use a calm, trustworthy color that works in both light and dark mode
