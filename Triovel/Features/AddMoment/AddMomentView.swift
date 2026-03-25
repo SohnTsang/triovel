@@ -27,7 +27,7 @@ struct AddMomentView: View {
         NavigationStack {
             VStack(spacing: 20) {
                 // Title — large auto-focused input
-                TextField("What's happening?", text: $title)
+                TextField(String(localized: "block.add.placeholder"), text: $title)
                     .font(.title3)
                     .focused($titleFocused)
                     .padding(.horizontal)
@@ -35,15 +35,15 @@ struct AddMomentView: View {
 
                 // Context toggle — default Group
                 Picker("Context", selection: $context) {
-                    Text("Group").tag(BlockContext.group)
-                    Text("Personal").tag(BlockContext.personal)
+                    Text("block.add.context.group").tag(BlockContext.group)
+                    Text("block.add.context.personal").tag(BlockContext.personal)
                 }
                 .pickerStyle(.segmented)
                 .padding(.horizontal)
                 .disabled(isSaving)
 
                 // Time picker
-                DatePicker("Time", selection: $time, displayedComponents: .hourAndMinute)
+                DatePicker(String(localized: "block.add.time"), selection: $time, displayedComponents: .hourAndMinute)
                     .padding(.horizontal)
                     .disabled(isSaving)
 
@@ -57,18 +57,18 @@ struct AddMomentView: View {
                 Spacer()
             }
             .padding(.top, 24)
-            .navigationTitle("Add Moment")
+            .navigationTitle(String(localized: "block.add.title"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
+                    Button(String(localized: "common.cancel")) { dismiss() }
                         .disabled(isSaving)
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     if isSaving {
                         ProgressView()
                     } else {
-                        Button("Save") {
+                        Button(String(localized: "common.save")) {
                             createBlock()
                         }
                         .disabled(title.trimmingCharacters(in: .whitespaces).isEmpty)
@@ -124,7 +124,7 @@ struct AddMomentView: View {
                 try? await Task.sleep(for: .milliseconds(300))
                 onBlockCreated?(block.id)
             } catch {
-                errorMessage = "Could not create block. Please try again."
+                errorMessage = String(localized: "block.add.error")
                 isSaving = false
             }
         }

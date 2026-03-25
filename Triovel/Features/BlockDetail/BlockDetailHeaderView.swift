@@ -64,26 +64,26 @@ struct BlockDetailHeaderView: View {
     @ViewBuilder
     private var editingContent: some View {
         HStack {
-            Text("Edit Block")
+            Text("block.edit.title")
                 .font(.subheadline.weight(.medium))
                 .foregroundStyle(.secondary)
             Spacer()
-            Button("Cancel") {
+            Button(String(localized: "common.cancel")) {
                 isEditing = false
             }
             .font(.subheadline)
-            Button("Save") {
+            Button(String(localized: "common.save")) {
                 onSave()
             }
             .font(.subheadline.weight(.semibold))
         }
 
-        TextField("Title", text: $editTitle)
+        TextField(String(localized: "block.edit.title.placeholder"), text: $editTitle)
             .font(.title3)
             .padding(8)
             .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 8))
 
-        TextField("Location (optional)", text: $editLocation)
+        TextField(String(localized: "block.edit.location.placeholder"), text: $editLocation)
             .font(.subheadline)
             .padding(8)
             .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 8))

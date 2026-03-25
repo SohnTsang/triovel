@@ -8,13 +8,13 @@ struct BillEntryView: View {
 
     var body: some View {
         NavigationStack {
-            Text("Bill entry — Phase 4")
+            Text("bill.placeholder")
                 .foregroundStyle(.secondary)
-                .navigationTitle("Add Bill")
+                .navigationTitle(String(localized: "bill.add.title"))
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
                     ToolbarItem(placement: .cancellationAction) {
-                        Button("Cancel") { dismiss() }
+                        Button(String(localized: "common.cancel")) { dismiss() }
                     }
                 }
         }

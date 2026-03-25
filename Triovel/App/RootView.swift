@@ -7,7 +7,7 @@ struct RootView: View {
         Group {
             switch appState.authStatus {
             case .unknown:
-                ProgressView("Restoring session…")
+                ProgressView(String(localized: "state.restoring.session"))
             case .signedOut:
                 AuthView()
             case .signedIn:

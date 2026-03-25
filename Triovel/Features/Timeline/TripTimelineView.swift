@@ -66,7 +66,7 @@ struct TripTimelineView: View {
                 addMomentGhostLabel = nil
                 showingAddMoment = true
             } label: {
-                Label("Add Moment", systemImage: "plus")
+                Label(String(localized: "timeline.add.moment"), systemImage: "plus")
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(.white)
                     .padding(.horizontal, 20)

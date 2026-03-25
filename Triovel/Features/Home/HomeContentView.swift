@@ -79,12 +79,12 @@ struct HomeContentView: View {
             }
         }
         .alert(
-            "Trip limit reached",
+            String(localized: "home.trip.limit.title"),
             isPresented: $viewModel.showingTripLimitAlert
         ) {
-            Button("OK", role: .cancel) {}
+            Button(String(localized: "common.ok"), role: .cancel) {}
         } message: {
-            Text("You can have up to \(HomeViewModel.activeOwnedTripLimit) active trips. Archive a trip to make room.")
+            Text("home.trip.limit.message \(HomeViewModel.activeOwnedTripLimit)")
         }
     }
 

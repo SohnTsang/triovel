@@ -16,22 +16,22 @@ struct SettingsView: View {
             }
 
             // Account info
-            Section("Account") {
+            Section(String(localized: "settings.account")) {
                 SignInMethodRow(user: authService.currentUser)
             }
 
             // Legal — placeholder slots per compliance.md
-            Section("Legal") {
+            Section(String(localized: "settings.legal")) {
                 Button {
                     // Privacy Policy — link to hosted page before App Store submission
                 } label: {
-                    Label("Privacy Policy", systemImage: "hand.raised")
+                    Label(String(localized: "settings.privacy.policy"), systemImage: "hand.raised")
                 }
 
                 Button {
                     // Terms of Service — link to hosted page before App Store submission
                 } label: {
-                    Label("Terms of Service", systemImage: "doc.text")
+                    Label(String(localized: "settings.terms"), systemImage: "doc.text")
                 }
             }
 
@@ -40,32 +40,32 @@ struct SettingsView: View {
                 Button(role: .destructive) {
                     showingSignOutConfirmation = true
                 } label: {
-                    Label("Sign Out", systemImage: "rectangle.portrait.and.arrow.right")
+                    Label(String(localized: "settings.sign.out"), systemImage: "rectangle.portrait.and.arrow.right")
                 }
 
                 Button(role: .destructive) {
                     showingDeleteConfirmation = true
                 } label: {
-                    Label("Delete Account", systemImage: "trash")
+                    Label(String(localized: "settings.delete.account"), systemImage: "trash")
                 }
             }
         }
-        .navigationTitle("Settings")
-        .confirmationDialog("Sign out?", isPresented: $showingSignOutConfirmation) {
-            Button("Sign Out", role: .destructive) {
+        .navigationTitle(String(localized: "settings.title"))
+        .confirmationDialog(String(localized: "settings.sign.out.confirm"), isPresented: $showingSignOutConfirmation) {
+            Button(String(localized: "settings.sign.out"), role: .destructive) {
                 Task { await appState.signOut() }
             }
         }
         .confirmationDialog(
-            "Delete account?",
+            String(localized: "settings.delete.confirm"),
             isPresented: $showingDeleteConfirmation,
             titleVisibility: .visible
         ) {
-            Button("Delete Account", role: .destructive) {
+            Button(String(localized: "settings.delete.account"), role: .destructive) {
                 // Full deletion flow — before App Store submission
             }
         } message: {
-            Text("This will permanently delete your account and all associated data. This cannot be undone.")
+            Text("settings.delete.message")
         }
     }
 }

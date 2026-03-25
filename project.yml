@@ -5,6 +5,9 @@ options:
     iOS: "17.0"
   xcodeVersion: "15.0"
   generateEmptyDirectories: true
+  defaultConfig: Release
+  developmentLanguage: en
+
 
 settings:
   base:
@@ -20,7 +23,10 @@ targets:
     type: application
     platform: iOS
     sources:
-      - Triovel
+      - path: Triovel
+        group: Triovel
+        excludes:
+          - "Info.plist"
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.triovel.app

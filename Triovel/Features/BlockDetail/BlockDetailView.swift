@@ -23,7 +23,7 @@ struct BlockDetailView: View {
                 // Unified memory stream — Phase 2
                 ScrollView {
                     LazyVStack(spacing: 12) {
-                        Text("No posts yet")
+                        Text("block.detail.no.posts")
                             .foregroundStyle(.tertiary)
                             .padding(.top, 40)
                     }
@@ -61,7 +61,7 @@ struct BlockDetailView: View {
 private struct ComposerPlaceholderView: View {
     var body: some View {
         HStack {
-            Text("Add a memory…")
+            Text("block.detail.composer.placeholder")
                 .foregroundStyle(.tertiary)
             Spacer()
         }

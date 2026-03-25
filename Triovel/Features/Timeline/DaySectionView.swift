@@ -11,7 +11,7 @@ struct DaySectionView: View {
         VStack(alignment: .leading, spacing: 12) {
             // Day header
             HStack {
-                Text("Day \(day.dayNumber)")
+                Text("timeline.day \(day.dayNumber)")
                     .font(.headline)
                 Text(day.shortDate)
                     .font(.subheadline)
@@ -42,7 +42,7 @@ struct DaySectionView: View {
 
             // If no content at all, show minimal empty state
             if day.blocks.isEmpty && day.ghostBlocks.isEmpty {
-                Text("No moments yet")
+                Text("timeline.no.moments")
                     .font(.subheadline)
                     .foregroundStyle(.tertiary)
                     .frame(maxWidth: .infinity)

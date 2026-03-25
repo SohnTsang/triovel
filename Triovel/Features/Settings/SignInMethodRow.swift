@@ -6,7 +6,7 @@ struct SignInMethodRow: View {
 
     var body: some View {
         HStack {
-            Label("Sign-in method", systemImage: iconName)
+            Label(String(localized: "settings.sign.in.method"), systemImage: iconName)
             Spacer()
             Text(methodLabel)
                 .foregroundStyle(.secondary)
@@ -15,7 +15,7 @@ struct SignInMethodRow: View {
 
     private var methodLabel: String {
         guard let provider = user?.appMetadata["provider"]?.value as? String else {
-            return "Unknown"
+            return String(localized: "settings.provider.unknown")
         }
         switch provider {
         case "apple":
