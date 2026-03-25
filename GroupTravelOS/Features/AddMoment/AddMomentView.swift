@@ -3,10 +3,10 @@ import SwiftUI
 struct AddMomentView: View {
     let tripId: String
     let defaultDay: Int
+    var dayDate: Date?
     var ghostLabel: GhostBlockLabel?
 
     @Environment(\.dismiss) private var dismiss
-    @EnvironmentObject private var router: Router
     @FocusState private var titleFocused: Bool
 
     @State private var title: String = ""
@@ -53,6 +53,19 @@ struct AddMomentView: View {
             .onAppear {
                 if let label = ghostLabel {
                     title = label.rawValue
+                    // Set time to ghost block's default hour
+                    if let date = dayDate {
+                        let cal = Calendar.current
+                        time = cal.date(bySettingHour: label.defaultHour, minute: 0, second: 0, of: date) ?? Date()
+                    }
+                } else if let date = dayDate {
+                    // Default to midday for future days, now for current day
+                    let cal = Calendar.current
+                    if cal.isDateInToday(date) {
+                        time = Date()
+                    } else {
+                        time = cal.date(bySettingHour: 12, minute: 0, second: 0, of: date) ?? Date()
+                    }
                 }
                 titleFocused = true
             }

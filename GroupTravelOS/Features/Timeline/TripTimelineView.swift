@@ -2,39 +2,68 @@ import SwiftUI
 
 struct TripTimelineView: View {
     let tripId: String
+    @EnvironmentObject private var appState: AppState
     @EnvironmentObject private var router: Router
+    @StateObject private var viewModel = TripTimelineViewModel()
 
-    @State private var selectedDay: Int = 1
-    @State private var activeFilter: TimelineFilter = .all
     @State private var showingAddMoment = false
+    @State private var addMomentGhostLabel: GhostBlockLabel?
+    @State private var addMomentDayDate: Date?
 
     var body: some View {
+        let filteredDays = viewModel.filteredDays
+
         ZStack(alignment: .bottomTrailing) {
             VStack(spacing: 0) {
                 // Sticky day ribbon
                 DayRibbonView(
-                    dayCount: 5, // Placeholder — will come from trip
-                    selectedDay: $selectedDay
+                    days: filteredDays,
+                    selectedIndex: $viewModel.selectedDayIndex
                 )
 
-                // Filter bar
-                FilterBarView(activeFilter: $activeFilter)
+                // Filter bar — session-only, resets on leave
+                FilterBarView(activeFilter: $viewModel.activeFilter)
 
                 // Day content
-                ScrollView {
-                    LazyVStack(spacing: 16) {
-                        // Placeholder — will be populated with blocks + ghost blocks
-                        Text("Day \(selectedDay)")
-                            .font(.headline)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(.horizontal)
+                ScrollViewReader { proxy in
+                    ScrollView {
+                        LazyVStack(spacing: 24) {
+                            ForEach(filteredDays) { day in
+                                DaySectionView(
+                                    day: day,
+                                    onGhostTap: { ghost in
+                                        addMomentGhostLabel = ghost.label
+                                        addMomentDayDate = ghost.dayDate
+                                        showingAddMoment = true
+                                    },
+                                    onBlockTap: { block in
+                                        router.push(.blockDetail(blockId: block.id))
+                                    }
+                                )
+                                .id(day.dayNumber)
+                            }
+                        }
+                        .padding(.vertical, 12)
+                        .padding(.bottom, 80)
                     }
-                    .padding(.vertical)
+                    .onChange(of: viewModel.selectedDayIndex) { _, newIndex in
+                        let dayNumber = (filteredDays.indices.contains(newIndex))
+                            ? filteredDays[newIndex].dayNumber
+                            : 1
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            proxy.scrollTo(dayNumber, anchor: .top)
+                        }
+                    }
                 }
             }
 
             // Floating + Add Moment button
             Button {
+                let currentDay = filteredDays.indices.contains(viewModel.selectedDayIndex)
+                    ? filteredDays[viewModel.selectedDayIndex]
+                    : nil
+                addMomentDayDate = currentDay?.date
+                addMomentGhostLabel = nil
                 showingAddMoment = true
             } label: {
                 Label("Add Moment", systemImage: "plus")
@@ -43,23 +72,49 @@ struct TripTimelineView: View {
                     .padding(.horizontal, 20)
                     .padding(.vertical, 14)
                     .background(Color.accentColor, in: Capsule())
-                    .shadow(radius: 4, y: 2)
+                    .shadow(color: .black.opacity(0.15), radius: 8, y: 4)
             }
             .padding(24)
         }
-        .navigationTitle("Trip") // Will use actual trip title
+        .navigationTitle(viewModel.trip?.title ?? "Trip")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    router.push(.tripSummary(tripId: tripId))
-                } label: {
-                    Image(systemName: "chart.bar")
+                HStack(spacing: 16) {
+                    Button {
+                        router.push(.tripMembers(
+                            tripId: tripId,
+                            members: viewModel.members,
+                            inviteLink: viewModel.trip?.inviteLink
+                        ))
+                    } label: {
+                        Image(systemName: "person.2")
+                    }
+
+                    Button {
+                        router.push(.tripSummary(tripId: tripId))
+                    } label: {
+                        Image(systemName: "chart.bar")
+                    }
                 }
             }
         }
         .sheet(isPresented: $showingAddMoment) {
-            AddMomentView(tripId: tripId, defaultDay: selectedDay)
+            AddMomentView(
+                tripId: tripId,
+                defaultDay: viewModel.selectedDayIndex + 1,
+                dayDate: addMomentDayDate,
+                ghostLabel: addMomentGhostLabel
+            )
+        }
+        .onAppear {
+            if let userId = appState.currentUserId {
+                viewModel.load(tripId: tripId, userId: userId)
+            }
+        }
+        .onDisappear {
+            // Filters are session-only — reset on leave per blueprint
+            viewModel.activeFilter = .all
         }
     }
 }

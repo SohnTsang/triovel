@@ -1,22 +1,23 @@
 import SwiftUI
 
 struct DayRibbonView: View {
-    let dayCount: Int
-    @Binding var selectedDay: Int
+    let days: [TimelineDay]
+    @Binding var selectedIndex: Int
 
     var body: some View {
         ScrollViewReader { proxy in
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 12) {
-                    ForEach(1...dayCount, id: \.self) { day in
+                HStack(spacing: 10) {
+                    ForEach(Array(days.enumerated()), id: \.element.id) { index, day in
                         DayChip(
-                            day: day,
-                            isSelected: day == selectedDay
+                            dayNumber: day.dayNumber,
+                            shortDate: day.shortDate,
+                            isSelected: index == selectedIndex
                         )
-                        .id(day)
+                        .id(day.dayNumber)
                         .onTapGesture {
                             withAnimation(.easeInOut(duration: 0.2)) {
-                                selectedDay = day
+                                selectedIndex = index
                             }
                         }
                     }
@@ -25,9 +26,10 @@ struct DayRibbonView: View {
             }
             .padding(.vertical, 8)
             .background(Color(.systemBackground))
-            .onChange(of: selectedDay) { _, newDay in
+            .onChange(of: selectedIndex) { _, newIndex in
+                let dayNumber = days.indices.contains(newIndex) ? days[newIndex].dayNumber : 1
                 withAnimation {
-                    proxy.scrollTo(newDay, anchor: .center)
+                    proxy.scrollTo(dayNumber, anchor: .center)
                 }
             }
         }
@@ -35,16 +37,22 @@ struct DayRibbonView: View {
 }
 
 private struct DayChip: View {
-    let day: Int
+    let dayNumber: Int
+    let shortDate: String
     let isSelected: Bool
 
     var body: some View {
-        Text("Day \(day)")
-            .font(.subheadline.weight(isSelected ? .semibold : .regular))
-            .padding(.horizontal, 16)
-            .padding(.vertical, 8)
-            .background(isSelected ? Color.accentColor : Color(.systemGray6))
-            .foregroundStyle(isSelected ? .white : .primary)
-            .clipShape(Capsule())
+        VStack(spacing: 2) {
+            Text("Day \(dayNumber)")
+                .font(.subheadline.weight(isSelected ? .semibold : .regular))
+            Text(shortDate)
+                .font(.caption2)
+                .foregroundStyle(isSelected ? .white.opacity(0.8) : .secondary)
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 8)
+        .background(isSelected ? Color.accentColor : Color(.systemGray6))
+        .foregroundStyle(isSelected ? .white : .primary)
+        .clipShape(Capsule())
     }
 }

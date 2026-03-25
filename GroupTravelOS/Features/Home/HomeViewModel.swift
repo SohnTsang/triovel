@@ -89,9 +89,9 @@ final class HomeViewModel: ObservableObject {
         archivedTrips = [trip3]
 
         // Mock member display data
-        let sohn = TripMemberDisplay(userId: userId, displayName: "Sohn", avatarPath: nil)
-        let alex = TripMemberDisplay(userId: "other-user", displayName: "Alex", avatarPath: nil)
-        let kim = TripMemberDisplay(userId: "user-003", displayName: "Kim", avatarPath: nil)
+        let sohn = TripMemberDisplay(userId: userId, displayName: "Sohn", avatarPath: nil, role: .owner)
+        let alex = TripMemberDisplay(userId: "other-user", displayName: "Alex", avatarPath: nil, role: .member)
+        let kim = TripMemberDisplay(userId: "user-003", displayName: "Kim", avatarPath: nil, role: .member)
 
         membersByTrip = [
             "trip-001": [sohn, alex, kim],
@@ -101,12 +101,13 @@ final class HomeViewModel: ObservableObject {
     }
 }
 
-/// Lightweight display model for member avatars on trip cards.
+/// Lightweight display model for member avatars on trip cards and member list.
 struct TripMemberDisplay: Identifiable, Hashable, Sendable {
     var id: String { userId }
     let userId: String
     let displayName: String
     let avatarPath: String?
+    var role: TripMember.Role = .member
 
     var initials: String {
         let parts = displayName.split(separator: " ")
