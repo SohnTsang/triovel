@@ -124,7 +124,7 @@ final class AuthService: ObservableObject {
     /// Resend the verification email to the given address.
     func resendVerificationEmail(to email: String) async throws {
         do {
-            try await client.auth.resend(.signup, email: email)
+            try await client.auth.resend(email: email, type: .signup)
         } catch {
             throw AuthError.networkError
         }

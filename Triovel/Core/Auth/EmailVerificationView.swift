@@ -18,7 +18,7 @@ struct EmailVerificationView: View {
 
             Image(systemName: "envelope.badge")
                 .font(.system(size: 56))
-                .foregroundStyle(.accentColor)
+                .foregroundStyle(Color.accentColor)
 
             Text("auth.verify.title")
                 .font(.title2.weight(.semibold))

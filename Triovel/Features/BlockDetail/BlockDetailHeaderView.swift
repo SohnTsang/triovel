@@ -46,7 +46,11 @@ struct BlockDetailHeaderView: View {
             .font(.title2.weight(.semibold))
 
         HStack(spacing: 12) {
-            Label(block.startAt, format: .dateTime.hour().minute())
+            Label {
+                Text(block.startAt, format: .dateTime.hour().minute())
+            } icon: {
+                Image(systemName: "clock")
+            }
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
 
