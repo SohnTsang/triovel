@@ -58,7 +58,7 @@ struct TripTimelineView: View {
                 }
             }
 
-            // Floating + Add Moment
+            // Floating + Activity
             Button {
                 let currentDay = filteredDays.indices.contains(viewModel.selectedDayIndex)
                     ? filteredDays[viewModel.selectedDayIndex] : nil
