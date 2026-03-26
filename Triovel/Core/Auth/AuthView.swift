@@ -12,61 +12,71 @@ struct AuthView: View {
     @State private var isSignUp = false
     @State private var isLoading = false
     @State private var errorMessage: String?
+    @FocusState private var focusedField: AuthField?
+
+    private enum AuthField: Hashable {
+        case email, password, confirmPassword
+    }
 
     private var authService: AuthService { appState.authService }
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 0) {
-                // Top section — 40% breathing room, app branding
-                VStack(spacing: 8) {
-                    Text("Triovel")
-                        .font(.title.bold())
+        GeometryReader { geometry in
+            ScrollView {
+                VStack(spacing: 0) {
+                    // Top section — branding
+                    VStack(spacing: 8) {
+                        Text("Triovel")
+                            .font(.title.bold())
 
-                    Text("auth.subtitle")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                }
-                .padding(.top, 80)
-                .padding(.bottom, 48)
-
-                // Primary: Sign in with Apple
-                SignInWithAppleButton(.signIn) { request in
-                    request.requestedScopes = [.fullName, .email]
-                } onCompletion: { _ in }
-                .signInWithAppleButtonStyle(.black)
-                .frame(height: 50)
-                .clipShape(RoundedRectangle(cornerRadius: 14))
-                .padding(.horizontal, 32)
-                .overlay {
-                    Button {
-                        startAppleSignIn()
-                    } label: {
-                        Color.clear
+                        Text("auth.subtitle")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
                     }
+                    .padding(.bottom, 48)
+
+                    // Primary: Sign in with Apple
+                    SignInWithAppleButton(.signIn) { request in
+                        request.requestedScopes = [.fullName, .email]
+                    } onCompletion: { _ in }
+                    .signInWithAppleButtonStyle(.black)
                     .frame(height: 50)
+                    .clipShape(RoundedRectangle(cornerRadius: 14))
                     .padding(.horizontal, 32)
+                    .overlay {
+                        Button {
+                            startAppleSignIn()
+                        } label: {
+                            Color.clear
+                        }
+                        .frame(height: 50)
+                        .padding(.horizontal, 32)
+                    }
+
+                    // Divider: line — or — line
+                    HStack(spacing: 16) {
+                        Rectangle().frame(height: 0.5).foregroundStyle(.quaternary)
+                        Text("auth.or")
+                            .font(.caption)
+                            .foregroundStyle(.tertiary)
+                        Rectangle().frame(height: 0.5).foregroundStyle(.quaternary)
+                    }
+                    .padding(.horizontal, 32)
+                    .padding(.vertical, 24)
+
+                    // Email form — different between Sign In and Sign Up
+                    emailForm
+                        .animation(.easeInOut(duration: 0.2), value: isSignUp)
+
+                    Spacer().frame(height: 32)
                 }
-
-                // Divider: line — or — line
-                HStack(spacing: 16) {
-                    Rectangle().frame(height: 0.5).foregroundStyle(.quaternary)
-                    Text("auth.or")
-                        .font(.caption)
-                        .foregroundStyle(.tertiary)
-                    Rectangle().frame(height: 0.5).foregroundStyle(.quaternary)
-                }
-                .padding(.horizontal, 32)
-                .padding(.vertical, 24)
-
-                // Email form — different between Sign In and Sign Up
-                emailForm
-                    .animation(.easeInOut(duration: 0.2), value: isSignUp)
-
-                Spacer().frame(height: 32)
+                .frame(maxWidth: sizeClass == .regular ? 500 : .infinity)
+                .frame(maxWidth: .infinity)
+                .frame(minHeight: geometry.size.height)
             }
-            .frame(maxWidth: sizeClass == .regular ? 500 : .infinity)
-            .frame(maxWidth: .infinity)
+        }
+        .onTapGesture {
+            focusedField = nil
         }
         .onAppear {
             setupAppleCoordinator()
@@ -84,24 +94,21 @@ struct AuthView: View {
                 .keyboardType(.emailAddress)
                 .autocorrectionDisabled()
                 .textInputAutocapitalization(.never)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 14)
-                .background(Color(.tertiarySystemBackground), in: RoundedRectangle(cornerRadius: 12))
+                .focused($focusedField, equals: .email)
+                .authField(isFocused: focusedField == .email)
 
             // Password
             SecureField("auth.password.placeholder", text: $password)
                 .textContentType(isSignUp ? .newPassword : .password)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 14)
-                .background(Color(.tertiarySystemBackground), in: RoundedRectangle(cornerRadius: 12))
+                .focused($focusedField, equals: .password)
+                .authField(isFocused: focusedField == .password)
 
             // Confirm password — only in Sign Up mode
             if isSignUp {
                 SecureField("auth.confirm.password.placeholder", text: $confirmPassword)
                     .textContentType(.newPassword)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 14)
-                    .background(Color(.tertiarySystemBackground), in: RoundedRectangle(cornerRadius: 12))
+                    .focused($focusedField, equals: .confirmPassword)
+                    .authField(isFocused: focusedField == .confirmPassword)
                     .transition(.opacity.combined(with: .move(edge: .top)))
             }
 
@@ -129,10 +136,10 @@ struct AuthView: View {
                     }
                 }
                 .frame(maxWidth: .infinity)
-                .frame(height: 50)
+                .frame(height: 44)
             }
             .buttonStyle(.borderedProminent)
-            .buttonBorderShape(.roundedRectangle(radius: 14))
+            .buttonBorderShape(.roundedRectangle(radius: 12))
             .disabled(!isFormValid || isLoading)
             .padding(.top, 4)
 
@@ -148,7 +155,7 @@ struct AuthView: View {
                     ? String(localized: "auth.switch.to.sign.in")
                     : String(localized: "auth.switch.to.sign.up"))
                     .font(.subheadline)
-                    .foregroundStyle(.accent)
+                    .foregroundStyle(Color.accentColor)
             }
             .padding(.top, 4)
         }
@@ -225,5 +232,32 @@ struct AuthView: View {
             }
             isLoading = false
         }
+    }
+}
+
+// MARK: - Auth Field Style
+
+private struct AuthFieldModifier: ViewModifier {
+    let isFocused: Bool
+
+    func body(content: Content) -> some View {
+        content
+            .padding(.horizontal, 12)
+            .padding(.vertical, 14)
+            .background(Color(.tertiarySystemBackground), in: RoundedRectangle(cornerRadius: 12))
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .strokeBorder(
+                        isFocused ? Color.accentColor : Color(.systemGray3),
+                        lineWidth: isFocused ? 1.5 : 1
+                    )
+            )
+            .animation(.easeOut(duration: 0.15), value: isFocused)
+    }
+}
+
+private extension View {
+    func authField(isFocused: Bool) -> some View {
+        modifier(AuthFieldModifier(isFocused: isFocused))
     }
 }

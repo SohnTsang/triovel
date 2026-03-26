@@ -98,6 +98,7 @@ private struct MemberRow: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(member.displayName)
                     .font(.body)
+                    .lineLimit(1)
 
                 if member.role == .owner {
                     Text("trip.members.role.organizer")

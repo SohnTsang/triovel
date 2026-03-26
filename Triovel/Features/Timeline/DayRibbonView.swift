@@ -45,9 +45,11 @@ private struct DayChip: View {
         VStack(spacing: 2) {
             Text("timeline.day \(dayNumber)")
                 .font(.subheadline.weight(isSelected ? .semibold : .regular))
+                .lineLimit(1)
             Text(shortDate)
                 .font(.caption2)
                 .foregroundStyle(isSelected ? .white.opacity(0.8) : .secondary)
+                .lineLimit(1)
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 8)

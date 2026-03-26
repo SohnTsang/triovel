@@ -44,6 +44,7 @@ struct BlockDetailHeaderView: View {
 
         Text(block.title)
             .font(.title2.weight(.semibold))
+            .lineLimit(3)
 
         HStack(spacing: 12) {
             Label {
@@ -86,10 +87,16 @@ struct BlockDetailHeaderView: View {
             .font(.title3)
             .padding(8)
             .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 8))
+            .onChange(of: editTitle) { _, newValue in
+                if newValue.count > 150 { editTitle = String(newValue.prefix(150)) }
+            }
 
         TextField(String(localized: "block.edit.location.placeholder"), text: $editLocation)
             .font(.subheadline)
             .padding(8)
             .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 8))
+            .onChange(of: editLocation) { _, newValue in
+                if newValue.count > 100 { editLocation = String(newValue.prefix(100)) }
+            }
     }
 }

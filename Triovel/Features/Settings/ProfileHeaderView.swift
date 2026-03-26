@@ -19,9 +19,12 @@ struct ProfileHeaderView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(displayName)
                     .font(.headline)
+                    .lineLimit(1)
                 Text(user?.email ?? String(localized: "settings.no.email"))
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                    .truncationMode(.middle)
             }
         }
         .padding(.vertical, 4)

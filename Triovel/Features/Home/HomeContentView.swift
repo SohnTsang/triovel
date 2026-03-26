@@ -59,7 +59,6 @@ struct HomeContentView: View {
                 } label: {
                     Image(systemName: "person.circle")
                 }
-                .buttonStyle(.plain)
             }
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
@@ -67,7 +66,6 @@ struct HomeContentView: View {
                 } label: {
                     Image(systemName: "archivebox")
                 }
-                .buttonStyle(.plain)
             }
         }
         .sheet(isPresented: $showingNewTrip) {

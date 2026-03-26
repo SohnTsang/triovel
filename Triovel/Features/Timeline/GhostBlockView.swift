@@ -26,10 +26,6 @@ struct GhostBlockView: View {
     }
 
     private var iconName: String {
-        switch ghost.label {
-        case .breakfast: return "cup.and.saucer"
-        case .lunch: return "fork.knife"
-        case .dinner: return "moon.stars"
-        }
+        "fork.knife"
     }
 }

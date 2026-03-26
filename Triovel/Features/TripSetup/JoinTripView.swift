@@ -33,6 +33,9 @@ struct JoinTripView: View {
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled()
                     .focused($codeFocused)
+                    .onChange(of: inviteCode) { _, newValue in
+                        if newValue.count > 50 { inviteCode = String(newValue.prefix(50)) }
+                    }
                     .padding(.horizontal, 12)
                     .padding(.vertical, 14)
                     .background(Color(.tertiarySystemBackground), in: RoundedRectangle(cornerRadius: 12))
@@ -57,10 +60,10 @@ struct JoinTripView: View {
                         }
                     }
                     .frame(maxWidth: .infinity)
-                    .frame(height: 50)
+                    .frame(height: 44)
                 }
                 .buttonStyle(.borderedProminent)
-                .buttonBorderShape(.roundedRectangle(radius: 14))
+                .buttonBorderShape(.roundedRectangle(radius: 12))
                 .disabled(inviteCode.trimmingCharacters(in: .whitespaces).isEmpty || isJoining)
                 .padding(.horizontal, 24)
 

@@ -27,6 +27,9 @@ struct TripSetupView: View {
                     TextField(String(localized: "trip.setup.name.placeholder"), text: $title)
                         .font(.title3)
                         .focused($titleFocused)
+                        .onChange(of: title) { _, newValue in
+                            if newValue.count > 100 { title = String(newValue.prefix(100)) }
+                        }
                 }
 
                 Section {

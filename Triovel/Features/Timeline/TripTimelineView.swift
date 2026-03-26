@@ -80,7 +80,7 @@ struct TripTimelineView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                HStack(spacing: 16) {
+                HStack(spacing: 12) {
                     Button {
                         router.push(.tripMembers(
                             tripId: tripId,
@@ -89,15 +89,15 @@ struct TripTimelineView: View {
                         ))
                     } label: {
                         Image(systemName: "person.2")
+                            .font(.subheadline)
                     }
-                    .buttonStyle(.plain)
 
                     Button {
                         router.push(.tripSummary(tripId: tripId))
                     } label: {
                         Image(systemName: "chart.bar")
+                            .font(.subheadline)
                     }
-                    .buttonStyle(.plain)
                 }
             }
         }

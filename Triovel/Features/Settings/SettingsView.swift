@@ -35,7 +35,7 @@ struct SettingsView: View {
                 }
             }
 
-            // Danger zone — triggers confirmationDialogs, not inline destructive actions
+            // Danger zone
             Section {
                 Button(role: .destructive) {
                     showingSignOutConfirmation = true
@@ -51,27 +51,25 @@ struct SettingsView: View {
             }
         }
         .navigationTitle(String(localized: "settings.title"))
-        .confirmationDialog(
+        .alert(
             String(localized: "settings.sign.out.confirm"),
-            isPresented: $showingSignOutConfirmation,
-            titleVisibility: .visible
+            isPresented: $showingSignOutConfirmation
         ) {
+            Button(String(localized: "common.cancel"), role: .cancel) {}
             Button(String(localized: "settings.sign.out"), role: .destructive) {
                 Task { await appState.signOut() }
             }
-            Button(String(localized: "common.cancel"), role: .cancel) {}
         } message: {
             Text("settings.sign.out.message")
         }
-        .confirmationDialog(
+        .alert(
             String(localized: "settings.delete.confirm"),
-            isPresented: $showingDeleteConfirmation,
-            titleVisibility: .visible
+            isPresented: $showingDeleteConfirmation
         ) {
+            Button(String(localized: "common.cancel"), role: .cancel) {}
             Button(String(localized: "settings.delete.account"), role: .destructive) {
                 // Full deletion flow — before App Store submission
             }
-            Button(String(localized: "common.cancel"), role: .cancel) {}
         } message: {
             Text("settings.delete.message")
         }

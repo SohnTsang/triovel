@@ -9,6 +9,7 @@ struct ContextChip: View {
         Text(label)
             .font(.caption.weight(.medium))
             .foregroundStyle(foregroundColor)
+            .lineLimit(1)
             .padding(.horizontal, 8)
             .padding(.vertical, 3)
             .background(backgroundColor, in: Capsule())

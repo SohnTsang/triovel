@@ -32,6 +32,9 @@ struct AddMomentView: View {
                     .focused($titleFocused)
                     .padding(.horizontal)
                     .disabled(isSaving)
+                    .onChange(of: title) { _, newValue in
+                        if newValue.count > 150 { title = String(newValue.prefix(150)) }
+                    }
 
                 // Context toggle — default Group
                 Picker("Context", selection: $context) {
