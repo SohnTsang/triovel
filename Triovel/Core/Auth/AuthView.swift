@@ -174,13 +174,13 @@ struct AuthView: View {
             errorMessage = nil
             do {
                 if isSignUp {
-                    let signedUpEmail = try await authService.signUp(email: email, password: password)
-                    if authService.hasSessionAfterSignUp {
+                    let result = try await authService.signUp(email: email, password: password)
+                    if result.needsVerification {
+                        // Show verification screen — user must confirm email
+                        appState.awaitVerification(email: result.email)
+                    } else {
                         // Auto-confirmed (dev) — go to Home
                         appState.completeSignIn()
-                    } else {
-                        // Verification required — show verification screen
-                        appState.awaitVerification(email: signedUpEmail)
                     }
                 } else {
                     try await authService.signIn(email: email, password: password)

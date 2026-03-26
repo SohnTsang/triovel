@@ -67,11 +67,15 @@ final class AuthService: ObservableObject {
 
     // MARK: - Email / Password
 
+    /// Sign up result indicating whether email verification is needed.
+    struct SignUpResult {
+        let email: String
+        let needsVerification: Bool
+    }
+
     /// Sign up with email and password.
-    /// Returns the email so the verification screen can display it.
-    /// Does NOT set current session — user must verify email first.
-    @discardableResult
-    func signUp(email: String, password: String) async throws -> String {
+    /// Returns result with email and whether verification is required.
+    func signUp(email: String, password: String) async throws -> SignUpResult {
         isLoading = true
         defer { isLoading = false }
 
@@ -80,22 +84,22 @@ final class AuthService: ObservableObject {
                 email: email,
                 password: password
             )
-            // Check if email confirmation is required (no session means pending verification)
-            if response.session != nil {
-                // Auto-confirmed (e.g. dev environment) — set session
-                self.currentSession = response.session
-                self.currentUser = response.session?.user
+
+            let user = response.user
+            let isConfirmed = user.emailConfirmedAt != nil || user.confirmedAt != nil
+
+            if isConfirmed, let session = response.session {
+                // Auto-confirmed (dev environment) — set session immediately
+                self.currentSession = session
+                self.currentUser = user
+                return SignUpResult(email: email, needsVerification: false)
             }
-            // If no session, email verification is pending — caller handles this
-            return email
+
+            // Email not confirmed — verification required
+            return SignUpResult(email: email, needsVerification: true)
         } catch {
             throw classifySignUpError(error)
         }
-    }
-
-    /// Whether the last sign-up produced a session (auto-confirmed) or not (needs verification).
-    var hasSessionAfterSignUp: Bool {
-        currentSession != nil
     }
 
     /// Sign in with email and password.
