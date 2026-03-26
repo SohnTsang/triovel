@@ -6,9 +6,9 @@ struct AuthView: View {
     @StateObject private var appleCoordinator = AppleSignInCoordinator()
     @Environment(\.horizontalSizeClass) private var sizeClass
 
-    @State private var showEmailForm = false
     @State private var email = ""
     @State private var password = ""
+    @State private var confirmPassword = ""
     @State private var isSignUp = false
     @State private var isLoading = false
     @State private var errorMessage: String?
@@ -16,70 +16,58 @@ struct AuthView: View {
     private var authService: AuthService { appState.authService }
 
     var body: some View {
-        VStack(spacing: 24) {
-            Spacer()
+        ScrollView {
+            VStack(spacing: 0) {
+                // Top section — 40% breathing room, app branding
+                VStack(spacing: 8) {
+                    Text("Triovel")
+                        .font(.title.bold())
 
-            // App branding
-            VStack(spacing: 8) {
-                Text("Triovel")
-                    .font(.largeTitle.weight(.bold))
-                Text("auth.subtitle")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-            }
-
-            Spacer()
-
-            // Primary: Sign in with Apple
-            SignInWithAppleButton(.signIn) { request in
-                request.requestedScopes = [.fullName, .email]
-            } onCompletion: { _ in }
-            .signInWithAppleButtonStyle(.black)
-            .frame(height: 50)
-            .cornerRadius(10)
-            .padding(.horizontal, 32)
-            .overlay {
-                Button {
-                    startAppleSignIn()
-                } label: {
-                    Color.clear
+                    Text("auth.subtitle")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
                 }
+                .padding(.top, 80)
+                .padding(.bottom, 48)
+
+                // Primary: Sign in with Apple
+                SignInWithAppleButton(.signIn) { request in
+                    request.requestedScopes = [.fullName, .email]
+                } onCompletion: { _ in }
+                .signInWithAppleButtonStyle(.black)
                 .frame(height: 50)
+                .clipShape(RoundedRectangle(cornerRadius: 14))
                 .padding(.horizontal, 32)
-            }
-
-            // Divider
-            HStack {
-                Rectangle().frame(height: 1).foregroundStyle(.quaternary)
-                Text("auth.or")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                Rectangle().frame(height: 1).foregroundStyle(.quaternary)
-            }
-            .padding(.horizontal, 32)
-
-            // Secondary: Email / Password
-            if showEmailForm {
-                emailFormContent
-            } else {
-                Button {
-                    withAnimation(.easeInOut(duration: 0.2)) {
-                        showEmailForm = true
+                .overlay {
+                    Button {
+                        startAppleSignIn()
+                    } label: {
+                        Color.clear
                     }
-                } label: {
-                    Text("auth.continue.email")
-                        .frame(maxWidth: .infinity)
+                    .frame(height: 50)
+                    .padding(.horizontal, 32)
                 }
-                .buttonStyle(.bordered)
-                .controlSize(.large)
-                .padding(.horizontal, 32)
-            }
 
-            Spacer()
-                .frame(height: 32)
+                // Divider: line — or — line
+                HStack(spacing: 16) {
+                    Rectangle().frame(height: 0.5).foregroundStyle(.quaternary)
+                    Text("auth.or")
+                        .font(.caption)
+                        .foregroundStyle(.tertiary)
+                    Rectangle().frame(height: 0.5).foregroundStyle(.quaternary)
+                }
+                .padding(.horizontal, 32)
+                .padding(.vertical, 24)
+
+                // Email form — different between Sign In and Sign Up
+                emailForm
+                    .animation(.easeInOut(duration: 0.2), value: isSignUp)
+
+                Spacer().frame(height: 32)
+            }
+            .frame(maxWidth: sizeClass == .regular ? 500 : .infinity)
+            .frame(maxWidth: .infinity)
         }
-        .frame(maxWidth: sizeClass == .regular ? 500 : .infinity)
-        .frame(maxWidth: .infinity)
         .onAppear {
             setupAppleCoordinator()
         }
@@ -88,56 +76,92 @@ struct AuthView: View {
     // MARK: - Email Form
 
     @ViewBuilder
-    private var emailFormContent: some View {
+    private var emailForm: some View {
         VStack(spacing: 12) {
+            // Email
             TextField("auth.email.placeholder", text: $email)
                 .textContentType(.emailAddress)
                 .keyboardType(.emailAddress)
                 .autocorrectionDisabled()
                 .textInputAutocapitalization(.never)
-                .padding()
-                .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 10))
+                .padding(.horizontal, 12)
+                .padding(.vertical, 14)
+                .background(Color(.tertiarySystemBackground), in: RoundedRectangle(cornerRadius: 12))
 
+            // Password
             SecureField("auth.password.placeholder", text: $password)
                 .textContentType(isSignUp ? .newPassword : .password)
-                .padding()
-                .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 10))
+                .padding(.horizontal, 12)
+                .padding(.vertical, 14)
+                .background(Color(.tertiarySystemBackground), in: RoundedRectangle(cornerRadius: 12))
 
+            // Confirm password — only in Sign Up mode
+            if isSignUp {
+                SecureField("auth.confirm.password.placeholder", text: $confirmPassword)
+                    .textContentType(.newPassword)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 14)
+                    .background(Color(.tertiarySystemBackground), in: RoundedRectangle(cornerRadius: 12))
+                    .transition(.opacity.combined(with: .move(edge: .top)))
+            }
+
+            // Error message
             if let error = errorMessage {
                 Text(error)
                     .font(.caption)
                     .foregroundStyle(.red)
-                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .transition(.opacity)
             }
 
+            // Submit button — FIXED frame, never resizes
             Button {
                 authenticateWithEmail()
             } label: {
-                if isLoading {
-                    ProgressView()
-                        .frame(maxWidth: .infinity)
-                } else {
-                    Text(isSignUp
-                        ? String(localized: "auth.sign.up")
-                        : String(localized: "auth.sign.in"))
-                        .frame(maxWidth: .infinity)
+                Group {
+                    if isLoading {
+                        ProgressView()
+                            .tint(.white)
+                    } else {
+                        Text(isSignUp
+                            ? String(localized: "auth.create.account")
+                            : String(localized: "auth.sign.in"))
+                    }
                 }
+                .frame(maxWidth: .infinity)
+                .frame(height: 50)
             }
             .buttonStyle(.borderedProminent)
-            .controlSize(.large)
-            .disabled(email.isEmpty || password.isEmpty || isLoading)
+            .buttonBorderShape(.roundedRectangle(radius: 14))
+            .disabled(!isFormValid || isLoading)
+            .padding(.top, 4)
 
+            // Mode switch link
             Button {
-                isSignUp.toggle()
-                errorMessage = nil
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    isSignUp.toggle()
+                    confirmPassword = ""
+                    errorMessage = nil
+                }
             } label: {
                 Text(isSignUp
                     ? String(localized: "auth.switch.to.sign.in")
                     : String(localized: "auth.switch.to.sign.up"))
                     .font(.subheadline)
+                    .foregroundStyle(.accent)
             }
+            .padding(.top, 4)
         }
         .padding(.horizontal, 32)
+    }
+
+    private var isFormValid: Bool {
+        let hasEmail = !email.isEmpty
+        let hasPassword = !password.isEmpty
+        if isSignUp {
+            return hasEmail && hasPassword && !confirmPassword.isEmpty && password == confirmPassword
+        }
+        return hasEmail && hasPassword
     }
 
     // MARK: - Apple Sign-In
@@ -169,6 +193,12 @@ struct AuthView: View {
     // MARK: - Email Auth
 
     private func authenticateWithEmail() {
+        // Validate confirm password match
+        if isSignUp && password != confirmPassword {
+            errorMessage = String(localized: "auth.error.passwords.mismatch")
+            return
+        }
+
         Task {
             isLoading = true
             errorMessage = nil
@@ -176,10 +206,8 @@ struct AuthView: View {
                 if isSignUp {
                     let result = try await authService.signUp(email: email, password: password)
                     if result.needsVerification {
-                        // Show verification screen — user must confirm email
                         appState.awaitVerification(email: result.email)
                     } else {
-                        // Auto-confirmed (dev) — go to Home
                         appState.completeSignIn()
                     }
                 } else {
@@ -188,7 +216,6 @@ struct AuthView: View {
                 }
             } catch let authError as AuthError {
                 if authError == .emailNotVerified {
-                    // Sign-in blocked by unverified email — show verification screen
                     appState.awaitVerification(email: email)
                 } else {
                     errorMessage = authError.errorDescription

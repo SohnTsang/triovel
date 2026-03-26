@@ -26,10 +26,10 @@ struct TripCardView: View {
                     .padding(.horizontal, 4)
             }
         }
-        .padding(12)
-        .background(Color(.systemBackground))
+        .padding(16)
+        .background(Color(.secondarySystemBackground))
         .clipShape(RoundedRectangle(cornerRadius: 16))
-        .shadow(color: .black.opacity(0.06), radius: 8, y: 2)
+        .shadow(color: .black.opacity(0.06), radius: 8, x: 0, y: 2)
     }
 
     @ViewBuilder

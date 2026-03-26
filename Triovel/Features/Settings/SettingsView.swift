@@ -5,7 +5,6 @@ struct SettingsView: View {
     @Environment(\.horizontalSizeClass) private var sizeClass
     @State private var showingDeleteConfirmation = false
     @State private var showingSignOutConfirmation = false
-    @State private var signOutError: String?
 
     private var authService: AuthService { appState.authService }
 
@@ -36,7 +35,7 @@ struct SettingsView: View {
                 }
             }
 
-            // Danger zone
+            // Danger zone — triggers confirmationDialogs, not inline destructive actions
             Section {
                 Button(role: .destructive) {
                     showingSignOutConfirmation = true
@@ -52,30 +51,17 @@ struct SettingsView: View {
             }
         }
         .navigationTitle(String(localized: "settings.title"))
-        .confirmationDialog(String(localized: "settings.sign.out.confirm"), isPresented: $showingSignOutConfirmation) {
+        .confirmationDialog(
+            String(localized: "settings.sign.out.confirm"),
+            isPresented: $showingSignOutConfirmation,
+            titleVisibility: .visible
+        ) {
             Button(String(localized: "settings.sign.out"), role: .destructive) {
-                Task {
-                    await appState.signOut()
-                }
+                Task { await appState.signOut() }
             }
-        }
-        .overlay(alignment: .bottom) {
-            if let error = signOutError {
-                Text(error)
-                    .font(.subheadline.weight(.medium))
-                    .foregroundStyle(.white)
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 10)
-                    .background(Color.red.opacity(0.85), in: Capsule())
-                    .padding(.bottom, 32)
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
-                    .onAppear {
-                        Task {
-                            try? await Task.sleep(for: .seconds(3))
-                            withAnimation { signOutError = nil }
-                        }
-                    }
-            }
+            Button(String(localized: "common.cancel"), role: .cancel) {}
+        } message: {
+            Text("settings.sign.out.message")
         }
         .confirmationDialog(
             String(localized: "settings.delete.confirm"),
@@ -85,6 +71,7 @@ struct SettingsView: View {
             Button(String(localized: "settings.delete.account"), role: .destructive) {
                 // Full deletion flow — before App Store submission
             }
+            Button(String(localized: "common.cancel"), role: .cancel) {}
         } message: {
             Text("settings.delete.message")
         }

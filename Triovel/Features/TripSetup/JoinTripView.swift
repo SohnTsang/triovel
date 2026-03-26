@@ -33,8 +33,9 @@ struct JoinTripView: View {
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled()
                     .focused($codeFocused)
-                    .padding()
-                    .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 10))
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 14)
+                    .background(Color(.tertiarySystemBackground), in: RoundedRectangle(cornerRadius: 12))
                     .padding(.horizontal, 24)
 
                 if let error = errorMessage {
@@ -47,16 +48,19 @@ struct JoinTripView: View {
                 Button {
                     joinTrip()
                 } label: {
-                    if isJoining {
-                        ProgressView()
-                            .frame(maxWidth: .infinity)
-                    } else {
-                        Text("trip.join.button")
-                            .frame(maxWidth: .infinity)
+                    Group {
+                        if isJoining {
+                            ProgressView()
+                                .tint(.white)
+                        } else {
+                            Text("trip.join.button")
+                        }
                     }
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 50)
                 }
                 .buttonStyle(.borderedProminent)
-                .controlSize(.large)
+                .buttonBorderShape(.roundedRectangle(radius: 14))
                 .disabled(inviteCode.trimmingCharacters(in: .whitespaces).isEmpty || isJoining)
                 .padding(.horizontal, 24)
 

@@ -783,6 +783,51 @@
         "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "無法登出，請重試。" } },
         "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "无法退出登录，请重试。" } }
       }
+    },
+    "auth.confirm.password.placeholder" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Confirm password" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "パスワードを確認" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "確認密碼" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "确认密码" } }
+      }
+    },
+    "auth.create.account" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Create account" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "アカウント作成" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "建立帳戶" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "创建账户" } }
+      }
+    },
+    "auth.error.passwords.mismatch" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Passwords don't match." } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "パスワードが一致しません。" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "密碼不一致。" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "密码不一致。" } }
+      }
+    },
+    "settings.sign.out.message" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "You can sign back in anytime." } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "いつでも再度サインインできます。" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "您隨時可以重新登入。" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "您随时可以重新登录。" } }
+      }
+    },
+    "home.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Trips" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "旅行" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "旅程" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "旅程" } }
+      }
     }
   },
   "version" : "1.0"

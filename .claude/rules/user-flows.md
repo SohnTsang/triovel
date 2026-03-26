@@ -138,3 +138,79 @@ If any screen is missing one of these states, it is incomplete. Do not ship it.
 - Handle: triovel://auth-callback (email verification, password reset)
 - Handle: triovel://trip/{invite_code} (join trip via shared link)
 - Gracefully handle malformed deep links — navigate to Home, don't crash
+
+## Error UI Components (standardized across the app)
+
+### Inline Field Error
+- Position: directly below the input field, 4pt gap
+- Style: .caption, Color.red, left-aligned
+- Appears with subtle fade animation
+- Example: "Incorrect email or password"
+
+### Inline Banner Error (for form/screen-level errors)
+- Position: top of the content area, below navigation bar
+- Style: rounded rect, Color(.systemRed).opacity(0.1) background, red text
+- Icon: exclamationmark.triangle SF Symbol, 14pt
+- Dismiss: tap X button or auto-dismiss after 5 seconds for non-critical
+- Persist until resolved for critical errors (auth failures, payment errors)
+
+### Toast (success/info only — never for errors)
+- Position: top of screen, overlays content briefly
+- Style: capsule shape, secondary background, subtle shadow
+- Auto-dismiss: 2 seconds
+- Use ONLY for: copied, saved, sent, joined — never for failures
+
+### Failed State Card (for posts/media that failed to sync)
+- Replace normal card content with failed state
+- Show: warning icon + "Failed to send. Tap to retry."
+- Tapping retries the action
+- Style: same card shape but with subtle red/orange tint border
+
+### Full-Screen Error (only for catastrophic failures)
+- Use ONLY when: app cannot function at all (no auth, no database)
+- Show: icon + short message + retry button
+- Never show technical details to user
+- Example: "Something went wrong. Please try again." + Retry button
+
+## Error Message Catalog
+
+### Auth Errors
+- Wrong credentials: "Incorrect email or password"
+- Email taken: "An account with this email already exists"
+- Weak password: "Password must be at least 8 characters"
+- Unverified email: "Please verify your email first"
+- Apple Sign-In cancelled: (no message — silently stay on auth screen)
+- Apple Sign-In failed: "Sign in failed. Please try again."
+- Session expired: (no message — silently redirect to auth screen)
+
+### Network Errors
+- No connection: "You're offline. Changes will sync when you reconnect."
+- Timeout: "Connection timed out. Please try again."
+- Server error (500): "Something went wrong. Please try again."
+- Never show: HTTP codes, stack traces, raw error strings, "nil", "unknown error"
+
+### Trip Errors
+- Create failed: "Couldn't create trip. Please try again."
+- Join invalid code: "No trip found with this code"
+- Join already member: "You're already in this trip"
+- Trip limit reached: "You've reached the limit of 30 active trips"
+
+### Block / Post Errors
+- Create block failed: "Couldn't save. Please try again."
+- Send post failed: (show failed state card with retry)
+- Delete failed: "Couldn't delete. Please try again."
+
+### Bill / Payment Errors (Phase 4)
+- Invalid amount: "Please enter a valid amount"
+- No members selected: "Select at least one person to split with"
+- Payment failed: "Couldn't record payment. Please try again."
+
+### Media Errors
+- Upload failed: "Media failed to sync. Tap to retry."
+- Compression failed: (silently retry with higher compression — never show to user)
+
+## Error Localization
+- Every error message must exist in all 4 languages
+- Japanese errors: polite form, empathetic — "接続できませんでした。もう一度お試しください。"
+- Chinese errors: clear and direct — "連線失敗，請重試。" / "连接失败，请重试。"
+- Never show English error messages to non-English users — if a translation is missing, use a generic localized fallback: "Something went wrong. Please try again."

@@ -9,7 +9,7 @@ struct ProfileHeaderView: View {
             // Avatar placeholder
             Circle()
                 .fill(Color(.systemGray4))
-                .frame(width: 56, height: 56)
+                .frame(width: 64, height: 64)
                 .overlay {
                     Image(systemName: "person.fill")
                         .font(.title2)

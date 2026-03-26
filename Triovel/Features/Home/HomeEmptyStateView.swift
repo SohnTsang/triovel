@@ -28,16 +28,16 @@ struct HomeEmptyStateView: View {
                 Button(action: onCreateTrip) {
                     Text("home.create.trip")
                         .frame(maxWidth: .infinity)
+                        .frame(height: 50)
                 }
                 .buttonStyle(.borderedProminent)
-                .controlSize(.large)
+                .buttonBorderShape(.roundedRectangle(radius: 14))
 
                 Button(action: onJoinTrip) {
                     Text("home.join.trip")
-                        .frame(maxWidth: .infinity)
+                        .font(.subheadline)
+                        .foregroundStyle(.accent)
                 }
-                .buttonStyle(.bordered)
-                .controlSize(.large)
             }
             .padding(.horizontal, 40)
 

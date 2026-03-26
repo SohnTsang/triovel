@@ -90,11 +90,14 @@ struct TripTimelineView: View {
                     } label: {
                         Image(systemName: "person.2")
                     }
+                    .buttonStyle(.plain)
+
                     Button {
                         router.push(.tripSummary(tripId: tripId))
                     } label: {
                         Image(systemName: "chart.bar")
                     }
+                    .buttonStyle(.plain)
                 }
             }
         }
