@@ -9,40 +9,13 @@ struct BlockDetailView: View {
     var body: some View {
         VStack(spacing: 0) {
             if let block = viewModel.block {
-                BlockDetailHeaderView(
-                    block: block,
-                    canEdit: viewModel.canEditHeader,
-                    isEditing: $viewModel.isEditingHeader,
-                    editTitle: $viewModel.editTitle,
-                    editLocation: $viewModel.editLocation,
-                    onSave: { viewModel.saveHeaderEdits() }
-                )
-
-                Divider()
-
-                // Unified memory stream — Phase 2
-                ScrollView {
-                    LazyVStack(spacing: 12) {
-                        Text("block.detail.no.posts")
-                            .foregroundStyle(.tertiary)
-                            .padding(.top, 40)
-                    }
-                    .padding()
-                }
-
-                Divider()
-
-                // Composer area — Phase 2
-                ComposerPlaceholderView()
+                blockContent(block)
             } else if viewModel.isLoading {
                 Spacer()
                 ProgressView()
                 Spacer()
             } else if let error = viewModel.errorMessage {
-                Spacer()
-                Text(error)
-                    .foregroundStyle(.secondary)
-                Spacer()
+                errorState(error)
             }
         }
         .frame(maxWidth: sizeClass == .regular ? 600 : .infinity)
@@ -55,17 +28,112 @@ struct BlockDetailView: View {
             }
         }
     }
-}
 
-/// Minimal composer shell — full implementation in Phase 2.
-private struct ComposerPlaceholderView: View {
-    var body: some View {
-        HStack {
-            Text("block.detail.composer.placeholder")
+    // MARK: - Block Content
+
+    @ViewBuilder
+    private func blockContent(_ block: Block) -> some View {
+        BlockDetailHeaderView(
+            block: block,
+            canEdit: viewModel.canEditHeader,
+            isEditing: $viewModel.isEditingHeader,
+            editTitle: $viewModel.editTitle,
+            editLocation: $viewModel.editLocation,
+            onSave: { viewModel.saveHeaderEdits() }
+        )
+
+        Divider()
+
+        // Unified chronological stream
+        ScrollViewReader { proxy in
+            ScrollView {
+                LazyVStack(spacing: 12) {
+                    if viewModel.isLoadingPosts {
+                        PostSkeletonView()
+                    } else if viewModel.posts.isEmpty && viewModel.failedDrafts.isEmpty {
+                        emptyPostsState
+                    } else {
+                        // Real posts
+                        ForEach(viewModel.posts) { post in
+                            PostCardView(
+                                post: post,
+                                authorName: viewModel.authorName(for: post),
+                                isOwn: viewModel.isOwnPost(post),
+                                onDelete: { viewModel.deletePost(post) },
+                                onRetry: nil
+                            )
+                            .id(post.id)
+                        }
+
+                        // Failed drafts
+                        ForEach(viewModel.failedDrafts) { draft in
+                            FailedPostCardView(
+                                bodyText: draft.body,
+                                onRetry: { viewModel.retryDraft(draft) },
+                                onDiscard: { viewModel.discardDraft(draft) }
+                            )
+                        }
+                    }
+                }
+                .padding(16)
+            }
+            .onChange(of: viewModel.posts.count) { _, _ in
+                // Scroll to newest post
+                if let last = viewModel.posts.last {
+                    withAnimation(.easeOut(duration: 0.2)) {
+                        proxy.scrollTo(last.id, anchor: .bottom)
+                    }
+                }
+            }
+        }
+
+        // Composer
+        PostComposerView(
+            onSend: { body, visibility in
+                viewModel.sendPost(body: body, visibility: visibility)
+            },
+            isSending: viewModel.isSendingPost
+        )
+    }
+
+    // MARK: - Empty State
+
+    private var emptyPostsState: some View {
+        VStack(spacing: 8) {
+            Image(systemName: "text.bubble")
+                .font(.system(size: 32))
+                .foregroundStyle(.quaternary)
+            Text("post.empty.title")
+                .font(.subheadline)
                 .foregroundStyle(.tertiary)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.top, 48)
+        .padding(.bottom, 24)
+    }
+
+    // MARK: - Error State
+
+    private func errorState(_ message: String) -> some View {
+        VStack(spacing: 16) {
+            Spacer()
+            Image(systemName: "exclamationmark.triangle")
+                .font(.system(size: 32))
+                .foregroundStyle(.secondary)
+            Text(message)
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+            Button(String(localized: "common.retry")) {
+                Task {
+                    if let userId = appState.currentUserId {
+                        await viewModel.load(blockId: blockId, userId: userId)
+                    }
+                }
+            }
+            .buttonStyle(.bordered)
             Spacer()
         }
         .padding()
-        .background(Color(.systemGray6))
     }
 }

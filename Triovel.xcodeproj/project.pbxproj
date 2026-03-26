@@ -7,6 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		122ED21F181CA6F1A6439FE7 /* PostCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF7877609F0801F88050EE7B /* PostCardView.swift */; };
+		AC2E22D78BF07ABA8DBFAEA0 /* PostComposerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25A2BE176E65296883E2E479 /* PostComposerView.swift */; };
+		890C4202FF9F332F9F6B10E8 /* PostRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 343BFF66F3F14B08708ED3E0 /* PostRepository.swift */; };
+		61A04E314EC4ED5771DCE984 /* PostSkeletonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBCE3D115C365BB3D6130339 /* PostSkeletonView.swift */; };
+		A452848C10679300EB0FD3D0 /* FailedPostCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC831200F20368D54B407FCF /* FailedPostCardView.swift */; };
 		0089A3D032183A715D917CAF /* DayRibbonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61441433F5D709CA5298B400 /* DayRibbonView.swift */; };
 		0503A1CC533D20141117D39E /* Post.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7551EEDD76A7BD21A1C50460 /* Post.swift */; };
 		0721DE45743D9417CFB8033A /* Router.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5D4A3803446EBC49544A0CF /* Router.swift */; };
@@ -70,6 +75,11 @@
 		DFFCD16C6F30BA7A4A7F7DC8 /* Triovel.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Triovel.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		6DBC312E03FF04F34E340413 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		00634D136B045793FBB55847 /* TripRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TripRepository.swift; sourceTree = "<group>"; };
+		343BFF66F3F14B08708ED3E0 /* PostRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostRepository.swift; sourceTree = "<group>"; };
+		25A2BE176E65296883E2E479 /* PostComposerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostComposerView.swift; sourceTree = "<group>"; };
+		FF7877609F0801F88050EE7B /* PostCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostCardView.swift; sourceTree = "<group>"; };
+		FC831200F20368D54B407FCF /* FailedPostCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FailedPostCardView.swift; sourceTree = "<group>"; };
+		EBCE3D115C365BB3D6130339 /* PostSkeletonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostSkeletonView.swift; sourceTree = "<group>"; };
 		046B24F1977F74C981837C7E /* BillEntryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BillEntryView.swift; sourceTree = "<group>"; };
 		0659C2FC5017EE92AD8B2119 /* EmailVerificationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmailVerificationView.swift; sourceTree = "<group>"; };
 		0DDCC435E21D2512F84EA1C8 /* DateExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateExtensions.swift; sourceTree = "<group>"; };
@@ -240,6 +250,7 @@
 			isa = PBXGroup;
 			children = (
 				B2DB1DF20856703F1CF41D12 /* BlockRepository.swift */,
+				343BFF66F3F14B08708ED3E0 /* PostRepository.swift */,
 				00634D136B045793FBB55847 /* TripRepository.swift */,
 			);
 			path = Networking;
@@ -302,6 +313,10 @@
 				72EC929A2DF4723A3383AC0D /* BlockDetailHeaderView.swift */,
 				FF32096E140C4392D2BA1DC2 /* BlockDetailView.swift */,
 				BB12DAB167C02F467EACCCB0 /* BlockDetailViewModel.swift */,
+				FF7877609F0801F88050EE7B /* PostCardView.swift */,
+				25A2BE176E65296883E2E479 /* PostComposerView.swift */,
+				FC831200F20368D54B407FCF /* FailedPostCardView.swift */,
+				EBCE3D115C365BB3D6130339 /* PostSkeletonView.swift */,
 			);
 			path = BlockDetail;
 			sourceTree = "<group>";
@@ -508,6 +523,11 @@
 				E9AE73965485EECDF30A4643 /* Payment.swift in Sources */,
 				EBA05C9595465B1448441DAC /* TripMembersView.swift in Sources */,
 				EE72C626B58EC3566BFEB125 /* BlockDetailHeaderView.swift in Sources */,
+				122ED21F181CA6F1A6439FE7 /* PostCardView.swift in Sources */,
+				AC2E22D78BF07ABA8DBFAEA0 /* PostComposerView.swift in Sources */,
+				890C4202FF9F332F9F6B10E8 /* PostRepository.swift in Sources */,
+				61A04E314EC4ED5771DCE984 /* PostSkeletonView.swift in Sources */,
+				A452848C10679300EB0FD3D0 /* FailedPostCardView.swift in Sources */,
 				EF216AB5A51B71483A566E21 /* ProfileHeaderView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
