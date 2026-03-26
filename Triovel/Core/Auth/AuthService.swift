@@ -3,7 +3,7 @@ import Supabase
 import Auth
 
 /// Handles all authentication: Sign in with Apple, email/password,
-/// session restore, and token refresh.
+/// session restore, token refresh, and email verification.
 ///
 /// Auth refresh flow (per sync.md):
 /// 1. Restore local session
@@ -15,7 +15,6 @@ final class AuthService: ObservableObject {
     @Published private(set) var currentSession: Session?
     @Published private(set) var currentUser: User?
     @Published private(set) var isLoading = false
-    @Published var errorMessage: String?
 
     private let client = SupabaseConfig.client
 
@@ -30,7 +29,6 @@ final class AuthService: ObservableObject {
             self.currentUser = session.user
             return true
         } catch {
-            // No valid session — user needs to sign in
             self.currentSession = nil
             self.currentUser = nil
             return false
@@ -48,10 +46,8 @@ final class AuthService: ObservableObject {
     // MARK: - Sign in with Apple
 
     /// Complete Apple Sign-In using the identity token from ASAuthorization.
-    /// Both Apple and email/password link to the same Supabase Auth user record.
     func signInWithApple(idToken: String, nonce: String) async throws {
         isLoading = true
-        errorMessage = nil
         defer { isLoading = false }
 
         do {
@@ -65,17 +61,18 @@ final class AuthService: ObservableObject {
             self.currentSession = session
             self.currentUser = session.user
         } catch {
-            self.errorMessage = "Apple sign-in failed. Please try again."
-            throw error
+            throw AuthError.appleSignInFailed
         }
     }
 
     // MARK: - Email / Password
 
     /// Sign up with email and password.
-    func signUp(email: String, password: String) async throws {
+    /// Returns the email so the verification screen can display it.
+    /// Does NOT set current session — user must verify email first.
+    @discardableResult
+    func signUp(email: String, password: String) async throws -> String {
         isLoading = true
-        errorMessage = nil
         defer { isLoading = false }
 
         do {
@@ -83,20 +80,27 @@ final class AuthService: ObservableObject {
                 email: email,
                 password: password
             )
-            if let session = response.session {
-                self.currentSession = session
-                self.currentUser = session.user
+            // Check if email confirmation is required (no session means pending verification)
+            if response.session != nil {
+                // Auto-confirmed (e.g. dev environment) — set session
+                self.currentSession = response.session
+                self.currentUser = response.session?.user
             }
+            // If no session, email verification is pending — caller handles this
+            return email
         } catch {
-            self.errorMessage = "Sign up failed. Please try again."
-            throw error
+            throw classifySignUpError(error)
         }
+    }
+
+    /// Whether the last sign-up produced a session (auto-confirmed) or not (needs verification).
+    var hasSessionAfterSignUp: Bool {
+        currentSession != nil
     }
 
     /// Sign in with email and password.
     func signIn(email: String, password: String) async throws {
         isLoading = true
-        errorMessage = nil
         defer { isLoading = false }
 
         do {
@@ -107,20 +111,111 @@ final class AuthService: ObservableObject {
             self.currentSession = session
             self.currentUser = session.user
         } catch {
-            self.errorMessage = "Sign in failed. Check your credentials."
-            throw error
+            throw classifySignInError(error)
+        }
+    }
+
+    // MARK: - Email Verification
+
+    /// Resend the verification email to the given address.
+    func resendVerificationEmail(to email: String) async throws {
+        do {
+            try await client.auth.resend(.signup, email: email)
+        } catch {
+            throw AuthError.networkError
+        }
+    }
+
+    /// Handle the auth callback URL (triovel://auth-callback).
+    /// Supabase encodes the token in the URL fragment.
+    func handleAuthCallback(url: URL) async throws {
+        do {
+            let session = try await client.auth.session(from: url)
+            self.currentSession = session
+            self.currentUser = session.user
+        } catch {
+            throw AuthError.verificationExpired
         }
     }
 
     // MARK: - Sign Out
 
-    func signOut() async {
+    /// Returns true on success, false if remote sign-out failed (local state still cleared).
+    @discardableResult
+    func signOut() async -> Bool {
         do {
             try await client.auth.signOut()
+            clearLocalState()
+            return true
         } catch {
-            // Even if remote sign-out fails, clear local state
+            // Clear local state even if remote fails
+            clearLocalState()
+            return false
         }
+    }
+
+    private func clearLocalState() {
         currentSession = nil
         currentUser = nil
+    }
+
+    // MARK: - Error Classification
+
+    private func classifySignUpError(_ error: Error) -> AuthError {
+        let message = error.localizedDescription.lowercased()
+        if message.contains("already registered") || message.contains("already exists") || message.contains("duplicate") {
+            return .emailTaken
+        }
+        if message.contains("password") && (message.contains("weak") || message.contains("short") || message.contains("least")) {
+            return .weakPassword
+        }
+        if message.contains("network") || message.contains("connection") || message.contains("offline") {
+            return .networkError
+        }
+        return .networkError
+    }
+
+    private func classifySignInError(_ error: Error) -> AuthError {
+        let message = error.localizedDescription.lowercased()
+        if message.contains("invalid") || message.contains("credentials") || message.contains("wrong") || message.contains("not found") {
+            return .wrongCredentials
+        }
+        if message.contains("confirm") || message.contains("verify") || message.contains("not confirmed") {
+            return .emailNotVerified
+        }
+        if message.contains("network") || message.contains("connection") || message.contains("offline") {
+            return .networkError
+        }
+        return .wrongCredentials
+    }
+}
+
+// MARK: - Auth Errors
+
+enum AuthError: LocalizedError {
+    case appleSignInFailed
+    case emailTaken
+    case weakPassword
+    case wrongCredentials
+    case emailNotVerified
+    case networkError
+    case verificationExpired
+    case signOutFailed
+
+    var localizedKey: String {
+        switch self {
+        case .appleSignInFailed: return "auth.error.apple.failed"
+        case .emailTaken: return "auth.error.email.taken"
+        case .weakPassword: return "auth.error.weak.password"
+        case .wrongCredentials: return "auth.error.wrong.credentials"
+        case .emailNotVerified: return "auth.error.not.verified"
+        case .networkError: return "auth.error.network"
+        case .verificationExpired: return "auth.error.verification.expired"
+        case .signOutFailed: return "auth.error.sign.out.failed"
+        }
+    }
+
+    var errorDescription: String? {
+        String(localized: String.LocalizationValue(localizedKey))
     }
 }

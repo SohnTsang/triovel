@@ -47,6 +47,17 @@
 		<string>fetch</string>
 		<string>processing</string>
 	</array>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.triovel.app</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>triovel</string>
+			</array>
+		</dict>
+	</array>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Triovel needs access to your photos to share trip memories.</string>
 	<key>NSCameraUsageDescription</key>

@@ -675,6 +675,114 @@
         "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "正在恢復連線…" } },
         "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "正在恢复连接…" } }
       }
+    },
+    "auth.verify.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Check your email" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "メールを確認してください" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "請查看您的電郵" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "请查看您的邮箱" } }
+      }
+    },
+    "auth.verify.subtitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "We sent a verification link to confirm your account." } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "アカウント確認用のリンクを送信しました。" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "我們已發送驗證連結以確認您的帳戶。" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "我们已发送验证链接以确认您的账户。" } }
+      }
+    },
+    "auth.verify.resend" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Resend verification email" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "確認メールを再送信" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "重新發送驗證郵件" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "重新发送验证邮件" } }
+      }
+    },
+    "auth.verify.resent" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Verification email sent." } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "確認メールを送信しました。" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "驗證郵件已發送。" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "验证邮件已发送。" } }
+      }
+    },
+    "auth.error.apple.failed" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Sign in failed. Please try again." } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "サインインに失敗しました。もう一度お試しください。" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "登入失敗，請重試。" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "登录失败，请重试。" } }
+      }
+    },
+    "auth.error.email.taken" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "An account with this email already exists." } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "このメールアドレスはすでに登録されています。" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "此電郵地址已註冊。" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "此邮箱已被注册。" } }
+      }
+    },
+    "auth.error.weak.password" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Password is too short. Use at least 6 characters." } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "パスワードが短すぎます。6文字以上を使用してください。" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "密碼太短，請使用至少6個字元。" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "密码太短，请使用至少6个字符。" } }
+      }
+    },
+    "auth.error.wrong.credentials" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Incorrect email or password." } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "メールアドレスまたはパスワードが正しくありません。" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "電郵或密碼不正確。" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "邮箱或密码不正确。" } }
+      }
+    },
+    "auth.error.not.verified" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Please verify your email first." } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "先にメールアドレスを確認してください。" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "請先驗證您的電郵。" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "请先验证您的邮箱。" } }
+      }
+    },
+    "auth.error.network" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Connection failed. Please try again." } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "接続に失敗しました。もう一度お試しください。" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "連線失敗，請重試。" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "连接失败，请重试。" } }
+      }
+    },
+    "auth.error.verification.expired" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Verification link expired. Please request a new one." } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "確認リンクの有効期限が切れています。新しいリンクをリクエストしてください。" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "驗證連結已過期，請重新申請。" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "验证链接已过期，请重新申请。" } }
+      }
+    },
+    "auth.error.sign.out.failed" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Couldn't sign out. Please try again." } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "サインアウトできませんでした。もう一度お試しください。" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "無法登出，請重試。" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "无法退出登录，请重试。" } }
+      }
     }
   },
   "version" : "1.0"

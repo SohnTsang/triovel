@@ -33,15 +33,12 @@ struct AuthView: View {
             // Primary: Sign in with Apple
             SignInWithAppleButton(.signIn) { request in
                 request.requestedScopes = [.fullName, .email]
-            } onCompletion: { _ in
-                // The actual flow goes through AppleSignInCoordinator
-            }
+            } onCompletion: { _ in }
             .signInWithAppleButtonStyle(.black)
             .frame(height: 50)
             .cornerRadius(10)
             .padding(.horizontal, 32)
             .overlay {
-                // Invisible button to trigger our coordinator flow
                 Button {
                     startAppleSignIn()
                 } label: {
@@ -63,14 +60,7 @@ struct AuthView: View {
 
             // Secondary: Email / Password
             if showEmailForm {
-                EmailAuthFormView(
-                    email: $email,
-                    password: $password,
-                    isSignUp: $isSignUp,
-                    isLoading: $isLoading,
-                    errorMessage: $errorMessage,
-                    onSubmit: { authenticateWithEmail() }
-                )
+                emailFormContent
             } else {
                 Button {
                     withAnimation(.easeInOut(duration: 0.2)) {
@@ -95,63 +85,10 @@ struct AuthView: View {
         }
     }
 
-    // MARK: - Apple Sign-In
+    // MARK: - Email Form
 
-    private func startAppleSignIn() {
-        appleCoordinator.startSignInWithApple()
-    }
-
-    private func setupAppleCoordinator() {
-        appleCoordinator.onCompletion = { idToken, nonce in
-            Task {
-                isLoading = true
-                errorMessage = nil
-                do {
-                    try await authService.signInWithApple(idToken: idToken, nonce: nonce)
-                    appState.completeSignIn()
-                } catch {
-                    errorMessage = String(localized: "auth.apple.failed")
-                }
-                isLoading = false
-            }
-        }
-        appleCoordinator.onError = { error in
-            errorMessage = String(localized: "auth.apple.failed")
-        }
-    }
-
-    // MARK: - Email Auth
-
-    private func authenticateWithEmail() {
-        Task {
-            isLoading = true
-            errorMessage = nil
-            do {
-                if isSignUp {
-                    try await authService.signUp(email: email, password: password)
-                } else {
-                    try await authService.signIn(email: email, password: password)
-                }
-                appState.completeSignIn()
-            } catch {
-                errorMessage = authService.errorMessage
-            }
-            isLoading = false
-        }
-    }
-}
-
-// MARK: - Email Form (extracted to stay under 200 lines)
-
-private struct EmailAuthFormView: View {
-    @Binding var email: String
-    @Binding var password: String
-    @Binding var isSignUp: Bool
-    @Binding var isLoading: Bool
-    @Binding var errorMessage: String?
-    let onSubmit: () -> Void
-
-    var body: some View {
+    @ViewBuilder
+    private var emailFormContent: some View {
         VStack(spacing: 12) {
             TextField("auth.email.placeholder", text: $email)
                 .textContentType(.emailAddress)
@@ -170,16 +107,19 @@ private struct EmailAuthFormView: View {
                 Text(error)
                     .font(.caption)
                     .foregroundStyle(.red)
+                    .multilineTextAlignment(.center)
             }
 
             Button {
-                onSubmit()
+                authenticateWithEmail()
             } label: {
                 if isLoading {
                     ProgressView()
                         .frame(maxWidth: .infinity)
                 } else {
-                    Text(isSignUp ? String(localized: "auth.sign.up") : String(localized: "auth.sign.in"))
+                    Text(isSignUp
+                        ? String(localized: "auth.sign.up")
+                        : String(localized: "auth.sign.in"))
                         .frame(maxWidth: .infinity)
                 }
             }
@@ -198,5 +138,65 @@ private struct EmailAuthFormView: View {
             }
         }
         .padding(.horizontal, 32)
+    }
+
+    // MARK: - Apple Sign-In
+
+    private func startAppleSignIn() {
+        appleCoordinator.startSignInWithApple()
+    }
+
+    private func setupAppleCoordinator() {
+        appleCoordinator.onCompletion = { idToken, nonce in
+            Task {
+                isLoading = true
+                errorMessage = nil
+                do {
+                    try await authService.signInWithApple(idToken: idToken, nonce: nonce)
+                    appState.completeSignIn()
+                } catch {
+                    errorMessage = (error as? AuthError)?.errorDescription
+                        ?? String(localized: "auth.error.apple.failed")
+                }
+                isLoading = false
+            }
+        }
+        appleCoordinator.onError = { _ in
+            // User cancelled — do nothing per user-flows.md
+        }
+    }
+
+    // MARK: - Email Auth
+
+    private func authenticateWithEmail() {
+        Task {
+            isLoading = true
+            errorMessage = nil
+            do {
+                if isSignUp {
+                    let signedUpEmail = try await authService.signUp(email: email, password: password)
+                    if authService.hasSessionAfterSignUp {
+                        // Auto-confirmed (dev) — go to Home
+                        appState.completeSignIn()
+                    } else {
+                        // Verification required — show verification screen
+                        appState.awaitVerification(email: signedUpEmail)
+                    }
+                } else {
+                    try await authService.signIn(email: email, password: password)
+                    appState.completeSignIn()
+                }
+            } catch let authError as AuthError {
+                if authError == .emailNotVerified {
+                    // Sign-in blocked by unverified email — show verification screen
+                    appState.awaitVerification(email: email)
+                } else {
+                    errorMessage = authError.errorDescription
+                }
+            } catch {
+                errorMessage = String(localized: "auth.error.network")
+            }
+            isLoading = false
+        }
     }
 }

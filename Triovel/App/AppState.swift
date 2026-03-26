@@ -2,9 +2,10 @@ import SwiftUI
 
 @MainActor
 final class AppState: ObservableObject {
-    enum AuthStatus {
+    enum AuthStatus: Equatable {
         case unknown
         case signedOut
+        case verificationPending(email: String)
         case signedIn
     }
 
@@ -23,18 +24,50 @@ final class AppState: ObservableObject {
         if restored, let user = authService.currentUser {
             currentUserId = user.id.uuidString
             authStatus = .signedIn
-            // Phase 2: resume PowerSync data sync here
-            // Phase 3: resume media upload queue here
         } else {
             authStatus = .signedOut
         }
     }
 
-    /// Called after successful sign-in (Apple or email/password).
+    /// Called after successful sign-in (Apple or email with auto-confirm).
     func completeSignIn() {
         guard let user = authService.currentUser else { return }
         currentUserId = user.id.uuidString
         authStatus = .signedIn
+    }
+
+    /// Called after email sign-up when verification is required.
+    func awaitVerification(email: String) {
+        authStatus = .verificationPending(email: email)
+    }
+
+    /// Called when user wants to go back to sign-in from verification screen.
+    func cancelVerification() {
+        authStatus = .signedOut
+    }
+
+    /// Handle deep link URLs (triovel://auth-callback, triovel://trip/{code}).
+    func handleDeepLink(url: URL) async {
+        guard let host = url.host else { return }
+
+        switch host {
+        case "auth-callback":
+            do {
+                try await authService.handleAuthCallback(url: url)
+                completeSignIn()
+            } catch {
+                // Link expired or invalid — stay on verification screen
+                // The error is surfaced via the AuthError type
+            }
+
+        case "trip":
+            // triovel://trip/{invite_code} — handle in Phase 1 follow-up
+            break
+
+        default:
+            // Malformed deep link — navigate to Home if signed in, ignore otherwise
+            break
+        }
     }
 
     func signOut() async {
