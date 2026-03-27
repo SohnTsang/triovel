@@ -2,9 +2,9 @@ import SwiftUI
 
 struct BlockDetailView: View {
     let blockId: String
-    @EnvironmentObject private var appState: AppState
+    @Environment(AppState.self) private var appState
     @Environment(\.horizontalSizeClass) private var sizeClass
-    @StateObject private var viewModel = BlockDetailViewModel()
+    @State private var viewModel = BlockDetailViewModel()
 
     var body: some View {
         VStack(spacing: 0) {
@@ -33,12 +33,13 @@ struct BlockDetailView: View {
 
     @ViewBuilder
     private func blockContent(_ block: Block) -> some View {
+        @Bindable var vm = viewModel
         BlockDetailHeaderView(
             block: block,
             canEdit: viewModel.canEditHeader,
-            isEditing: $viewModel.isEditingHeader,
-            editTitle: $viewModel.editTitle,
-            editLocation: $viewModel.editLocation,
+            isEditing: $vm.isEditingHeader,
+            editTitle: $vm.editTitle,
+            editLocation: $vm.editLocation,
             onSave: { viewModel.saveHeaderEdits() }
         )
 

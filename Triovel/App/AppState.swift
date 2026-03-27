@@ -1,7 +1,9 @@
+import Observation
 import SwiftUI
 
+@Observable
 @MainActor
-final class AppState: ObservableObject {
+final class AppState {
     enum AuthStatus: Equatable {
         case unknown
         case signedOut
@@ -9,8 +11,8 @@ final class AppState: ObservableObject {
         case signedIn
     }
 
-    @Published var authStatus: AuthStatus = .unknown
-    @Published var currentUserId: String?
+    var authStatus: AuthStatus = .unknown
+    var currentUserId: String?
 
     let authService = AuthService()
 
@@ -22,9 +24,11 @@ final class AppState: ObservableObject {
     func restoreSession() async {
         let restored = await authService.restoreSession()
         if restored, let user = authService.currentUser {
-            currentUserId = user.id.uuidString
+            currentUserId = user.id.uuidString.lowercased()
+            print("[Auth] Session restored, userId: \(currentUserId ?? "nil")")
             authStatus = .signedIn
         } else {
+            print("[Auth] No session to restore")
             authStatus = .signedOut
         }
     }
@@ -32,7 +36,8 @@ final class AppState: ObservableObject {
     /// Called after successful sign-in (Apple or email with auto-confirm).
     func completeSignIn() {
         guard let user = authService.currentUser else { return }
-        currentUserId = user.id.uuidString
+        currentUserId = user.id.uuidString.lowercased()
+        print("[Auth] Sign-in complete, userId: \(currentUserId ?? "nil")")
         authStatus = .signedIn
     }
 

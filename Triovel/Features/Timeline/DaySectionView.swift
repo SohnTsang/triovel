@@ -77,9 +77,16 @@ struct DaySectionView: View {
 // MARK: - Timeline Item
 
 private struct TimelineItem: Identifiable {
-    let id = UUID()
     let sortTime: Date
     let content: Content
+
+    /// Stable ID derived from content — never UUID() which forces full recreation.
+    var id: String {
+        switch content {
+        case .ghost(let ghost): return ghost.id
+        case .timeSlot(let slot): return slot.id
+        }
+    }
 
     enum Content {
         case ghost(GhostBlock)

@@ -2,7 +2,7 @@ import SwiftUI
 
 struct TripSetupView: View {
     @Environment(\.dismiss) private var dismiss
-    @EnvironmentObject private var appState: AppState
+    @Environment(AppState.self) private var appState
 
     /// Called with the new trip ID after creation succeeds.
     private let onTripCreated: ((String) -> Void)?
@@ -93,6 +93,7 @@ struct TripSetupView: View {
 
         Task {
             do {
+                print("[TripSetup] Creating trip: \(trimmedTitle), userId=\(userId)")
                 let tripId = try await tripRepository.createTrip(
                     title: trimmedTitle,
                     startDate: startDate,
@@ -101,12 +102,14 @@ struct TripSetupView: View {
                     baseCurrency: Locale.current.currency?.identifier ?? "USD",
                     createdBy: userId
                 )
+                print("[TripSetup] Trip created: \(tripId)")
 
                 dismiss()
                 // Small delay to let sheet dismiss animate before navigation
                 try? await Task.sleep(for: .milliseconds(300))
                 onTripCreated?(tripId)
             } catch {
+                print("[TripSetup] ❌ Create trip failed: \(error)")
                 errorMessage = String(localized: "trip.setup.error")
                 isCreating = false
             }

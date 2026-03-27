@@ -3,7 +3,6 @@ import Supabase
 
 /// Handles block CRUD against Supabase.
 /// Will be replaced by PowerSync local-first writes in Phase 2.
-@MainActor
 final class BlockRepository {
     private let client = SupabaseConfig.client
 
@@ -27,49 +26,74 @@ final class BlockRepository {
             created_by: createdBy
         )
 
-        let rows: [BlockDBRow] = try await client
-            .from("blocks")
-            .insert(params)
-            .select()
-            .execute()
-            .value
+        print("[BlockRepo] INSERT blocks: \(params)")
 
-        guard let row = rows.first else {
-            throw BlockRepositoryError.createFailed
+        do {
+            let rows: [BlockDBRow] = try await client
+                .from("blocks")
+                .insert(params)
+                .select()
+                .execute()
+                .value
+
+            print("[BlockRepo] INSERT success, rows: \(rows.count)")
+
+            guard let row = rows.first else {
+                throw BlockRepositoryError.createFailed
+            }
+
+            return row.toDomain()
+        } catch {
+            print("[BlockRepo] ❌ INSERT failed: \(error)")
+            throw error
         }
-
-        return row.toDomain()
     }
 
     // MARK: - Fetch Blocks for Trip
 
-    func fetchBlocks(tripId: String) async throws -> [Block] {
-        let rows: [BlockDBRow] = try await client
-            .from("blocks")
-            .select()
-            .eq("trip_id", value: tripId)
-            .order("start_at", ascending: true)
-            .execute()
-            .value
+    func fetchBlocks(tripId: String, limit: Int = 20, offset: Int = 0) async throws -> [Block] {
+        print("[BlockRepo] SELECT blocks for trip: \(tripId), limit=\(limit), offset=\(offset)")
+        do {
+            let rows: [BlockDBRow] = try await client
+                .from("blocks")
+                .select()
+                .eq("trip_id", value: tripId)
+                .order("start_at", ascending: true)
+                .range(from: offset, to: offset + limit - 1)
+                .execute()
+                .value
 
-        return rows.map { $0.toDomain() }
+            print("[BlockRepo] SELECT success, rows: \(rows.count)")
+            return rows.map { $0.toDomain() }
+        } catch {
+            print("[BlockRepo] ❌ SELECT blocks failed: \(error)")
+            throw error
+        }
     }
 
     // MARK: - Fetch Single Block
 
     func fetchBlock(blockId: String) async throws -> Block {
-        let rows: [BlockDBRow] = try await client
-            .from("blocks")
-            .select()
-            .eq("id", value: blockId)
-            .execute()
-            .value
+        print("[BlockRepo] SELECT block: \(blockId)")
+        do {
+            let rows: [BlockDBRow] = try await client
+                .from("blocks")
+                .select()
+                .eq("id", value: blockId)
+                .execute()
+                .value
 
-        guard let row = rows.first else {
-            throw BlockRepositoryError.notFound
+            print("[BlockRepo] SELECT block success, rows: \(rows.count)")
+
+            guard let row = rows.first else {
+                throw BlockRepositoryError.notFound
+            }
+
+            return row.toDomain()
+        } catch {
+            print("[BlockRepo] ❌ SELECT block failed: \(error)")
+            throw error
         }
-
-        return row.toDomain()
     }
 
     // MARK: - Update Block Header
@@ -98,18 +122,26 @@ final class BlockRepository {
     // MARK: - Fetch Trip (for block detail context)
 
     func fetchTrip(tripId: String) async throws -> Trip {
-        let rows: [TripDBRow] = try await client
-            .from("trips")
-            .select()
-            .eq("id", value: tripId)
-            .execute()
-            .value
+        print("[BlockRepo] SELECT trip: \(tripId)")
+        do {
+            let rows: [TripDBRow] = try await client
+                .from("trips")
+                .select()
+                .eq("id", value: tripId)
+                .execute()
+                .value
 
-        guard let row = rows.first else {
-            throw BlockRepositoryError.notFound
+            print("[BlockRepo] SELECT trip success, rows: \(rows.count)")
+
+            guard let row = rows.first else {
+                throw BlockRepositoryError.notFound
+            }
+
+            return row.toDomain()
+        } catch {
+            print("[BlockRepo] ❌ SELECT trip failed: \(error)")
+            throw error
         }
-
-        return row.toDomain()
     }
 
     // MARK: - Helpers

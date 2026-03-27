@@ -1,8 +1,10 @@
+import Observation
 import SwiftUI
 
+@Observable
 @MainActor
-final class Router: ObservableObject {
-    @Published var path = NavigationPath()
+final class Router {
+    var path = NavigationPath()
 
     func push(_ destination: Destination) {
         path.append(destination)

@@ -3,7 +3,6 @@ import Supabase
 
 /// Handles trip CRUD against Supabase.
 /// Will be replaced by PowerSync local-first writes in Phase 2.
-@MainActor
 final class TripRepository {
     private let client = SupabaseConfig.client
 
@@ -28,98 +27,123 @@ final class TripRepository {
             created_by: createdBy
         )
 
-        let rows: [TripRow] = try await client
-            .from("trips")
-            .insert(params)
-            .select("id")
-            .execute()
-            .value
+        print("[TripRepo] INSERT trip: \(title), created_by=\(createdBy)")
 
-        guard let tripId = rows.first?.id else {
-            throw TripRepositoryError.createFailed
+        // Verify auth session before insert
+        do {
+            let session = try await client.auth.session
+            print("[TripRepo] Auth UID: \(session.user.id.uuidString)")
+            print("[TripRepo] Sending created_by: \(createdBy)")
+            print("[TripRepo] Match: \(session.user.id.uuidString == createdBy)")
+        } catch {
+            print("[TripRepo] ⚠️ No valid auth session: \(error)")
         }
 
-        // Add creator as owner
-        let memberParams = CreateTripMemberParams(
-            trip_id: tripId,
-            user_id: createdBy,
-            role: "owner"
-        )
-        try await client
-            .from("trip_members")
-            .insert(memberParams)
-            .execute()
+        do {
+            let rows: [TripRow] = try await client
+                .from("trips")
+                .insert(params)
+                .select("id")
+                .execute()
+                .value
 
-        return tripId
+            guard let tripId = rows.first?.id else {
+                throw TripRepositoryError.createFailed
+            }
+
+            // Note: on_trip_created trigger auto-adds creator as owner in trip_members
+            print("[TripRepo] Trip created: \(tripId)")
+            return tripId
+        } catch {
+            print("[TripRepo] ❌ INSERT trip failed: \(error)")
+            throw error
+        }
     }
 
     // MARK: - Join Trip
 
     /// Joins a trip by invite link. Returns the trip ID if successful.
     func joinTrip(inviteCode: String, userId: String) async throws -> String {
-        // Look up trip by invite_link
-        let rows: [TripRow] = try await client
-            .from("trips")
-            .select("id")
-            .eq("invite_link", value: inviteCode)
-            .execute()
-            .value
-
-        guard let tripId = rows.first?.id else {
-            throw TripRepositoryError.tripNotFound
-        }
-
-        // Check if already a member
-        let existing: [TripMemberRow] = try await client
-            .from("trip_members")
-            .select("id")
-            .eq("trip_id", value: tripId)
-            .eq("user_id", value: userId)
-            .execute()
-            .value
-
-        if existing.isEmpty {
-            let memberParams = CreateTripMemberParams(
-                trip_id: tripId,
-                user_id: userId,
-                role: "member"
-            )
-            try await client
-                .from("trip_members")
-                .insert(memberParams)
+        print("[TripRepo] JOIN trip with code: \(inviteCode)")
+        do {
+            // Look up trip by invite_link
+            let rows: [TripRow] = try await client
+                .from("trips")
+                .select("id")
+                .eq("invite_link", value: inviteCode)
                 .execute()
-        }
+                .value
 
-        return tripId
+            guard let tripId = rows.first?.id else {
+                throw TripRepositoryError.tripNotFound
+            }
+
+            // Check if already a member
+            let existing: [TripMemberRow] = try await client
+                .from("trip_members")
+                .select("id")
+                .eq("trip_id", value: tripId)
+                .eq("user_id", value: userId)
+                .execute()
+                .value
+
+            if existing.isEmpty {
+                let memberParams = CreateTripMemberParams(
+                    trip_id: tripId,
+                    user_id: userId,
+                    role: "member"
+                )
+                try await client
+                    .from("trip_members")
+                    .insert(memberParams)
+                    .execute()
+                print("[TripRepo] Joined trip: \(tripId)")
+            } else {
+                print("[TripRepo] Already a member of trip: \(tripId)")
+            }
+
+            return tripId
+        } catch {
+            print("[TripRepo] ❌ JOIN failed: \(error)")
+            throw error
+        }
     }
 
     // MARK: - Fetch Trips
 
     /// Fetches all trips the user is a member of, split into active and archived.
     func fetchTrips(userId: String) async throws -> (active: [Trip], archived: [Trip]) {
-        // Get trip IDs user is a member of
-        let memberships: [TripMemberRow] = try await client
-            .from("trip_members")
-            .select("trip_id")
-            .eq("user_id", value: userId)
-            .execute()
-            .value
+        print("[TripRepo] FETCH trips for user: \(userId)")
+        do {
+            // Get trip IDs user is a member of
+            let memberships: [TripMemberRow] = try await client
+                .from("trip_members")
+                .select("trip_id")
+                .eq("user_id", value: userId)
+                .execute()
+                .value
 
-        let tripIds = memberships.map(\.trip_id)
-        guard !tripIds.isEmpty else { return ([], []) }
+            let tripIds = memberships.map(\.trip_id)
+            print("[TripRepo] User is member of \(tripIds.count) trips")
+            guard !tripIds.isEmpty else { return ([], []) }
 
-        let rows: [TripDBRow] = try await client
-            .from("trips")
-            .select()
-            .in("id", values: tripIds)
-            .order("created_at", ascending: false)
-            .execute()
-            .value
+            let rows: [TripDBRow] = try await client
+                .from("trips")
+                .select()
+                .in("id", values: tripIds)
+                .order("created_at", ascending: false)
+                .execute()
+                .value
 
-        let trips = rows.map { $0.toDomain() }
-        let active = trips.filter { !$0.archived }
-        let archived = trips.filter { $0.archived }
-        return (active, archived)
+            let trips = rows.map { $0.toDomain() }
+            let active = trips.filter { !$0.archived }
+            let archived = trips.filter { $0.archived }
+            print("[TripRepo] Fetched \(active.count) active, \(archived.count) archived trips")
+            return (active, archived)
+        } catch {
+            print("[TripRepo] ❌ FETCH trips failed: \(error)")
+            throw error
+        }
     }
 
     /// Fetches members for a list of trips.

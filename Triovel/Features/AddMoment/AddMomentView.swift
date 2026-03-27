@@ -12,7 +12,7 @@ struct AddMomentView: View {
 
     @Environment(\.dismiss) private var dismiss
     @Environment(\.horizontalSizeClass) private var sizeClass
-    @EnvironmentObject private var appState: AppState
+    @Environment(AppState.self) private var appState
     @FocusState private var titleFocused: Bool
 
     @State private var title: String = ""
@@ -113,6 +113,7 @@ struct AddMomentView: View {
 
         Task {
             do {
+                print("[AddMoment] Creating block: tripId=\(tripId), title=\(trimmedTitle), context=\(context.rawValue), startAt=\(startAt), tz=\(displayTimezone), userId=\(userId)")
                 let block = try await blockRepository.createBlock(
                     tripId: tripId,
                     title: trimmedTitle,
@@ -121,12 +122,18 @@ struct AddMomentView: View {
                     displayTimezone: displayTimezone,
                     createdBy: userId
                 )
+                print("[AddMoment] Block created: \(block.id)")
 
                 dismiss()
                 // Small delay for sheet dismiss animation
                 try? await Task.sleep(for: .milliseconds(300))
                 onBlockCreated?(block.id)
             } catch {
+                print("[AddMoment] ❌ Block creation failed: \(error)")
+                print("[AddMoment] ❌ Error type: \(type(of: error))")
+                if let localizedError = error as? LocalizedError {
+                    print("[AddMoment] ❌ Description: \(localizedError.errorDescription ?? "nil")")
+                }
                 errorMessage = String(localized: "block.add.error")
                 isSaving = false
             }

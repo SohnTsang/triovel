@@ -3,7 +3,7 @@ import SwiftUI
 struct JoinTripView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.horizontalSizeClass) private var sizeClass
-    @EnvironmentObject private var appState: AppState
+    @Environment(AppState.self) private var appState
 
     /// Called with the joined trip ID on success.
     private let onTripJoined: ((String) -> Void)?

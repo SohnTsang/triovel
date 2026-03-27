@@ -6,7 +6,7 @@ import Foundation
 /// Generates a nonce, presents the Apple auth sheet, and returns
 /// the identity token + nonce for Supabase to verify.
 @MainActor
-final class AppleSignInCoordinator: NSObject, ObservableObject,
+final class AppleSignInCoordinator: NSObject,
     ASAuthorizationControllerDelegate,
     ASAuthorizationControllerPresentationContextProviding
 {

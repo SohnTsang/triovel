@@ -3,7 +3,6 @@ import Supabase
 
 /// Handles post CRUD against Supabase.
 /// Will be replaced by PowerSync local-first writes when sync is integrated.
-@MainActor
 final class PostRepository {
     private let client = SupabaseConfig.client
 
@@ -22,39 +21,55 @@ final class PostRepository {
             visibility: visibility.rawValue
         )
 
-        let rows: [PostDBRow] = try await client
-            .from("posts")
-            .insert(params)
-            .select()
-            .execute()
-            .value
+        print("[PostRepo] INSERT post: blockId=\(blockId), visibility=\(visibility.rawValue)")
 
-        guard let row = rows.first else {
-            throw PostRepositoryError.createFailed
+        do {
+            let rows: [PostDBRow] = try await client
+                .from("posts")
+                .insert(params)
+                .select()
+                .execute()
+                .value
+
+            print("[PostRepo] INSERT success, rows: \(rows.count)")
+
+            guard let row = rows.first else {
+                throw PostRepositoryError.createFailed
+            }
+
+            return row.toDomain()
+        } catch {
+            print("[PostRepo] ❌ INSERT failed: \(error)")
+            throw error
         }
-
-        return row.toDomain()
     }
 
     // MARK: - Fetch Posts for Block
 
-    /// Fetches posts for a block. Filters private posts to only the current user.
-    func fetchPosts(blockId: String, currentUserId: String) async throws -> [Post] {
-        // Fetch all shared posts + only this user's private posts
-        // RLS should enforce this server-side, but we double-check client-side
-        let rows: [PostDBRow] = try await client
-            .from("posts")
-            .select()
-            .eq("block_id", value: blockId)
-            .order("created_at", ascending: true)
-            .execute()
-            .value
+    /// Fetches posts for a block with pagination. Filters private posts to only the current user.
+    func fetchPosts(blockId: String, currentUserId: String, limit: Int = 20, offset: Int = 0) async throws -> [Post] {
+        print("[PostRepo] SELECT posts for block: \(blockId), limit=\(limit), offset=\(offset)")
+        do {
+            let rows: [PostDBRow] = try await client
+                .from("posts")
+                .select()
+                .eq("block_id", value: blockId)
+                .order("created_at", ascending: true)
+                .range(from: offset, to: offset + limit - 1)
+                .execute()
+                .value
 
-        return rows
-            .map { $0.toDomain() }
-            .filter { post in
-                post.visibility == .shared || post.userId == currentUserId
-            }
+            print("[PostRepo] SELECT success, rows: \(rows.count)")
+
+            return rows
+                .map { $0.toDomain() }
+                .filter { post in
+                    post.visibility == .shared || post.userId == currentUserId
+                }
+        } catch {
+            print("[PostRepo] ❌ SELECT posts failed: \(error)")
+            throw error
+        }
     }
 
     // MARK: - Update Post
@@ -70,11 +85,18 @@ final class PostRepository {
     // MARK: - Delete Post
 
     func deletePost(postId: String) async throws {
-        try await client
-            .from("posts")
-            .delete()
-            .eq("id", value: postId)
-            .execute()
+        print("[PostRepo] DELETE post: \(postId)")
+        do {
+            try await client
+                .from("posts")
+                .delete()
+                .eq("id", value: postId)
+                .execute()
+            print("[PostRepo] DELETE success")
+        } catch {
+            print("[PostRepo] ❌ DELETE failed: \(error)")
+            throw error
+        }
     }
 }
 

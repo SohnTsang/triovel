@@ -1,28 +1,66 @@
 import Foundation
-import SwiftUI
+import Observation
 
 /// Drives the trip timeline: day generation, block grouping, ghost blocks, filtering.
+@Observable
 @MainActor
-final class TripTimelineViewModel: ObservableObject {
-    @Published private(set) var trip: Trip?
-    @Published private(set) var days: [TimelineDay] = []
-    @Published private(set) var members: [TripMemberDisplay] = []
-    @Published var selectedDayIndex: Int = 0
-    @Published var activeFilter: TimelineFilter = .all
+final class TripTimelineViewModel {
+    private(set) var trip: Trip?
+    private(set) var days: [TimelineDay] = []
+    private(set) var members: [TripMemberDisplay] = []
+    private(set) var isLoading = false
+    var selectedDayIndex: Int = 0
+    var activeFilter: TimelineFilter = .all
 
     /// All blocks for the trip, before filtering.
     private var allBlocks: [Block] = []
 
     private let blockRepository = BlockRepository()
+    private let tripRepository = TripRepository()
     private var currentTripId: String?
     private var currentUserId: String?
+    nonisolated(unsafe) private var loadTask: Task<Void, Never>?
 
     // MARK: - Load
 
     func load(tripId: String, userId: String) {
         currentTripId = tripId
         currentUserId = userId
-        loadMockData(tripId: tripId, userId: userId)
+        loadTask?.cancel()
+        loadTask = Task { [weak self] in
+            await self?.fetchTripData(tripId: tripId, userId: userId)
+        }
+    }
+
+    deinit {
+        loadTask?.cancel()
+    }
+
+    private func fetchTripData(tripId: String, userId: String) async {
+        isLoading = trip == nil
+        print("[Timeline] Loading trip: \(tripId)")
+
+        do {
+            // Fetch trip details
+            let fetchedTrip = try await blockRepository.fetchTrip(tripId: tripId)
+            self.trip = fetchedTrip
+            print("[Timeline] Trip loaded: \(fetchedTrip.title)")
+
+            // Fetch blocks
+            let blocks = try await blockRepository.fetchBlocks(tripId: tripId)
+            allBlocks = blocks
+            days = generateDays(for: fetchedTrip)
+            print("[Timeline] Loaded \(blocks.count) blocks, \(days.count) days")
+
+            // Fetch members
+            let memberMap = try await tripRepository.fetchMembers(tripIds: [tripId])
+            members = memberMap[tripId] ?? []
+            print("[Timeline] Loaded \(members.count) members")
+        } catch {
+            print("[Timeline] ❌ fetchTripData failed: \(error)")
+        }
+
+        isLoading = false
     }
 
     /// Refresh blocks from Supabase after a new block is created.
@@ -31,10 +69,12 @@ final class TripTimelineViewModel: ObservableObject {
         do {
             let blocks = try await blockRepository.fetchBlocks(tripId: tripId)
             allBlocks = blocks
+            print("[Timeline] Refreshed blocks: \(blocks.count)")
             if let trip {
                 days = generateDays(for: trip)
             }
         } catch {
+            print("[Timeline] ❌ refreshBlocks failed: \(error)")
             // Silently fail — keep showing existing data
         }
     }
@@ -70,7 +110,7 @@ final class TripTimelineViewModel: ObservableObject {
 
     private func generateDays(for trip: Trip) -> [TimelineDay] {
         let calendar = Calendar.current
-        var timeZone = TimeZone(identifier: trip.displayTimezone) ?? .current
+        let timeZone = TimeZone(identifier: trip.displayTimezone) ?? .current
         var cal = calendar
         cal.timeZone = timeZone
 
@@ -135,81 +175,6 @@ final class TripTimelineViewModel: ObservableObject {
                 suggestedTime: suggestedTime
             )
         }
-    }
-
-    // MARK: - Mock Data
-
-    private func loadMockData(tripId: String, userId: String) {
-        let cal = Calendar.current
-        let now = Date()
-
-        let mockTrip = Trip(
-            id: tripId,
-            title: "Tokyo Trip 2026",
-            startDate: cal.date(byAdding: .day, value: -1, to: now)!,
-            endDate: cal.date(byAdding: .day, value: 4, to: now)!,
-            coverImagePath: nil,
-            inviteLink: "TOKYO2026",
-            displayTimezone: "Asia/Tokyo",
-            baseCurrency: "JPY",
-            archived: false,
-            createdBy: userId,
-            createdAt: cal.date(byAdding: .day, value: -7, to: now)!
-        )
-
-        let tripStart = cal.startOfDay(for: mockTrip.startDate)
-
-        allBlocks = [
-            Block(
-                id: "block-001",
-                tripId: tripId,
-                title: "Ramen in Shibuya",
-                context: .group,
-                createdBy: userId,
-                startAt: cal.date(bySettingHour: 12, minute: 30, second: 0, of: cal.date(byAdding: .day, value: 1, to: tripStart)!)!,
-                displayTimezone: "Asia/Tokyo",
-                createdAt: now
-            ),
-            Block(
-                id: "block-002",
-                tripId: tripId,
-                title: "My airport transfer",
-                context: .personal,
-                createdBy: "other-user",
-                startAt: cal.date(bySettingHour: 7, minute: 0, second: 0, of: tripStart)!,
-                displayTimezone: "Asia/Tokyo",
-                createdAt: now
-            ),
-            Block(
-                id: "block-003",
-                tripId: tripId,
-                title: "Dinner at Gonpachi",
-                context: .group,
-                createdBy: userId,
-                startAt: cal.date(bySettingHour: 19, minute: 0, second: 0, of: cal.date(byAdding: .day, value: 1, to: tripStart)!)!,
-                displayTimezone: "Asia/Tokyo",
-                createdAt: now
-            ),
-            Block(
-                id: "block-004",
-                tripId: tripId,
-                title: "Karaoke booking",
-                context: .group,
-                createdBy: "other-user",
-                startAt: cal.date(bySettingHour: 19, minute: 0, second: 0, of: cal.date(byAdding: .day, value: 1, to: tripStart)!)!,
-                displayTimezone: "Asia/Tokyo",
-                createdAt: now
-            )
-        ]
-
-        members = [
-            TripMemberDisplay(userId: userId, displayName: "Sohn", avatarPath: nil, role: .owner),
-            TripMemberDisplay(userId: "other-user", displayName: "Alex", avatarPath: nil, role: .member),
-            TripMemberDisplay(userId: "user-003", displayName: "Kim", avatarPath: nil, role: .member)
-        ]
-
-        trip = mockTrip
-        days = generateDays(for: mockTrip)
     }
 }
 

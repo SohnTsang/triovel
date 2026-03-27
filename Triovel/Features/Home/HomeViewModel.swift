@@ -1,22 +1,26 @@
 import Foundation
-import SwiftUI
+import Observation
 
 /// Drives the Global Home screen: active trips, archived trips, and trip limit.
+@Observable
 @MainActor
-final class HomeViewModel: ObservableObject {
+final class HomeViewModel {
     /// Free user active trip ownership limit (scope-control.md)
     static let activeOwnedTripLimit = 30
 
-    @Published private(set) var activeTrips: [Trip] = []
-    @Published private(set) var archivedTrips: [Trip] = []
-    @Published private(set) var membersByTrip: [String: [TripMemberDisplay]] = [:]
-    @Published var showingTripLimitAlert = false
+    private(set) var activeTrips: [Trip] = []
+    private(set) var archivedTrips: [Trip] = []
+    private(set) var membersByTrip: [String: [TripMemberDisplay]] = [:]
+    private(set) var isLoading = false
+    var showingTripLimitAlert = false
 
     var canCreateTrip: Bool {
         ownedActiveTripCount < Self.activeOwnedTripLimit
     }
 
     private var currentUserId: String?
+    private let tripRepository = TripRepository()
+    nonisolated(unsafe) private var loadTask: Task<Void, Never>?
 
     private var ownedActiveTripCount: Int {
         guard let uid = currentUserId else { return 0 }
@@ -25,7 +29,19 @@ final class HomeViewModel: ObservableObject {
 
     func load(userId: String) {
         currentUserId = userId
-        loadMockData(userId: userId)
+        loadTask?.cancel()
+        loadTask = Task { [weak self] in
+            await self?.fetchTrips(userId: userId)
+        }
+    }
+
+    func refresh() async {
+        guard let userId = currentUserId else { return }
+        await fetchTrips(userId: userId)
+    }
+
+    deinit {
+        loadTask?.cancel()
     }
 
     /// Called when user taps + New Trip. Returns true if allowed.
@@ -37,67 +53,28 @@ final class HomeViewModel: ObservableObject {
         return true
     }
 
-    // MARK: - Mock Data (replaced by repository in Phase 2)
+    // MARK: - Fetch from Supabase
 
-    private func loadMockData(userId: String) {
-        let cal = Calendar.current
-        let now = Date()
+    private func fetchTrips(userId: String) async {
+        isLoading = activeTrips.isEmpty
+        do {
+            let result = try await tripRepository.fetchTrips(userId: userId)
+            activeTrips = result.active
+            archivedTrips = result.archived
+            print("[Home] Loaded \(result.active.count) active, \(result.archived.count) archived trips")
 
-        let trip1 = Trip(
-            id: "trip-001",
-            title: "Tokyo Trip 2026",
-            startDate: cal.date(byAdding: .day, value: 5, to: now)!,
-            endDate: cal.date(byAdding: .day, value: 10, to: now)!,
-            coverImagePath: nil,
-            inviteLink: nil,
-            displayTimezone: "Asia/Tokyo",
-            baseCurrency: "JPY",
-            archived: false,
-            createdBy: userId,
-            createdAt: cal.date(byAdding: .day, value: -7, to: now)!
-        )
-
-        let trip2 = Trip(
-            id: "trip-002",
-            title: "Melbourne Weekend",
-            startDate: cal.date(byAdding: .day, value: 20, to: now)!,
-            endDate: cal.date(byAdding: .day, value: 23, to: now)!,
-            coverImagePath: nil,
-            inviteLink: nil,
-            displayTimezone: "Australia/Melbourne",
-            baseCurrency: "AUD",
-            archived: false,
-            createdBy: "other-user",
-            createdAt: cal.date(byAdding: .day, value: -3, to: now)!
-        )
-
-        let trip3 = Trip(
-            id: "trip-003",
-            title: "Osaka 2025",
-            startDate: cal.date(byAdding: .month, value: -6, to: now)!,
-            endDate: cal.date(byAdding: .month, value: -6, to: cal.date(byAdding: .day, value: 4, to: now)!)!,
-            coverImagePath: nil,
-            inviteLink: nil,
-            displayTimezone: "Asia/Tokyo",
-            baseCurrency: "JPY",
-            archived: true,
-            createdBy: userId,
-            createdAt: cal.date(byAdding: .month, value: -7, to: now)!
-        )
-
-        activeTrips = [trip1, trip2]
-        archivedTrips = [trip3]
-
-        // Mock member display data
-        let sohn = TripMemberDisplay(userId: userId, displayName: "Sohn", avatarPath: nil, role: .owner)
-        let alex = TripMemberDisplay(userId: "other-user", displayName: "Alex", avatarPath: nil, role: .member)
-        let kim = TripMemberDisplay(userId: "user-003", displayName: "Kim", avatarPath: nil, role: .member)
-
-        membersByTrip = [
-            "trip-001": [sohn, alex, kim],
-            "trip-002": [alex, sohn],
-            "trip-003": [sohn, alex]
-        ]
+            // Fetch members for all trips
+            let allTripIds = (result.active + result.archived).map(\.id)
+            if !allTripIds.isEmpty {
+                let members = try await tripRepository.fetchMembers(tripIds: allTripIds)
+                membersByTrip = members
+                print("[Home] Loaded members for \(members.count) trips")
+            }
+        } catch {
+            print("[Home] ❌ fetchTrips failed: \(error)")
+            // Keep showing cached data if any
+        }
+        isLoading = false
     }
 }
 

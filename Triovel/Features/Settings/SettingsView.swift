@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct SettingsView: View {
-    @EnvironmentObject private var appState: AppState
+    @Environment(AppState.self) private var appState
     @Environment(\.horizontalSizeClass) private var sizeClass
     @State private var showingDeleteConfirmation = false
     @State private var showingSignOutConfirmation = false

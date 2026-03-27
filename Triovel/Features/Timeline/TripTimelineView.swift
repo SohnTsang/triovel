@@ -2,9 +2,10 @@ import SwiftUI
 
 struct TripTimelineView: View {
     let tripId: String
-    @EnvironmentObject private var appState: AppState
-    @EnvironmentObject private var router: Router
-    @StateObject private var viewModel = TripTimelineViewModel()
+    @Environment(AppState.self) private var appState
+    @Environment(Router.self) private var router
+    @State private var viewModel = TripTimelineViewModel()
+    @State private var hasAppeared = false
 
     @Environment(\.horizontalSizeClass) private var sizeClass
 
@@ -13,16 +14,17 @@ struct TripTimelineView: View {
     @State private var addMomentDayDate: Date?
 
     var body: some View {
+        @Bindable var vm = viewModel
         let filteredDays = viewModel.filteredDays
 
         ZStack(alignment: .bottomTrailing) {
             VStack(spacing: 0) {
                 DayRibbonView(
                     days: filteredDays,
-                    selectedIndex: $viewModel.selectedDayIndex
+                    selectedIndex: $vm.selectedDayIndex
                 )
 
-                FilterBarView(activeFilter: $viewModel.activeFilter)
+                FilterBarView(activeFilter: $vm.activeFilter)
 
                 ScrollViewReader { proxy in
                     ScrollView {
@@ -117,6 +119,8 @@ struct TripTimelineView: View {
             )
         }
         .onAppear {
+            guard !hasAppeared else { return }
+            hasAppeared = true
             if let userId = appState.currentUserId {
                 viewModel.load(tripId: tripId, userId: userId)
             }

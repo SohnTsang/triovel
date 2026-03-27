@@ -2,8 +2,8 @@ import SwiftUI
 
 /// Inner content for the Home screen, extracted from HomeView to stay under 200 lines.
 struct HomeContentView: View {
-    @ObservedObject var viewModel: HomeViewModel
-    @EnvironmentObject private var router: Router
+    @Bindable var viewModel: HomeViewModel
+    @Environment(Router.self) private var router
     @Environment(\.horizontalSizeClass) private var sizeClass
 
     @State private var showingNewTrip = false
@@ -70,11 +70,13 @@ struct HomeContentView: View {
         }
         .sheet(isPresented: $showingNewTrip) {
             TripSetupView { tripId in
+                Task { await viewModel.refresh() }
                 router.push(.tripTimeline(tripId: tripId))
             }
         }
         .sheet(isPresented: $showingJoinTrip) {
             JoinTripView { tripId in
+                Task { await viewModel.refresh() }
                 router.push(.tripTimeline(tripId: tripId))
             }
         }

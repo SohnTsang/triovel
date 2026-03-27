@@ -1,31 +1,40 @@
 import Foundation
+import Observation
 
 /// ViewModel for BlockDetailView. Fetches block + posts from Supabase,
 /// determines edit permissions, handles header edits, and manages post CRUD.
+@Observable
 @MainActor
-final class BlockDetailViewModel: ObservableObject {
-    @Published private(set) var block: Block?
-    @Published private(set) var isLoading = false
-    @Published var errorMessage: String?
+final class BlockDetailViewModel {
+    private(set) var block: Block?
+    private(set) var isLoading = false
+    var errorMessage: String?
 
     // Edit state
-    @Published var isEditingHeader = false
-    @Published var editTitle = ""
-    @Published var editLocation = ""
+    var isEditingHeader = false
+    var editTitle = ""
+    var editLocation = ""
 
     // Posts
-    @Published private(set) var posts: [Post] = []
-    @Published private(set) var isLoadingPosts = false
-    @Published private(set) var isSendingPost = false
-    @Published private(set) var memberNames: [String: String] = [:]
+    private(set) var posts: [Post] = []
+    private(set) var isLoadingPosts = false
+    private(set) var isSendingPost = false
+    private(set) var memberNames: [String: String] = [:]
 
     // Failed posts queue — retryable drafts that didn't send
-    @Published var failedDrafts: [FailedDraft] = []
+    var failedDrafts: [FailedDraft] = []
 
     private var currentUserId: String?
     private var tripOwnerId: String?
     private let blockRepository = BlockRepository()
     private let postRepository = PostRepository()
+    nonisolated(unsafe) private var loadTask: Task<Void, Never>?
+    nonisolated(unsafe) private var sendTask: Task<Void, Never>?
+
+    deinit {
+        loadTask?.cancel()
+        sendTask?.cancel()
+    }
 
     /// Only block creator or trip owner can edit header.
     var canEditHeader: Bool {
@@ -40,17 +49,23 @@ final class BlockDetailViewModel: ObservableObject {
         isLoading = true
         errorMessage = nil
 
+        print("[BlockDetail] Loading block: \(blockId), userId: \(userId)")
+
         do {
             let fetchedBlock = try await blockRepository.fetchBlock(blockId: blockId)
             self.block = fetchedBlock
+            print("[BlockDetail] Block loaded: \(fetchedBlock.title)")
 
             // Fetch trip to determine owner + member names
             let trip = try await blockRepository.fetchTrip(tripId: fetchedBlock.tripId)
             self.tripOwnerId = trip.createdBy
+            print("[BlockDetail] Trip loaded: \(trip.title)")
 
             // Fetch member names for display
             await loadMemberNames(tripId: fetchedBlock.tripId)
         } catch {
+            print("[BlockDetail] ❌ Load failed: \(error)")
+            print("[BlockDetail] ❌ Error type: \(type(of: error))")
             errorMessage = String(localized: "block.detail.error.load")
         }
 
@@ -67,13 +82,19 @@ final class BlockDetailViewModel: ObservableObject {
         self.tripOwnerId = tripOwnerId
         self.isLoading = false
 
-        Task { await loadPosts() }
+        loadTask?.cancel()
+        loadTask = Task { [weak self] in
+            await self?.loadPosts()
+        }
     }
 
     // MARK: - Posts
 
     func loadPosts() async {
-        guard let block, let userId = currentUserId else { return }
+        guard let block, let userId = currentUserId else {
+            print("[BlockDetail] Skipping loadPosts — block=\(block != nil), userId=\(currentUserId ?? "nil")")
+            return
+        }
         isLoadingPosts = posts.isEmpty
 
         do {
@@ -82,7 +103,9 @@ final class BlockDetailViewModel: ObservableObject {
                 currentUserId: userId
             )
             self.posts = fetched
+            print("[BlockDetail] Posts loaded: \(fetched.count)")
         } catch {
+            print("[BlockDetail] ❌ loadPosts failed: \(error)")
             if posts.isEmpty {
                 errorMessage = String(localized: "post.error.load")
             }
@@ -95,23 +118,26 @@ final class BlockDetailViewModel: ObservableObject {
         guard let block, let userId = currentUserId else { return }
         isSendingPost = true
 
-        Task {
+        sendTask?.cancel()
+        sendTask = Task { [weak self] in
+            guard let self else { return }
             do {
-                let post = try await postRepository.createPost(
+                let post = try await self.postRepository.createPost(
                     blockId: block.id,
                     userId: userId,
                     body: body,
                     visibility: visibility
                 )
-                posts.append(post)
+                self.posts.append(post)
+                print("[BlockDetail] Post sent: \(post.id)")
             } catch {
-                // Add to failed drafts for retry
-                failedDrafts.append(FailedDraft(
+                print("[BlockDetail] ❌ sendPost failed: \(error)")
+                self.failedDrafts.append(FailedDraft(
                     body: body,
                     visibility: visibility
                 ))
             }
-            isSendingPost = false
+            self.isSendingPost = false
         }
     }
 
@@ -128,13 +154,14 @@ final class BlockDetailViewModel: ObservableObject {
         // Optimistic removal
         posts.removeAll { $0.id == post.id }
 
-        Task {
+        Task { [weak self] in
+            guard let self else { return }
             do {
-                try await postRepository.deletePost(postId: post.id)
+                try await self.postRepository.deletePost(postId: post.id)
             } catch {
                 // Re-add on failure
-                posts.append(post)
-                posts.sort { $0.createdAt < $1.createdAt }
+                self.posts.append(post)
+                self.posts.sort { $0.createdAt < $1.createdAt }
             }
         }
     }
@@ -178,21 +205,21 @@ final class BlockDetailViewModel: ObservableObject {
 
         let newLocation = editLocation.trimmingCharacters(in: .whitespaces)
 
-        Task {
+        Task { [weak self] in
+            guard let self else { return }
             do {
-                try await blockRepository.updateBlockHeader(
+                try await self.blockRepository.updateBlockHeader(
                     blockId: block.id,
                     title: trimmedTitle != block.title ? trimmedTitle : nil,
                     locationText: newLocation != (block.locationText ?? "") ? newLocation : nil,
                     startAt: nil
                 )
 
-                // Update local state optimistically
                 self.block?.title = trimmedTitle
                 self.block?.locationText = newLocation.isEmpty ? nil : newLocation
-                isEditingHeader = false
+                self.isEditingHeader = false
             } catch {
-                errorMessage = String(localized: "block.detail.error.save")
+                self.errorMessage = String(localized: "block.detail.error.save")
             }
         }
     }

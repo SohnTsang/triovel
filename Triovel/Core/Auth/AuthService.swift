@@ -1,4 +1,5 @@
 import Foundation
+import Observation
 import Supabase
 import Auth
 
@@ -10,11 +11,12 @@ import Auth
 /// 2. Refresh Supabase auth token if expired
 /// 3. Resume data sync (Phase 2)
 /// 4. Resume media queue (Phase 3)
+@Observable
 @MainActor
-final class AuthService: ObservableObject {
-    @Published private(set) var currentSession: Session?
-    @Published private(set) var currentUser: User?
-    @Published private(set) var isLoading = false
+final class AuthService {
+    private(set) var currentSession: Session?
+    private(set) var currentUser: User?
+    private(set) var isLoading = false
 
     private let client = SupabaseConfig.client
 

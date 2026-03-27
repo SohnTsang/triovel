@@ -2,8 +2,8 @@ import AuthenticationServices
 import SwiftUI
 
 struct AuthView: View {
-    @EnvironmentObject private var appState: AppState
-    @StateObject private var appleCoordinator = AppleSignInCoordinator()
+    @Environment(AppState.self) private var appState
+    @State private var appleCoordinator = AppleSignInCoordinator()
     @Environment(\.horizontalSizeClass) private var sizeClass
 
     @State private var email = ""

@@ -1,12 +1,14 @@
 import SwiftUI
 
 struct HomeView: View {
-    @EnvironmentObject private var appState: AppState
-    @StateObject private var router = Router()
-    @StateObject private var viewModel = HomeViewModel()
+    @Environment(AppState.self) private var appState
+    @State private var router = Router()
+    @State private var viewModel = HomeViewModel()
+    @State private var hasAppeared = false
 
     var body: some View {
-        NavigationStack(path: $router.path) {
+        @Bindable var routerBindable = router
+        NavigationStack(path: $routerBindable.path) {
             HomeContentView(viewModel: viewModel)
                 .navigationDestination(for: Destination.self) { destination in
                     switch destination {
@@ -25,8 +27,10 @@ struct HomeView: View {
                     }
                 }
         }
-        .environmentObject(router)
+        .environment(router)
         .onAppear {
+            guard !hasAppeared else { return }
+            hasAppeared = true
             if let userId = appState.currentUserId {
                 viewModel.load(userId: userId)
             }
