@@ -56,14 +56,16 @@ final class HomeViewModel {
     // MARK: - Fetch from Supabase
 
     private func fetchTrips(userId: String) async {
-        isLoading = activeTrips.isEmpty
+        let showLoading = activeTrips.isEmpty
+        if showLoading { isLoading = true }
+        let start = ContinuousClock.now
+
         do {
             let result = try await tripRepository.fetchTrips(userId: userId)
             activeTrips = result.active
             archivedTrips = result.archived
             print("[Home] Loaded \(result.active.count) active, \(result.archived.count) archived trips")
 
-            // Fetch members for all trips
             let allTripIds = (result.active + result.archived).map(\.id)
             if !allTripIds.isEmpty {
                 let members = try await tripRepository.fetchMembers(tripIds: allTripIds)
@@ -72,7 +74,13 @@ final class HomeViewModel {
             }
         } catch {
             print("[Home] ❌ fetchTrips failed: \(error)")
-            // Keep showing cached data if any
+        }
+
+        if showLoading {
+            let elapsed = ContinuousClock.now - start
+            if elapsed < .milliseconds(500) {
+                try? await Task.sleep(for: .milliseconds(500) - elapsed)
+            }
         }
         isLoading = false
     }

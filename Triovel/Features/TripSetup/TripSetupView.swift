@@ -57,18 +57,33 @@ struct TripSetupView: View {
             .navigationTitle(String(localized: "trip.setup.title"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button(String(localized: "common.cancel")) { dismiss() }
-                        .disabled(isCreating)
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    if isCreating {
-                        ProgressView()
-                    } else {
-                        Button(String(localized: "common.create")) {
-                            createTrip()
+                if #available(iOS 26, *) {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button(String(localized: "common.cancel")) { dismiss() }
+                            .disabled(isCreating)
+                    }
+                    .sharedBackgroundVisibility(.hidden)
+                    ToolbarItem(placement: .confirmationAction) {
+                        if isCreating {
+                            ProgressView()
+                        } else {
+                            Button(String(localized: "common.create")) { createTrip() }
+                                .disabled(title.trimmingCharacters(in: .whitespaces).isEmpty)
                         }
-                        .disabled(title.trimmingCharacters(in: .whitespaces).isEmpty)
+                    }
+                    .sharedBackgroundVisibility(.hidden)
+                } else {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button(String(localized: "common.cancel")) { dismiss() }
+                            .disabled(isCreating)
+                    }
+                    ToolbarItem(placement: .confirmationAction) {
+                        if isCreating {
+                            ProgressView()
+                        } else {
+                            Button(String(localized: "common.create")) { createTrip() }
+                                .disabled(title.trimmingCharacters(in: .whitespaces).isEmpty)
+                        }
                     }
                 }
             }

@@ -27,5 +27,6 @@ struct ArchivedTripsView: View {
             }
         }
         .navigationTitle(String(localized: "home.archived.title"))
+        .plainBackButton()
     }
 }

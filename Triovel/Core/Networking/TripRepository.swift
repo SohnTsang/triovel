@@ -18,7 +18,13 @@ final class TripRepository {
         baseCurrency: String,
         createdBy: String
     ) async throws -> String {
+        // Generate UUID client-side to avoid INSERT...RETURNING
+        // which fails because the SELECT policy requires trip membership,
+        // but the trigger that adds the creator hasn't fired yet.
+        let tripId = UUID().uuidString.lowercased()
+
         let params = CreateTripParams(
+            id: tripId,
             title: title,
             start_date: Self.dateOnlyString(from: startDate),
             end_date: Self.dateOnlyString(from: endDate),
@@ -27,31 +33,15 @@ final class TripRepository {
             created_by: createdBy
         )
 
-        print("[TripRepo] INSERT trip: \(title), created_by=\(createdBy)")
-
-        // Verify auth session before insert
-        do {
-            let session = try await client.auth.session
-            print("[TripRepo] Auth UID: \(session.user.id.uuidString)")
-            print("[TripRepo] Sending created_by: \(createdBy)")
-            print("[TripRepo] Match: \(session.user.id.uuidString == createdBy)")
-        } catch {
-            print("[TripRepo] ⚠️ No valid auth session: \(error)")
-        }
+        print("[TripRepo] INSERT trip: \(title), id=\(tripId), created_by=\(createdBy)")
 
         do {
-            let rows: [TripRow] = try await client
+            try await client
                 .from("trips")
                 .insert(params)
-                .select("id")
                 .execute()
-                .value
 
-            guard let tripId = rows.first?.id else {
-                throw TripRepositoryError.createFailed
-            }
-
-            // Note: on_trip_created trigger auto-adds creator as owner in trip_members
+            // on_trip_created trigger auto-adds creator as owner in trip_members
             print("[TripRepo] Trip created: \(tripId)")
             return tripId
         } catch {
@@ -198,6 +188,7 @@ enum TripRepositoryError: LocalizedError {
 // MARK: - Codable DTOs
 
 private struct CreateTripParams: Encodable {
+    let id: String
     let title: String
     let start_date: String
     let end_date: String
@@ -213,6 +204,10 @@ private struct CreateTripMemberParams: Encodable {
 }
 
 private struct TripRow: Decodable {
+    let id: String
+}
+
+private struct UserExistsRow: Decodable {
     let id: String
 }
 

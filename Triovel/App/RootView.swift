@@ -14,7 +14,8 @@ struct RootView: View {
                 EmailVerificationView(
                     email: email,
                     authService: appState.authService,
-                    onVerified: { appState.completeSignIn() }
+                    onVerified: { appState.completeSignIn() },
+                    onBack: { appState.cancelVerification() }
                 )
             case .signedIn:
                 HomeView()

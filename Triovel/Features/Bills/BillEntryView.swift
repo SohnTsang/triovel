@@ -13,8 +13,15 @@ struct BillEntryView: View {
                 .navigationTitle(String(localized: "bill.add.title"))
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
-                    ToolbarItem(placement: .cancellationAction) {
-                        Button(String(localized: "common.cancel")) { dismiss() }
+                    if #available(iOS 26, *) {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button(String(localized: "common.cancel")) { dismiss() }
+                        }
+                        .sharedBackgroundVisibility(.hidden)
+                    } else {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button(String(localized: "common.cancel")) { dismiss() }
+                        }
                     }
                 }
         }

@@ -1113,25 +1113,83 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Edit Block"
+            "value": "Edit Activity"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "ブロックを編集"
+            "value": "アクティビティを編集"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "编辑时刻"
+            "value": "编辑活动"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "編輯時刻"
+            "value": "編輯活動"
+          }
+        }
+      }
+    },
+    "block.edit.title.label": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Title"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "タイトル"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "标题"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "標題"
+          }
+        }
+      }
+    },
+    "block.edit.location.label": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Location"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "場所"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "地点"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "地點"
           }
         }
       }

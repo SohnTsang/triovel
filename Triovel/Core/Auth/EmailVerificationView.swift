@@ -6,6 +6,7 @@ struct EmailVerificationView: View {
     let email: String
     let authService: AuthService
     let onVerified: () -> Void
+    var onBack: (() -> Void)?
 
     @Environment(\.horizontalSizeClass) private var sizeClass
     @State private var isResending = false
@@ -14,6 +15,20 @@ struct EmailVerificationView: View {
 
     var body: some View {
         VStack(spacing: 24) {
+            // Back button
+            HStack {
+                Button {
+                    onBack?()
+                } label: {
+                    Image(systemName: "chevron.left")
+                        .font(.body.weight(.semibold))
+                        .foregroundStyle(Color(.label))
+                }
+                .padding(.leading, 20)
+                .padding(.top, 16)
+                Spacer()
+            }
+
             Spacer()
 
             Image(systemName: "envelope.badge")
@@ -51,16 +66,19 @@ struct EmailVerificationView: View {
             Button {
                 resendEmail()
             } label: {
-                if isResending {
-                    ProgressView()
-                        .frame(maxWidth: .infinity)
-                } else {
-                    Text("auth.verify.resend")
-                        .frame(maxWidth: .infinity)
+                Group {
+                    if isResending {
+                        ProgressView()
+                            .tint(.white)
+                    } else {
+                        Text("auth.verify.resend")
+                    }
                 }
+                .frame(maxWidth: .infinity)
+                .frame(height: 44)
             }
-            .buttonStyle(.bordered)
-            .controlSize(.large)
+            .buttonStyle(.borderedProminent)
+            .buttonBorderShape(.roundedRectangle(radius: 12))
             .disabled(isResending)
             .padding(.horizontal, 40)
 
@@ -80,6 +98,7 @@ struct EmailVerificationView: View {
                 try await authService.resendVerificationEmail(to: email)
                 resendSuccess = true
             } catch {
+                print("[EmailVerification] ❌ Resend failed: \(error)")
                 errorMessage = String(localized: "auth.error.network")
             }
             isResending = false

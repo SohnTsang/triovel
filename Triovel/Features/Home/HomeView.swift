@@ -4,7 +4,6 @@ struct HomeView: View {
     @Environment(AppState.self) private var appState
     @State private var router = Router()
     @State private var viewModel = HomeViewModel()
-    @State private var hasAppeared = false
 
     var body: some View {
         @Bindable var routerBindable = router
@@ -28,9 +27,7 @@ struct HomeView: View {
                 }
         }
         .environment(router)
-        .onAppear {
-            guard !hasAppeared else { return }
-            hasAppeared = true
+        .task {
             if let userId = appState.currentUserId {
                 viewModel.load(userId: userId)
             }

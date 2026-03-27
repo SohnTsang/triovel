@@ -72,9 +72,17 @@ struct JoinTripView: View {
             .navigationTitle(String(localized: "trip.join.title"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button(String(localized: "common.cancel")) { dismiss() }
-                        .disabled(isJoining)
+                if #available(iOS 26, *) {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button(String(localized: "common.cancel")) { dismiss() }
+                            .disabled(isJoining)
+                    }
+                    .sharedBackgroundVisibility(.hidden)
+                } else {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button(String(localized: "common.cancel")) { dismiss() }
+                            .disabled(isJoining)
+                    }
                 }
             }
             .interactiveDismissDisabled(isJoining)

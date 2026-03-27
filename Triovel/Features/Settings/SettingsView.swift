@@ -51,6 +51,7 @@ struct SettingsView: View {
             }
         }
         .navigationTitle(String(localized: "settings.title"))
+        .plainBackButton()
         .alert(
             String(localized: "settings.sign.out.confirm"),
             isPresented: $showingSignOutConfirmation

@@ -38,13 +38,12 @@
 		86DED270FA017E87976BA58F /* BlockCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1774356B3E6EA3F7E792264 /* BlockCardView.swift */; };
 		888D8D1B3E22F6EC06511BB6 /* AppleSignInCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63FD4F177E2CDBFCF8FA32C6 /* AppleSignInCoordinator.swift */; };
 		8F6905023EFF8F9F5039D8E9 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECB3DD3D521270A1A28CBFAB /* User.swift */; };
-		90036ECE8A8433A4942A752F /* GhostBlockView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0954BC8DA4139156D8AC2E8 /* GhostBlockView.swift */; };
 		9D10912FAB4244E90718A67C /* EmailVerificationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0659C2FC5017EE92AD8B2119 /* EmailVerificationView.swift */; };
 		A4BBBE3A28B5B4CD314F7F92 /* DaySectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 613286437E7803B096A54666 /* DaySectionView.swift */; };
 		A6C87617DCB31D8CAB9B930B /* TripRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00634D136B045793FBB55847 /* TripRepository.swift */; };
 		AFF128FE034012F02AE30141 /* AuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C2A3F0A9A57518F0486DF0E /* AuthService.swift */; };
-		B2D9085E617155490A69697D /* GhostBlock.swift in Sources */ = {isa = PBXBuildFile; fileRef = A19AEBF2B82EF5726C1F86BD /* GhostBlock.swift */; };
 		B92FBBD4D84D44F754559724 /* SyncStateIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23F430BD077061F269968B7B /* SyncStateIndicator.swift */; };
+		BA1F33CC2E8A41BB99001122 /* PlainToolbarModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA1F33CC2E8A41BB88001122 /* PlainToolbarModifier.swift */; };
 		BCA5F68AB871C504A2526985 /* TripSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DB17EE1B5470619A4A394AE /* TripSetupView.swift */; };
 		C2FCF58455F03A9A65277428 /* DateExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DDCC435E21D2512F84EA1C8 /* DateExtensions.swift */; };
 		C6885B2B8BCD24E949390E54 /* ArchivedTripsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0F18C424A110CFFFCA1254D /* ArchivedTripsView.swift */; };
@@ -86,6 +85,7 @@
 		128876BA9CB203F0B32BD069 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		1F84F5FB2579E85C4BD0863E /* AuthView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthView.swift; sourceTree = "<group>"; };
 		23F430BD077061F269968B7B /* SyncStateIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncStateIndicator.swift; sourceTree = "<group>"; };
+		BA1F33CC2E8A41BB88001122 /* PlainToolbarModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlainToolbarModifier.swift; sourceTree = "<group>"; };
 		269F7767C8A4CF66716D6105 /* TripTimelineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TripTimelineView.swift; sourceTree = "<group>"; };
 		2BB191F7BAA778BACA46EA4D /* TriovelApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TriovelApp.swift; sourceTree = "<group>"; };
 		32BDBA7347A3E79312D74A74 /* TripSummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TripSummaryView.swift; sourceTree = "<group>"; };
@@ -117,9 +117,7 @@
 		95263BE394C3E8D471B084E2 /* TripMember.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TripMember.swift; sourceTree = "<group>"; };
 		9837928DA6FF356E5F87EF15 /* TripTimelineViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TripTimelineViewModel.swift; sourceTree = "<group>"; };
 		A1774356B3E6EA3F7E792264 /* BlockCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockCardView.swift; sourceTree = "<group>"; };
-		A19AEBF2B82EF5726C1F86BD /* GhostBlock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GhostBlock.swift; sourceTree = "<group>"; };
 		A9C218D2F661A161061EC46B /* Payment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Payment.swift; sourceTree = "<group>"; };
-		B0954BC8DA4139156D8AC2E8 /* GhostBlockView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GhostBlockView.swift; sourceTree = "<group>"; };
 		B2DB1DF20856703F1CF41D12 /* BlockRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockRepository.swift; sourceTree = "<group>"; };
 		BB12DAB167C02F467EACCCB0 /* BlockDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockDetailViewModel.swift; sourceTree = "<group>"; };
 		BF0AB4F9147A31F6C31E9197 /* HomeEmptyStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeEmptyStateView.swift; sourceTree = "<group>"; };
@@ -235,7 +233,6 @@
 				BFD5CEB34A1587FDEF0F98EA /* Bill.swift */,
 				C6A827B2C1B904D67FAB604D /* BillShare.swift */,
 				419AFE4DF400582FC595B4F3 /* Block.swift */,
-				A19AEBF2B82EF5726C1F86BD /* GhostBlock.swift */,
 				A9C218D2F661A161061EC46B /* Payment.swift */,
 				7551EEDD76A7BD21A1C50460 /* Post.swift */,
 				595582A9F7359CD124EB2B37 /* PostMedia.swift */,
@@ -270,6 +267,7 @@
 			isa = PBXGroup;
 			children = (
 				948EA56D9B57B8FDA5AA3313 /* ContextChip.swift */,
+				BA1F33CC2E8A41BB88001122 /* PlainToolbarModifier.swift */,
 				23F430BD077061F269968B7B /* SyncStateIndicator.swift */,
 			);
 			path = Components;
@@ -359,7 +357,6 @@
 				61441433F5D709CA5298B400 /* DayRibbonView.swift */,
 				613286437E7803B096A54666 /* DaySectionView.swift */,
 				CE1BFBA28488B4E60630B4B5 /* FilterBarView.swift */,
-				B0954BC8DA4139156D8AC2E8 /* GhostBlockView.swift */,
 				269F7767C8A4CF66716D6105 /* TripTimelineView.swift */,
 				9837928DA6FF356E5F87EF15 /* TripTimelineViewModel.swift */,
 			);
@@ -498,13 +495,12 @@
 				86DED270FA017E87976BA58F /* BlockCardView.swift in Sources */,
 				888D8D1B3E22F6EC06511BB6 /* AppleSignInCoordinator.swift in Sources */,
 				8F6905023EFF8F9F5039D8E9 /* User.swift in Sources */,
-				90036ECE8A8433A4942A752F /* GhostBlockView.swift in Sources */,
 				9D10912FAB4244E90718A67C /* EmailVerificationView.swift in Sources */,
 				A4BBBE3A28B5B4CD314F7F92 /* DaySectionView.swift in Sources */,
 				A6C87617DCB31D8CAB9B930B /* TripRepository.swift in Sources */,
 				AFF128FE034012F02AE30141 /* AuthService.swift in Sources */,
-				B2D9085E617155490A69697D /* GhostBlock.swift in Sources */,
 				B92FBBD4D84D44F754559724 /* SyncStateIndicator.swift in Sources */,
+				BA1F33CC2E8A41BB99001122 /* PlainToolbarModifier.swift in Sources */,
 				BCA5F68AB871C504A2526985 /* TripSetupView.swift in Sources */,
 				C2FCF58455F03A9A65277428 /* DateExtensions.swift in Sources */,
 				C6885B2B8BCD24E949390E54 /* ArchivedTripsView.swift in Sources */,

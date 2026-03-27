@@ -32,5 +32,6 @@ struct TripSummaryView: View {
             .padding(.top)
         }
         .navigationTitle(String(localized: "summary.title"))
+        .plainBackButton()
     }
 }

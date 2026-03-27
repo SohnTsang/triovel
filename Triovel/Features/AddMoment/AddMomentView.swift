@@ -4,7 +4,6 @@ struct AddMomentView: View {
     let tripId: String
     let defaultDay: Int
     var dayDate: Date?
-    var ghostLabel: GhostBlockLabel?
     var displayTimezone: String = TimeZone.current.identifier
 
     /// Called with the created block ID after successful creation.
@@ -63,30 +62,39 @@ struct AddMomentView: View {
             .navigationTitle(String(localized: "block.add.title"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button(String(localized: "common.cancel")) { dismiss() }
-                        .disabled(isSaving)
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    if isSaving {
-                        ProgressView()
-                    } else {
-                        Button(String(localized: "common.save")) {
-                            createBlock()
+                if #available(iOS 26, *) {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button(String(localized: "common.cancel")) { dismiss() }
+                            .disabled(isSaving)
+                    }
+                    .sharedBackgroundVisibility(.hidden)
+                    ToolbarItem(placement: .confirmationAction) {
+                        if isSaving {
+                            ProgressView()
+                        } else {
+                            Button(String(localized: "common.save")) { createBlock() }
+                                .disabled(title.trimmingCharacters(in: .whitespaces).isEmpty)
                         }
-                        .disabled(title.trimmingCharacters(in: .whitespaces).isEmpty)
+                    }
+                    .sharedBackgroundVisibility(.hidden)
+                } else {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button(String(localized: "common.cancel")) { dismiss() }
+                            .disabled(isSaving)
+                    }
+                    ToolbarItem(placement: .confirmationAction) {
+                        if isSaving {
+                            ProgressView()
+                        } else {
+                            Button(String(localized: "common.save")) { createBlock() }
+                                .disabled(title.trimmingCharacters(in: .whitespaces).isEmpty)
+                        }
                     }
                 }
             }
             .interactiveDismissDisabled(isSaving)
             .onAppear {
-                if let label = ghostLabel {
-                    title = label.rawValue
-                    if let date = dayDate {
-                        let cal = Calendar.current
-                        time = cal.date(bySettingHour: label.defaultHour, minute: 0, second: 0, of: date) ?? Date()
-                    }
-                } else if let date = dayDate {
+                if let date = dayDate {
                     let cal = Calendar.current
                     if cal.isDateInToday(date) {
                         time = Date()

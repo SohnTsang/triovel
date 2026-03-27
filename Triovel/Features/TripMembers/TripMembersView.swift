@@ -29,6 +29,7 @@ struct TripMembersView: View {
             }
         }
         .navigationTitle(String(localized: "trip.members.title"))
+        .plainBackButton()
         .overlay {
             if showingCopied {
                 copiedToast

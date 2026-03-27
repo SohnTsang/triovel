@@ -14,30 +14,34 @@ final class PostRepository {
         body: String,
         visibility: PostVisibility
     ) async throws -> Post {
+        let postId = UUID().uuidString.lowercased()
+
         let params = CreatePostParams(
+            id: postId,
             block_id: blockId,
             user_id: userId,
             body: body,
             visibility: visibility.rawValue
         )
 
-        print("[PostRepo] INSERT post: blockId=\(blockId), visibility=\(visibility.rawValue)")
+        print("[PostRepo] INSERT post: id=\(postId), blockId=\(blockId), visibility=\(visibility.rawValue)")
 
         do {
-            let rows: [PostDBRow] = try await client
+            try await client
                 .from("posts")
                 .insert(params)
-                .select()
                 .execute()
-                .value
 
-            print("[PostRepo] INSERT success, rows: \(rows.count)")
+            print("[PostRepo] INSERT success: \(postId)")
 
-            guard let row = rows.first else {
-                throw PostRepositoryError.createFailed
-            }
-
-            return row.toDomain()
+            return Post(
+                id: postId,
+                blockId: blockId,
+                userId: userId,
+                body: body,
+                visibility: visibility,
+                createdAt: Date()
+            )
         } catch {
             print("[PostRepo] ❌ INSERT failed: \(error)")
             throw error
@@ -117,6 +121,7 @@ enum PostRepositoryError: LocalizedError {
 // MARK: - DTOs
 
 private struct CreatePostParams: Encodable {
+    let id: String
     let block_id: String
     let user_id: String
     let body: String

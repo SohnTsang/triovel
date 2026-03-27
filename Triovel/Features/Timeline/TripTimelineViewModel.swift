@@ -1,7 +1,7 @@
 import Foundation
 import Observation
 
-/// Drives the trip timeline: day generation, block grouping, ghost blocks, filtering.
+/// Drives the trip timeline: day generation, block grouping, filtering.
 @Observable
 @MainActor
 final class TripTimelineViewModel {
@@ -37,22 +37,22 @@ final class TripTimelineViewModel {
     }
 
     private func fetchTripData(tripId: String, userId: String) async {
-        isLoading = trip == nil
+        let showLoading = trip == nil
+        if showLoading { isLoading = true }
+        let start = ContinuousClock.now
+
         print("[Timeline] Loading trip: \(tripId)")
 
         do {
-            // Fetch trip details
             let fetchedTrip = try await blockRepository.fetchTrip(tripId: tripId)
             self.trip = fetchedTrip
             print("[Timeline] Trip loaded: \(fetchedTrip.title)")
 
-            // Fetch blocks
             let blocks = try await blockRepository.fetchBlocks(tripId: tripId)
             allBlocks = blocks
             days = generateDays(for: fetchedTrip)
             print("[Timeline] Loaded \(blocks.count) blocks, \(days.count) days")
 
-            // Fetch members
             let memberMap = try await tripRepository.fetchMembers(tripIds: [tripId])
             members = memberMap[tripId] ?? []
             print("[Timeline] Loaded \(members.count) members")
@@ -60,6 +60,12 @@ final class TripTimelineViewModel {
             print("[Timeline] ❌ fetchTripData failed: \(error)")
         }
 
+        if showLoading {
+            let elapsed = ContinuousClock.now - start
+            if elapsed < .milliseconds(500) {
+                try? await Task.sleep(for: .milliseconds(500) - elapsed)
+            }
+        }
         isLoading = false
     }
 
@@ -100,8 +106,7 @@ final class TripTimelineViewModel {
                 dayNumber: day.dayNumber,
                 date: day.date,
                 shortDate: day.shortDate,
-                blocks: filtered,
-                ghostBlocks: activeFilter == .personal ? [] : day.ghostBlocks
+                blocks: filtered
             )
         }
     }
@@ -133,49 +138,15 @@ final class TripTimelineViewModel {
                 block.startAt >= dayStart && block.startAt < dayEnd
             }.sorted { $0.startAt < $1.startAt }
 
-            // Ghost blocks for slots not covered by real blocks
-            let ghosts = generateGhostBlocks(for: date, existingBlocks: dayBlocks, calendar: cal)
-
             return TimelineDay(
                 dayNumber: dayNumber,
                 date: date,
                 shortDate: shortDate,
-                blocks: dayBlocks,
-                ghostBlocks: ghosts
+                blocks: dayBlocks
             )
         }
     }
 
-    private func generateGhostBlocks(
-        for date: Date,
-        existingBlocks: [Block],
-        calendar: Calendar
-    ) -> [GhostBlock] {
-        GhostBlockLabel.allCases.compactMap { label in
-            // Check if any real block covers this ghost's time window (±2h)
-            let ghostHour = label.defaultHour
-            let hasRealBlock = existingBlocks.contains { block in
-                let blockHour = calendar.component(.hour, from: block.startAt)
-                return abs(blockHour - ghostHour) <= 2
-            }
-
-            if hasRealBlock { return nil }
-
-            let suggestedTime = calendar.date(
-                bySettingHour: ghostHour,
-                minute: 0,
-                second: 0,
-                of: date
-            )!
-
-            return GhostBlock(
-                id: "ghost-\(label.rawValue)-\(date.timeIntervalSince1970)",
-                dayDate: date,
-                label: label,
-                suggestedTime: suggestedTime
-            )
-        }
-    }
 }
 
 // MARK: - Timeline Day Model
@@ -185,7 +156,6 @@ struct TimelineDay: Identifiable {
     let date: Date
     let shortDate: String
     let blocks: [Block]
-    let ghostBlocks: [GhostBlock]
 
     var id: Int { dayNumber }
 

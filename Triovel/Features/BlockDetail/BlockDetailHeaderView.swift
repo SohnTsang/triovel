@@ -10,6 +10,12 @@ struct BlockDetailHeaderView: View {
     @Binding var editLocation: String
     let onSave: () -> Void
 
+    @FocusState private var focusedField: EditField?
+
+    private enum EditField {
+        case title, location
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             if isEditing {
@@ -20,6 +26,10 @@ struct BlockDetailHeaderView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding()
+        .contentShape(Rectangle())
+        .onTapGesture {
+            focusedField = nil
+        }
     }
 
     // MARK: - Display Mode
@@ -36,8 +46,8 @@ struct BlockDetailHeaderView: View {
                     isEditing = true
                 } label: {
                     Image(systemName: "pencil")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                        .font(.body.weight(.semibold))
+                        .foregroundStyle(Color(.label))
                 }
             }
         }
@@ -68,35 +78,76 @@ struct BlockDetailHeaderView: View {
 
     @ViewBuilder
     private var editingContent: some View {
+        // Header with X and checkmark icons
         HStack {
-            Text("block.edit.title")
-                .font(.subheadline.weight(.medium))
-                .foregroundStyle(.secondary)
-            Spacer()
-            Button(String(localized: "common.cancel")) {
+            Button {
+                focusedField = nil
                 isEditing = false
+            } label: {
+                Image(systemName: "xmark.circle.fill")
+                    .font(.title3)
+                    .foregroundStyle(.secondary)
             }
-            .font(.subheadline)
-            Button(String(localized: "common.save")) {
+
+            Spacer()
+
+            Text("block.edit.title")
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(.primary)
+
+            Spacer()
+
+            Button {
+                focusedField = nil
                 onSave()
+            } label: {
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.title3)
+                    .foregroundStyle(editTitle.trimmingCharacters(in: .whitespaces).isEmpty ? Color(.systemGray3) : Color.accentColor)
             }
-            .font(.subheadline.weight(.semibold))
+            .disabled(editTitle.trimmingCharacters(in: .whitespaces).isEmpty)
         }
 
-        TextField(String(localized: "block.edit.title.placeholder"), text: $editTitle)
-            .font(.title3)
-            .padding(8)
-            .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 8))
-            .onChange(of: editTitle) { _, newValue in
-                if newValue.count > 150 { editTitle = String(newValue.prefix(150)) }
-            }
+        // Title field
+        VStack(alignment: .leading, spacing: 4) {
+            Text("block.edit.title.label")
+                .font(.caption)
+                .foregroundStyle(.secondary)
 
-        TextField(String(localized: "block.edit.location.placeholder"), text: $editLocation)
-            .font(.subheadline)
-            .padding(8)
-            .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 8))
-            .onChange(of: editLocation) { _, newValue in
-                if newValue.count > 100 { editLocation = String(newValue.prefix(100)) }
-            }
+            TextField(String(localized: "block.edit.title.placeholder"), text: $editTitle)
+                .font(.body)
+                .focused($focusedField, equals: .title)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 10)
+                .background(Color(.tertiarySystemBackground), in: RoundedRectangle(cornerRadius: 10))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 10)
+                        .stroke(focusedField == .title ? Color.accentColor : Color(.systemGray4), lineWidth: focusedField == .title ? 1.5 : 1)
+                )
+                .onChange(of: editTitle) { _, newValue in
+                    if newValue.count > 150 { editTitle = String(newValue.prefix(150)) }
+                }
+        }
+
+        // Location field
+        VStack(alignment: .leading, spacing: 4) {
+            Text("block.edit.location.label")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+
+            TextField(String(localized: "block.edit.location.placeholder"), text: $editLocation)
+                .font(.body)
+                .focused($focusedField, equals: .location)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 10)
+                .background(Color(.tertiarySystemBackground), in: RoundedRectangle(cornerRadius: 10))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 10)
+                        .stroke(focusedField == .location ? Color.accentColor : Color(.systemGray4), lineWidth: focusedField == .location ? 1.5 : 1)
+                )
+                .onChange(of: editLocation) { _, newValue in
+                    if newValue.count > 100 { editLocation = String(newValue.prefix(100)) }
+                }
+        }
     }
 }

@@ -11,7 +11,15 @@ struct HomeContentView: View {
 
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
-            if viewModel.activeTrips.isEmpty {
+            if viewModel.isLoading {
+                VStack {
+                    Spacer()
+                    ProgressView()
+                        .controlSize(.large)
+                    Spacer()
+                }
+                .frame(maxWidth: .infinity)
+            } else if viewModel.activeTrips.isEmpty {
                 HomeEmptyStateView(
                     onCreateTrip: { attemptCreateTrip() },
                     onJoinTrip: { showingJoinTrip = true }
@@ -53,18 +61,29 @@ struct HomeContentView: View {
         }
         .navigationTitle(String(localized: "home.title"))
         .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                Button {
-                    router.push(.settings)
-                } label: {
-                    Image(systemName: "person.circle")
+            if #available(iOS 26, *) {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button { router.push(.settings) } label: {
+                        Image(systemName: "person.circle").font(.body.weight(.semibold)).foregroundStyle(Color(.label))
+                    }
                 }
-            }
-            ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    router.push(.archivedTrips)
-                } label: {
-                    Image(systemName: "archivebox")
+                .sharedBackgroundVisibility(.hidden)
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button { router.push(.archivedTrips) } label: {
+                        Image(systemName: "archivebox").font(.body.weight(.semibold)).foregroundStyle(Color(.label))
+                    }
+                }
+                .sharedBackgroundVisibility(.hidden)
+            } else {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button { router.push(.settings) } label: {
+                        Image(systemName: "person.circle").font(.body.weight(.semibold)).foregroundStyle(Color(.label))
+                    }
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button { router.push(.archivedTrips) } label: {
+                        Image(systemName: "archivebox").font(.body.weight(.semibold)).foregroundStyle(Color(.label))
+                    }
                 }
             }
         }

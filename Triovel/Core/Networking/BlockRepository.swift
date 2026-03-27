@@ -17,32 +17,45 @@ final class BlockRepository {
         displayTimezone: String,
         createdBy: String
     ) async throws -> Block {
+        let blockId = UUID().uuidString.lowercased()
+        let isoStartAt = Self.isoString(from: startAt)
+
         let params = CreateBlockParams(
+            id: blockId,
             trip_id: tripId,
             title: title,
             context: context.rawValue,
-            start_at: Self.isoString(from: startAt),
+            start_at: isoStartAt,
             display_timezone: displayTimezone,
             created_by: createdBy
         )
 
-        print("[BlockRepo] INSERT blocks: \(params)")
+        print("[BlockRepo] INSERT block: id=\(blockId), trip=\(tripId), title=\(title)")
 
         do {
-            let rows: [BlockDBRow] = try await client
+            try await client
                 .from("blocks")
                 .insert(params)
-                .select()
                 .execute()
-                .value
 
-            print("[BlockRepo] INSERT success, rows: \(rows.count)")
+            print("[BlockRepo] INSERT success: \(blockId)")
 
-            guard let row = rows.first else {
-                throw BlockRepositoryError.createFailed
-            }
-
-            return row.toDomain()
+            // Build domain object from known params
+            return Block(
+                id: blockId,
+                tripId: tripId,
+                title: title,
+                context: context,
+                createdBy: createdBy,
+                startAt: startAt,
+                endAt: nil,
+                locationText: nil,
+                displayTimezone: displayTimezone,
+                localTimezone: nil,
+                untimedRank: nil,
+                coverMediaId: nil,
+                createdAt: Date()
+            )
         } catch {
             print("[BlockRepo] ❌ INSERT failed: \(error)")
             throw error
@@ -186,6 +199,7 @@ enum BlockRepositoryError: LocalizedError {
 // MARK: - DTOs
 
 private struct CreateBlockParams: Encodable {
+    let id: String
     let trip_id: String
     let title: String
     let context: String

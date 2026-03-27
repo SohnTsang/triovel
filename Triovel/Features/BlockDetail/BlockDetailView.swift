@@ -10,18 +10,32 @@ struct BlockDetailView: View {
         VStack(spacing: 0) {
             if let block = viewModel.block {
                 blockContent(block)
-            } else if viewModel.isLoading {
-                Spacer()
-                ProgressView()
-                Spacer()
             } else if let error = viewModel.errorMessage {
                 errorState(error)
+            } else {
+                // Loading state (covers both delayed and immediate loading)
+                Spacer()
+                ProgressView()
+                    .controlSize(.large)
+                Spacer()
             }
         }
         .frame(maxWidth: sizeClass == .regular ? 600 : .infinity)
         .frame(maxWidth: .infinity)
-        .navigationTitle(viewModel.block?.title ?? "Block")
         .navigationBarTitleDisplayMode(.inline)
+        .plainBackButton()
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                if let title = viewModel.block?.title {
+                    Text(title)
+                        .font(.headline)
+                        .lineLimit(1)
+                } else {
+                    ProgressView()
+                        .controlSize(.small)
+                }
+            }
+        }
         .task {
             if let userId = appState.currentUserId {
                 await viewModel.load(blockId: blockId, userId: userId)

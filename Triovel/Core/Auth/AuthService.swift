@@ -125,9 +125,12 @@ final class AuthService {
 
     /// Resend the verification email to the given address.
     func resendVerificationEmail(to email: String) async throws {
+        print("[Auth] Resending verification email to: \(email)")
         do {
             try await client.auth.resend(email: email, type: .signup)
+            print("[Auth] Verification email resent successfully")
         } catch {
+            print("[Auth] ❌ Resend verification failed: \(error)")
             throw AuthError.networkError
         }
     }

@@ -46,8 +46,14 @@ final class BlockDetailViewModel {
 
     func load(blockId: String, userId: String) async {
         currentUserId = userId
-        isLoading = true
         errorMessage = nil
+
+        let showLoading = block == nil
+        if showLoading {
+            isLoading = true
+            isLoadingPosts = true
+        }
+        let start = ContinuousClock.now
 
         print("[BlockDetail] Loading block: \(blockId), userId: \(userId)")
 
@@ -56,22 +62,24 @@ final class BlockDetailViewModel {
             self.block = fetchedBlock
             print("[BlockDetail] Block loaded: \(fetchedBlock.title)")
 
-            // Fetch trip to determine owner + member names
             let trip = try await blockRepository.fetchTrip(tripId: fetchedBlock.tripId)
             self.tripOwnerId = trip.createdBy
             print("[BlockDetail] Trip loaded: \(trip.title)")
 
-            // Fetch member names for display
             await loadMemberNames(tripId: fetchedBlock.tripId)
         } catch {
             print("[BlockDetail] ❌ Load failed: \(error)")
-            print("[BlockDetail] ❌ Error type: \(type(of: error))")
             errorMessage = String(localized: "block.detail.error.load")
         }
 
+        if showLoading {
+            let elapsed = ContinuousClock.now - start
+            if elapsed < .milliseconds(500) {
+                try? await Task.sleep(for: .milliseconds(500) - elapsed)
+            }
+        }
         isLoading = false
 
-        // Load posts after block loads
         await loadPosts()
     }
 
@@ -95,7 +103,10 @@ final class BlockDetailViewModel {
             print("[BlockDetail] Skipping loadPosts — block=\(block != nil), userId=\(currentUserId ?? "nil")")
             return
         }
-        isLoadingPosts = posts.isEmpty
+
+        let showSkeleton = posts.isEmpty
+        if showSkeleton { isLoadingPosts = true }
+        let start = ContinuousClock.now
 
         do {
             let fetched = try await postRepository.fetchPosts(
@@ -111,6 +122,12 @@ final class BlockDetailViewModel {
             }
         }
 
+        if showSkeleton {
+            let elapsed = ContinuousClock.now - start
+            if elapsed < .milliseconds(500) {
+                try? await Task.sleep(for: .milliseconds(500) - elapsed)
+            }
+        }
         isLoadingPosts = false
     }
 
