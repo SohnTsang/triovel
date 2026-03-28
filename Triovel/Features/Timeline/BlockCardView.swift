@@ -1,47 +1,55 @@
 import SwiftUI
 
+/// Timeline block card with itinerary-style layout:
+///   from time   Title
+///   |           Location
+///   to time
 struct BlockCardView: View {
     let block: Block
     var creatorName: String?
     var syncState: SyncState = .synced
 
+    private var hasEndTime: Bool { block.endAt != nil }
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                // Context chip for personal blocks
-                if block.context == .personal {
-                    ContextChip(
-                        context: .personal,
-                        userName: creatorName
-                    )
+        HStack(alignment: .top, spacing: 0) {
+            // Left: time column with vertical line
+            timeColumn
+                .frame(width: 56)
+
+            // Right: content
+            VStack(alignment: .leading, spacing: 4) {
+                // Top row: title + sync indicator
+                HStack(alignment: .top) {
+                    Text(block.title)
+                        .font(.headline)
+                        .lineLimit(2)
+                    Spacer(minLength: 4)
+                    SyncStateIndicator(state: syncState)
                 }
-                Spacer()
-                SyncStateIndicator(state: syncState)
-            }
 
-            Text(block.title)
-                .font(.headline)
-                .lineLimit(2)
-
-            HStack(spacing: 12) {
-                if let location = block.locationText {
+                // Location
+                if let location = block.locationText, !location.isEmpty {
                     Label(location, systemImage: "mappin")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
                 }
 
-                Text(block.startAt, style: .time)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                // Context chip for personal blocks
+                if block.context == .personal {
+                    ContextChip(context: .personal, userName: creatorName)
+                        .padding(.top, 2)
+                }
             }
+            .padding(.vertical, 12)
+            .padding(.trailing, 14)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding()
         .background(
             block.context == .personal
                 ? ColorTokens.personalBackground
-                : Color(.systemBackground)
+                : Color(.secondarySystemBackground)
         )
         .clipShape(RoundedRectangle(cornerRadius: 12))
         .overlay(
@@ -53,5 +61,37 @@ struct BlockCardView: View {
                     lineWidth: 1
                 )
         )
+    }
+
+    // MARK: - Time Column
+
+    private var timeColumn: some View {
+        VStack(spacing: 0) {
+            // Start time
+            Text(block.startAt, format: .dateTime.hour().minute())
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.primary)
+                .padding(.top, 12)
+
+            // Vertical line
+            if hasEndTime {
+                RoundedRectangle(cornerRadius: 1)
+                    .fill(Color(.systemGray4))
+                    .frame(width: 2)
+                    .frame(minHeight: 16)
+                    .padding(.vertical, 4)
+            }
+
+            // End time
+            if let endAt = block.endAt {
+                Text(endAt, format: .dateTime.hour().minute())
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            Spacer(minLength: 0)
+        }
+        .frame(maxHeight: .infinity)
+        .padding(.leading, 14)
     }
 }

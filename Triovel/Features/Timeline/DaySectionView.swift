@@ -48,12 +48,7 @@ private struct TimeSlotView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            // Shared time label
-            Text(slot.time, style: .time)
-                .font(.caption.weight(.medium))
-                .foregroundStyle(.secondary)
-
-            // Stacked block cards — full-width, never tiny side-by-side
+            // Block cards — time is shown inside each card
             ForEach(slot.blocks) { block in
                 BlockCardView(
                     block: block,
