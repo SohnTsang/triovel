@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Block header showing title, context chip, time, and optional location.
+/// Block header showing title, context chip, time, location, and description.
 /// Editable by block creator or trip owner only.
 struct BlockDetailHeaderView: View {
     let block: Block
@@ -8,12 +8,13 @@ struct BlockDetailHeaderView: View {
     @Binding var isEditing: Bool
     @Binding var editTitle: String
     @Binding var editLocation: String
+    @Binding var editDescription: String
     let onSave: () -> Void
 
     @FocusState private var focusedField: EditField?
 
     private enum EditField {
-        case title, location
+        case title, location, description
     }
 
     var body: some View {
@@ -43,6 +44,7 @@ struct BlockDetailHeaderView: View {
                 Button {
                     editTitle = block.title
                     editLocation = block.locationText ?? ""
+                    editDescription = block.description ?? ""
                     isEditing = true
                 } label: {
                     Image(systemName: "pencil")
@@ -55,6 +57,29 @@ struct BlockDetailHeaderView: View {
         Text(block.title)
             .font(.title2.weight(.semibold))
             .lineLimit(3)
+
+        // Description (planning context)
+        if let description = block.description, !description.isEmpty {
+            Text(description)
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .lineLimit(5)
+        } else if canEdit {
+            Button {
+                editTitle = block.title
+                editLocation = block.locationText ?? ""
+                editDescription = ""
+                isEditing = true
+                // Focus description field after entering edit mode
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    focusedField = .description
+                }
+            } label: {
+                Text("block.detail.description.placeholder")
+                    .font(.subheadline)
+                    .foregroundStyle(.tertiary)
+            }
+        }
 
         HStack(spacing: 12) {
             Label {
@@ -126,6 +151,28 @@ struct BlockDetailHeaderView: View {
                 )
                 .onChange(of: editTitle) { _, newValue in
                     if newValue.count > 150 { editTitle = String(newValue.prefix(150)) }
+                }
+        }
+
+        // Description field
+        VStack(alignment: .leading, spacing: 4) {
+            Text("block.edit.description.label")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+
+            TextField(String(localized: "block.detail.description.placeholder"), text: $editDescription, axis: .vertical)
+                .font(.body)
+                .lineLimit(1...6)
+                .focused($focusedField, equals: .description)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 10)
+                .background(Color(.tertiarySystemBackground), in: RoundedRectangle(cornerRadius: 10))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 10)
+                        .stroke(focusedField == .description ? Color.accentColor : Color(.systemGray4), lineWidth: focusedField == .description ? 1.5 : 1)
+                )
+                .onChange(of: editDescription) { _, newValue in
+                    if newValue.count > 500 { editDescription = String(newValue.prefix(500)) }
                 }
         }
 

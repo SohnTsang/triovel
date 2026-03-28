@@ -37,7 +37,7 @@ Triovel/
 │   │   └── SupabaseConfig.swift      — Supabase client singleton (URL + anon key)
 │   ├── Models/
 │   │   ├── Trip.swift                — Trip container with dayCount computed property
-│   │   ├── Block.swift               — Timeline moment + BlockContext enum (group/personal)
+│   │   ├── Block.swift               — Timeline moment + BlockContext enum (group/personal) + description
 │   │   ├── Post.swift                — Memory post + PostVisibility enum (shared/private)
 │   │   ├── PostMedia.swift           — Media attachment + MediaType + UploadStatus enums
 │   │   ├── Bill.swift                — Expense record (amount as integer, smallest unit)
@@ -232,7 +232,8 @@ docs/
 | Day inheritance | Inherits day from visible timeline position or tapped ghost block |
 | After create | Navigates directly into new block detail (never back to timeline) |
 | Header editing | Only block creator or trip owner can edit (pencil icon → inline fields) |
-| Header fields | Title (max 150 chars), location (max 100 chars), with save/cancel controls |
+| Header fields | Title (max 150 chars), description (max 500 chars, multiline), location (max 100 chars), with save/cancel controls |
+| Description | Optional planning context ("Meet at lobby 6:30, reservation under Sohn"). Shows "Add details..." placeholder when empty (tappable by editors). NOT a post — block-level metadata visible to all trip members. |
 | Error handling | Inline error messages, keeps sheet open on failure |
 | UI | Fixed button heights, .presentationDetents, auto-focus |
 | Localization | All strings in 4 languages |
@@ -339,7 +340,7 @@ docs/
 | users | Profile linked to auth.users | ON DELETE CASCADE from auth.users |
 | trips | Top-level container | end_date >= start_date, unique invite_link |
 | trip_members | User-trip junction | unique (trip_id, user_id), role IN (owner, member) |
-| blocks | Timeline moments | context IN (group, personal) |
+| blocks | Timeline moments | context IN (group, personal), optional description text |
 | posts | Memory entries | visibility IN (shared, private) |
 | post_media | Attached media | media_type IN (photo, video), upload_status IN (queued, uploading, uploaded, failed) |
 | bills | Expense records | amount >= 0, integer (smallest currency unit) |

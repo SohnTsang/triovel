@@ -41,6 +41,7 @@ final class BlockRepository {
             startAt: startAt,
             endAt: nil,
             locationText: nil,
+            description: nil,
             displayTimezone: displayTimezone,
             localTimezone: nil,
             untimedRank: nil,
@@ -96,6 +97,7 @@ final class BlockRepository {
         blockId: String,
         title: String?,
         locationText: String?,
+        description: String?,
         startAt: Date?
     ) async throws {
         var setClauses: [String] = []
@@ -108,6 +110,10 @@ final class BlockRepository {
         if let locationText {
             setClauses.append("location_text = ?")
             params.append(locationText)
+        }
+        if let description {
+            setClauses.append("description = ?")
+            params.append(description)
         }
         if let startAt {
             setClauses.append("start_at = ?")
@@ -152,6 +158,7 @@ final class BlockRepository {
             startAt: parseISO(startAtStr),
             endAt: endAtStr.flatMap { parseISO($0) },
             locationText: try cursor.getStringOptional(name: "location_text"),
+            description: try cursor.getStringOptional(name: "description"),
             displayTimezone: try cursor.getString(name: "display_timezone"),
             localTimezone: try cursor.getStringOptional(name: "local_timezone"),
             untimedRank: try cursor.getIntOptional(name: "untimed_rank"),

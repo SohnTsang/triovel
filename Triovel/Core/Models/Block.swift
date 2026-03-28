@@ -9,6 +9,7 @@ struct Block: Identifiable, Codable, Hashable, Sendable {
     var startAt: Date
     var endAt: Date?
     var locationText: String?
+    var description: String?
     var displayTimezone: String
     var localTimezone: String?
     var untimedRank: Int?

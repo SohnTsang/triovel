@@ -54,6 +54,7 @@ enum AppSchema {
                 .text("start_at"),
                 .text("end_at"),
                 .text("location_text"),
+                .text("description"),
                 .text("display_timezone"),
                 .text("local_timezone"),
                 .integer("untimed_rank"),
