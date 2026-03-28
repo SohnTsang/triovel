@@ -1,15 +1,16 @@
 import Foundation
+import PowerSync
 import Supabase
 
-/// Handles trip CRUD against Supabase.
-/// Will be replaced by PowerSync local-first writes in Phase 2.
+/// Reads trips from local PowerSync SQLite. Writes locally first, then
+/// PowerSync uploads to Supabase via the connector.
+/// Exception: joinTrip requires network (trip not in local DB until membership exists).
 final class TripRepository {
+    private var db: PowerSyncDatabaseProtocol { SyncManager.shared.db }
     private let client = SupabaseConfig.client
 
-    // MARK: - Create Trip
+    // MARK: - Create Trip (local-first)
 
-    /// Creates a trip and adds the creator as owner in trip_members.
-    /// Returns the created trip's ID.
     func createTrip(
         title: String,
         startDate: Date,
@@ -18,154 +19,167 @@ final class TripRepository {
         baseCurrency: String,
         createdBy: String
     ) async throws -> String {
-        // Generate UUID client-side to avoid INSERT...RETURNING
-        // which fails because the SELECT policy requires trip membership,
-        // but the trigger that adds the creator hasn't fired yet.
         let tripId = UUID().uuidString.lowercased()
+        let memberId = UUID().uuidString.lowercased()
+        let now = Self.isoString(from: Date())
 
-        let params = CreateTripParams(
-            id: tripId,
-            title: title,
-            start_date: Self.dateOnlyString(from: startDate),
-            end_date: Self.dateOnlyString(from: endDate),
-            display_timezone: displayTimezone,
-            base_currency: baseCurrency,
-            created_by: createdBy
-        )
-
-        print("[TripRepo] INSERT trip: \(title), id=\(tripId), created_by=\(createdBy)")
-
-        do {
-            try await client
-                .from("trips")
-                .insert(params)
-                .execute()
-
-            // on_trip_created trigger auto-adds creator as owner in trip_members
-            print("[TripRepo] Trip created: \(tripId)")
-            return tripId
-        } catch {
-            print("[TripRepo] ❌ INSERT trip failed: \(error)")
-            throw error
+        try await db.writeTransaction { tx in
+            try tx.execute(
+                sql: """
+                    INSERT INTO trips (id, title, start_date, end_date, display_timezone, base_currency, archived, created_by, created_at)
+                    VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?)
+                    """,
+                parameters: [
+                    tripId, title,
+                    Self.dateOnlyString(from: startDate),
+                    Self.dateOnlyString(from: endDate),
+                    displayTimezone, baseCurrency,
+                    createdBy, now,
+                ]
+            )
+            // Mirror the on_trip_created trigger locally
+            try tx.execute(
+                sql: """
+                    INSERT INTO trip_members (id, trip_id, user_id, role, joined_at)
+                    VALUES (?, ?, ?, 'owner', ?)
+                    """,
+                parameters: [memberId, tripId, createdBy, now]
+            )
         }
+
+        print("[TripRepo] Created trip locally: \(tripId)")
+        return tripId
     }
 
-    // MARK: - Join Trip
+    // MARK: - Join Trip (requires network)
 
-    /// Joins a trip by invite link. Returns the trip ID if successful.
     func joinTrip(inviteCode: String, userId: String) async throws -> String {
         print("[TripRepo] JOIN trip with code: \(inviteCode)")
-        do {
-            // Look up trip by invite_link
-            let rows: [TripRow] = try await client
-                .from("trips")
-                .select("id")
-                .eq("invite_link", value: inviteCode)
-                .execute()
-                .value
 
-            guard let tripId = rows.first?.id else {
-                throw TripRepositoryError.tripNotFound
-            }
-
-            // Check if already a member
-            let existing: [TripMemberRow] = try await client
-                .from("trip_members")
-                .select("id")
-                .eq("trip_id", value: tripId)
-                .eq("user_id", value: userId)
-                .execute()
-                .value
-
-            if existing.isEmpty {
-                let memberParams = CreateTripMemberParams(
-                    trip_id: tripId,
-                    user_id: userId,
-                    role: "member"
-                )
-                try await client
-                    .from("trip_members")
-                    .insert(memberParams)
-                    .execute()
-                print("[TripRepo] Joined trip: \(tripId)")
-            } else {
-                print("[TripRepo] Already a member of trip: \(tripId)")
-            }
-
-            return tripId
-        } catch {
-            print("[TripRepo] ❌ JOIN failed: \(error)")
-            throw error
-        }
-    }
-
-    // MARK: - Fetch Trips
-
-    /// Fetches all trips the user is a member of, split into active and archived.
-    func fetchTrips(userId: String) async throws -> (active: [Trip], archived: [Trip]) {
-        print("[TripRepo] FETCH trips for user: \(userId)")
-        do {
-            // Get trip IDs user is a member of
-            let memberships: [TripMemberRow] = try await client
-                .from("trip_members")
-                .select("trip_id")
-                .eq("user_id", value: userId)
-                .execute()
-                .value
-
-            let tripIds = memberships.map(\.trip_id)
-            print("[TripRepo] User is member of \(tripIds.count) trips")
-            guard !tripIds.isEmpty else { return ([], []) }
-
-            let rows: [TripDBRow] = try await client
-                .from("trips")
-                .select()
-                .in("id", values: tripIds)
-                .order("created_at", ascending: false)
-                .execute()
-                .value
-
-            let trips = rows.map { $0.toDomain() }
-            let active = trips.filter { !$0.archived }
-            let archived = trips.filter { $0.archived }
-            print("[TripRepo] Fetched \(active.count) active, \(archived.count) archived trips")
-            return (active, archived)
-        } catch {
-            print("[TripRepo] ❌ FETCH trips failed: \(error)")
-            throw error
-        }
-    }
-
-    /// Fetches members for a list of trips.
-    func fetchMembers(tripIds: [String]) async throws -> [String: [TripMemberDisplay]] {
-        guard !tripIds.isEmpty else { return [:] }
-
-        let rows: [TripMemberWithUser] = try await client
-            .from("trip_members")
-            .select("trip_id, user_id, users(display_name, avatar_path)")
-            .in("trip_id", values: tripIds)
+        let rows: [TripIdRow] = try await client
+            .from("trips")
+            .select("id")
+            .eq("invite_link", value: inviteCode)
             .execute()
             .value
 
+        guard let tripId = rows.first?.id else {
+            throw TripRepositoryError.tripNotFound
+        }
+
+        let existing: [MemberIdRow] = try await client
+            .from("trip_members")
+            .select("id")
+            .eq("trip_id", value: tripId)
+            .eq("user_id", value: userId)
+            .execute()
+            .value
+
+        if existing.isEmpty {
+            let params = JoinTripParams(trip_id: tripId, user_id: userId, role: "member")
+            try await client
+                .from("trip_members")
+                .insert(params)
+                .execute()
+            print("[TripRepo] Joined trip: \(tripId)")
+        } else {
+            print("[TripRepo] Already a member of trip: \(tripId)")
+        }
+
+        return tripId
+    }
+
+    // MARK: - Fetch Trips (local read)
+
+    func fetchTrips(userId: String) async throws -> (active: [Trip], archived: [Trip]) {
+        let trips = try await db.getAll(
+            sql: """
+                SELECT t.* FROM trips t
+                JOIN trip_members tm ON t.id = tm.trip_id
+                WHERE tm.user_id = ?
+                ORDER BY t.created_at DESC
+                """,
+            parameters: [userId],
+            mapper: Self.tripMapper
+        )
+        let active = trips.filter { !$0.archived }
+        let archived = trips.filter { $0.archived }
+        return (active, archived)
+    }
+
+    /// Reactive stream of trips for the given user.
+    func watchTrips(userId: String) throws -> AsyncThrowingStream<[Trip], Error> {
+        try db.watch(
+            sql: """
+                SELECT t.* FROM trips t
+                JOIN trip_members tm ON t.id = tm.trip_id
+                WHERE tm.user_id = ?
+                ORDER BY t.created_at DESC
+                """,
+            parameters: [userId],
+            mapper: Self.tripMapper
+        )
+    }
+
+    // MARK: - Fetch Members (local read)
+
+    func fetchMembers(tripIds: [String]) async throws -> [String: [TripMemberDisplay]] {
+        guard !tripIds.isEmpty else { return [:] }
+
+        let placeholders = tripIds.map { _ in "?" }.joined(separator: ", ")
+        let rows = try await db.getAll(
+            sql: """
+                SELECT tm.trip_id, tm.user_id, tm.role, u.display_name, u.avatar_path
+                FROM trip_members tm
+                JOIN users u ON tm.user_id = u.id
+                WHERE tm.trip_id IN (\(placeholders))
+                """,
+            parameters: tripIds.map { $0 as Sendable? },
+            mapper: MemberWithTrip.from
+        )
+
         var result: [String: [TripMemberDisplay]] = [:]
         for row in rows {
-            let display = TripMemberDisplay(
-                userId: row.user_id,
-                displayName: row.users.display_name,
-                avatarPath: row.users.avatar_path
-            )
-            result[row.trip_id, default: []].append(display)
+            result[row.tripId, default: []].append(row.display)
         }
         return result
+    }
+
+    // MARK: - Trip Mapper
+
+    static let tripMapper: @Sendable (SqlCursor) throws -> Trip = { cursor in
+        let startDateStr = try cursor.getString(name: "start_date")
+        let endDateStr = try cursor.getString(name: "end_date")
+        let createdAtStr = try cursor.getString(name: "created_at")
+
+        return Trip(
+            id: try cursor.getString(name: "id"),
+            title: try cursor.getString(name: "title"),
+            startDate: parseDateOnly(startDateStr),
+            endDate: parseDateOnly(endDateStr),
+            coverImagePath: try cursor.getStringOptional(name: "cover_image_path"),
+            inviteLink: try cursor.getStringOptional(name: "invite_link"),
+            displayTimezone: try cursor.getString(name: "display_timezone"),
+            baseCurrency: try cursor.getString(name: "base_currency"),
+            archived: (try? cursor.getInt(name: "archived")) == 1,
+            createdBy: try cursor.getString(name: "created_by"),
+            createdAt: parseISO(createdAtStr)
+        )
     }
 
     // MARK: - Helpers
 
     private static func dateOnlyString(from date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
-        formatter.timeZone = TimeZone.current
-        return formatter.string(from: date)
+        let f = DateFormatter()
+        f.dateFormat = "yyyy-MM-dd"
+        f.timeZone = TimeZone.current
+        return f.string(from: date)
+    }
+
+    private static func isoString(from date: Date) -> String {
+        let f = ISO8601DateFormatter()
+        f.formatOptions = [.withInternetDateTime]
+        return f.string(from: date)
     }
 }
 
@@ -177,98 +191,55 @@ enum TripRepositoryError: LocalizedError {
 
     var errorDescription: String? {
         switch self {
-        case .createFailed:
-            return "Failed to create trip."
-        case .tripNotFound:
-            return "No trip found with that invite code."
+        case .createFailed: return "Failed to create trip."
+        case .tripNotFound: return "No trip found with that invite code."
         }
     }
 }
 
-// MARK: - Codable DTOs
+// MARK: - Date Parsing
 
-private struct CreateTripParams: Encodable {
-    let id: String
-    let title: String
-    let start_date: String
-    let end_date: String
-    let display_timezone: String
-    let base_currency: String
-    let created_by: String
+private func parseDateOnly(_ str: String) -> Date {
+    let parts = str.split(separator: "-")
+    guard parts.count == 3,
+          let y = Int(parts[0]), let m = Int(parts[1]), let d = Int(parts[2])
+    else { return Date() }
+    var c = DateComponents()
+    c.year = y; c.month = m; c.day = d
+    return Calendar.current.date(from: c) ?? Date()
 }
 
-private struct CreateTripMemberParams: Encodable {
+private func parseISO(_ str: String) -> Date {
+    let f = ISO8601DateFormatter()
+    f.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+    if let d = f.date(from: str) { return d }
+    f.formatOptions = [.withInternetDateTime]
+    return f.date(from: str) ?? Date()
+}
+
+// MARK: - DTOs (for Supabase direct calls in joinTrip)
+
+private struct TripIdRow: Decodable { let id: String }
+private struct MemberIdRow: Decodable { let id: String }
+private struct JoinTripParams: Encodable {
     let trip_id: String
     let user_id: String
     let role: String
 }
 
-private struct TripRow: Decodable {
-    let id: String
-}
+private struct MemberWithTrip: Sendable {
+    let tripId: String
+    let display: TripMemberDisplay
 
-private struct UserExistsRow: Decodable {
-    let id: String
-}
-
-private struct TripMemberRow: Decodable {
-    let id: String?
-    let trip_id: String
-
-    enum CodingKeys: String, CodingKey {
-        case id, trip_id
-    }
-
-    init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.id = try container.decodeIfPresent(String.self, forKey: .id)
-        self.trip_id = try container.decode(String.self, forKey: .trip_id)
-    }
-}
-
-private struct TripDBRow: Decodable {
-    let id: String
-    let title: String
-    let start_date: String
-    let end_date: String
-    let cover_image_path: String?
-    let invite_link: String?
-    let display_timezone: String
-    let base_currency: String
-    let archived: Bool
-    let created_by: String
-    let created_at: String
-
-    func toDomain() -> Trip {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd"
-
-        let isoFormatter = ISO8601DateFormatter()
-        isoFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-
-        return Trip(
-            id: id,
-            title: title,
-            startDate: dateFormatter.date(from: start_date) ?? Date(),
-            endDate: dateFormatter.date(from: end_date) ?? Date(),
-            coverImagePath: cover_image_path,
-            inviteLink: invite_link,
-            displayTimezone: display_timezone,
-            baseCurrency: base_currency,
-            archived: archived,
-            createdBy: created_by,
-            createdAt: isoFormatter.date(from: created_at) ?? Date()
+    static let from: @Sendable (SqlCursor) throws -> MemberWithTrip = { cursor in
+        MemberWithTrip(
+            tripId: try cursor.getString(name: "trip_id"),
+            display: TripMemberDisplay(
+                userId: try cursor.getString(name: "user_id"),
+                displayName: try cursor.getString(name: "display_name"),
+                avatarPath: try cursor.getStringOptional(name: "avatar_path"),
+                role: TripMember.Role(rawValue: try cursor.getString(name: "role")) ?? .member
+            )
         )
-    }
-}
-
-private struct TripMemberWithUser: Decodable {
-    let trip_id: String
-    let user_id: String
-    let users: UserProfile
-
-    struct UserProfile: Decodable {
-        let display_name: String
-        let avatar_path: String?
     }
 }

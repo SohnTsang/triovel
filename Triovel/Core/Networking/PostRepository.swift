@@ -1,12 +1,12 @@
 import Foundation
-import Supabase
+import PowerSync
 
-/// Handles post CRUD against Supabase.
-/// Will be replaced by PowerSync local-first writes when sync is integrated.
+/// Reads posts from local PowerSync SQLite. Writes locally first.
+/// Private posts are filtered server-side by sync rules AND client-side as defense-in-depth.
 final class PostRepository {
-    private let client = SupabaseConfig.client
+    private var db: PowerSyncDatabaseProtocol { SyncManager.shared.db }
 
-    // MARK: - Create Post
+    // MARK: - Create Post (local-first)
 
     func createPost(
         blockId: String,
@@ -15,92 +15,97 @@ final class PostRepository {
         visibility: PostVisibility
     ) async throws -> Post {
         let postId = UUID().uuidString.lowercased()
+        let now = Self.isoString(from: Date())
 
-        let params = CreatePostParams(
-            id: postId,
-            block_id: blockId,
-            user_id: userId,
-            body: body,
-            visibility: visibility.rawValue
+        try await db.execute(
+            sql: """
+                INSERT INTO posts (id, block_id, user_id, body, visibility, created_at)
+                VALUES (?, ?, ?, ?, ?, ?)
+                """,
+            parameters: [postId, blockId, userId, body, visibility.rawValue, now]
         )
 
-        print("[PostRepo] INSERT post: id=\(postId), blockId=\(blockId), visibility=\(visibility.rawValue)")
+        print("[PostRepo] Created post locally: \(postId)")
 
-        do {
-            try await client
-                .from("posts")
-                .insert(params)
-                .execute()
-
-            print("[PostRepo] INSERT success: \(postId)")
-
-            return Post(
-                id: postId,
-                blockId: blockId,
-                userId: userId,
-                body: body,
-                visibility: visibility,
-                createdAt: Date()
-            )
-        } catch {
-            print("[PostRepo] ❌ INSERT failed: \(error)")
-            throw error
-        }
+        return Post(
+            id: postId,
+            blockId: blockId,
+            userId: userId,
+            body: body,
+            visibility: visibility,
+            createdAt: Date()
+        )
     }
 
-    // MARK: - Fetch Posts for Block
+    // MARK: - Fetch Posts (local read)
 
-    /// Fetches posts for a block with pagination. Filters private posts to only the current user.
-    func fetchPosts(blockId: String, currentUserId: String, limit: Int = 20, offset: Int = 0) async throws -> [Post] {
-        print("[PostRepo] SELECT posts for block: \(blockId), limit=\(limit), offset=\(offset)")
-        do {
-            let rows: [PostDBRow] = try await client
-                .from("posts")
-                .select()
-                .eq("block_id", value: blockId)
-                .order("created_at", ascending: true)
-                .range(from: offset, to: offset + limit - 1)
-                .execute()
-                .value
-
-            print("[PostRepo] SELECT success, rows: \(rows.count)")
-
-            return rows
-                .map { $0.toDomain() }
-                .filter { post in
-                    post.visibility == .shared || post.userId == currentUserId
-                }
-        } catch {
-            print("[PostRepo] ❌ SELECT posts failed: \(error)")
-            throw error
-        }
+    func fetchPosts(blockId: String, currentUserId: String, limit: Int = 100, offset: Int = 0) async throws -> [Post] {
+        try await db.getAll(
+            sql: """
+                SELECT * FROM posts
+                WHERE block_id = ?
+                  AND (visibility = 'shared' OR user_id = ?)
+                ORDER BY created_at ASC
+                LIMIT ? OFFSET ?
+                """,
+            parameters: [blockId, currentUserId, limit, offset],
+            mapper: Self.postMapper
+        )
     }
 
-    // MARK: - Update Post
+    /// Reactive stream of posts for a block.
+    func watchPosts(blockId: String, currentUserId: String) throws -> AsyncThrowingStream<[Post], Error> {
+        try db.watch(
+            sql: """
+                SELECT * FROM posts
+                WHERE block_id = ?
+                  AND (visibility = 'shared' OR user_id = ?)
+                ORDER BY created_at ASC
+                """,
+            parameters: [blockId, currentUserId],
+            mapper: Self.postMapper
+        )
+    }
+
+    // MARK: - Update Post (local-first)
 
     func updatePost(postId: String, body: String) async throws {
-        try await client
-            .from("posts")
-            .update(["body": body])
-            .eq("id", value: postId)
-            .execute()
+        try await db.execute(
+            sql: "UPDATE posts SET body = ? WHERE id = ?",
+            parameters: [body, postId]
+        )
     }
 
-    // MARK: - Delete Post
+    // MARK: - Delete Post (local-first)
 
     func deletePost(postId: String) async throws {
-        print("[PostRepo] DELETE post: \(postId)")
-        do {
-            try await client
-                .from("posts")
-                .delete()
-                .eq("id", value: postId)
-                .execute()
-            print("[PostRepo] DELETE success")
-        } catch {
-            print("[PostRepo] ❌ DELETE failed: \(error)")
-            throw error
-        }
+        try await db.execute(
+            sql: "DELETE FROM posts WHERE id = ?",
+            parameters: [postId]
+        )
+        print("[PostRepo] Deleted post locally: \(postId)")
+    }
+
+    // MARK: - Mapper
+
+    static let postMapper: @Sendable (SqlCursor) throws -> Post = { cursor in
+        let createdAtStr = try cursor.getString(name: "created_at")
+        return Post(
+            id: try cursor.getString(name: "id"),
+            blockId: try cursor.getString(name: "block_id"),
+            userId: try cursor.getString(name: "user_id"),
+            body: try cursor.getStringOptional(name: "body"),
+            visibility: PostVisibility(rawValue: try cursor.getString(name: "visibility")) ?? .shared,
+            createdAt: parseISO(createdAtStr)
+        )
+    }
+
+    // MARK: - Helpers
+
+    private static func isoString(from date: Date) -> String {
+        let f = ISO8601DateFormatter()
+        f.formatOptions = [.withInternetDateTime]
+        return f.string(from: date)
     }
 }
 
@@ -118,42 +123,10 @@ enum PostRepositoryError: LocalizedError {
     }
 }
 
-// MARK: - DTOs
-
-private struct CreatePostParams: Encodable {
-    let id: String
-    let block_id: String
-    let user_id: String
-    let body: String
-    let visibility: String
-}
-
-private struct PostDBRow: Decodable {
-    let id: String
-    let block_id: String
-    let user_id: String
-    let body: String?
-    let visibility: String
-    let created_at: String
-
-    func toDomain() -> Post {
-        let isoFormatter = ISO8601DateFormatter()
-        isoFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-
-        let isoBasic = ISO8601DateFormatter()
-        isoBasic.formatOptions = [.withInternetDateTime]
-
-        let date = isoFormatter.date(from: created_at)
-            ?? isoBasic.date(from: created_at)
-            ?? Date()
-
-        return Post(
-            id: id,
-            blockId: block_id,
-            userId: user_id,
-            body: body,
-            visibility: PostVisibility(rawValue: visibility) ?? .shared,
-            createdAt: date
-        )
-    }
+private func parseISO(_ str: String) -> Date {
+    let f = ISO8601DateFormatter()
+    f.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+    if let d = f.date(from: str) { return d }
+    f.formatOptions = [.withInternetDateTime]
+    return f.date(from: str) ?? Date()
 }

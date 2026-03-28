@@ -2,6 +2,7 @@ import Foundation
 import Observation
 
 /// Drives the Global Home screen: active trips, archived trips, and trip limit.
+/// Uses reactive watch queries — UI updates automatically when local data changes.
 @Observable
 @MainActor
 final class HomeViewModel {
@@ -20,7 +21,7 @@ final class HomeViewModel {
 
     private var currentUserId: String?
     private let tripRepository = TripRepository()
-    nonisolated(unsafe) private var loadTask: Task<Void, Never>?
+    nonisolated(unsafe) private var watchTask: Task<Void, Never>?
 
     private var ownedActiveTripCount: Int {
         guard let uid = currentUserId else { return 0 }
@@ -29,19 +30,19 @@ final class HomeViewModel {
 
     func load(userId: String) {
         currentUserId = userId
-        loadTask?.cancel()
-        loadTask = Task { [weak self] in
-            await self?.fetchTrips(userId: userId)
+        watchTask?.cancel()
+        watchTask = Task { [weak self] in
+            await self?.startWatching(userId: userId)
         }
     }
 
     func refresh() async {
         guard let userId = currentUserId else { return }
-        await fetchTrips(userId: userId)
+        await fetchOnce(userId: userId)
     }
 
     deinit {
-        loadTask?.cancel()
+        watchTask?.cancel()
     }
 
     /// Called when user taps + New Trip. Returns true if allowed.
@@ -53,36 +54,65 @@ final class HomeViewModel {
         return true
     }
 
-    // MARK: - Fetch from Supabase
+    // MARK: - Reactive Watch
 
-    private func fetchTrips(userId: String) async {
+    private func startWatching(userId: String) async {
         let showLoading = activeTrips.isEmpty
         if showLoading { isLoading = true }
         let start = ContinuousClock.now
 
         do {
+            let stream = try tripRepository.watchTrips(userId: userId)
+            var isFirst = true
+
+            for try await trips in stream {
+                guard !Task.isCancelled else { break }
+
+                self.activeTrips = trips.filter { !$0.archived }
+                self.archivedTrips = trips.filter { $0.archived }
+
+                if isFirst {
+                    if showLoading {
+                        let elapsed = ContinuousClock.now - start
+                        if elapsed < .milliseconds(500) {
+                            try? await Task.sleep(for: .milliseconds(500) - elapsed)
+                        }
+                        isLoading = false
+                    }
+                    isFirst = false
+                }
+
+                // Refresh members when trips change
+                let allTripIds = trips.map(\.id)
+                if !allTripIds.isEmpty {
+                    let members = try await tripRepository.fetchMembers(tripIds: allTripIds)
+                    guard !Task.isCancelled else { break }
+                    membersByTrip = members
+                }
+            }
+        } catch {
+            if !(error is CancellationError) {
+                print("[Home] ❌ Watch error: \(error)")
+            }
+        }
+
+        if isLoading { isLoading = false }
+    }
+
+    /// One-time fetch for pull-to-refresh.
+    private func fetchOnce(userId: String) async {
+        do {
             let result = try await tripRepository.fetchTrips(userId: userId)
             activeTrips = result.active
             archivedTrips = result.archived
-            print("[Home] Loaded \(result.active.count) active, \(result.archived.count) archived trips")
 
             let allTripIds = (result.active + result.archived).map(\.id)
             if !allTripIds.isEmpty {
-                let members = try await tripRepository.fetchMembers(tripIds: allTripIds)
-                membersByTrip = members
-                print("[Home] Loaded members for \(members.count) trips")
+                membersByTrip = try await tripRepository.fetchMembers(tripIds: allTripIds)
             }
         } catch {
             print("[Home] ❌ fetchTrips failed: \(error)")
         }
-
-        if showLoading {
-            let elapsed = ContinuousClock.now - start
-            if elapsed < .milliseconds(500) {
-                try? await Task.sleep(for: .milliseconds(500) - elapsed)
-            }
-        }
-        isLoading = false
     }
 }
 

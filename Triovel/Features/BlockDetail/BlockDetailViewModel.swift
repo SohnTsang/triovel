@@ -1,8 +1,10 @@
 import Foundation
 import Observation
+import PowerSync
 
-/// ViewModel for BlockDetailView. Fetches block + posts from Supabase,
+/// ViewModel for BlockDetailView. Reads block + posts from local SQLite,
 /// determines edit permissions, handles header edits, and manages post CRUD.
+/// Posts are watched reactively — new posts appear instantly after local write.
 @Observable
 @MainActor
 final class BlockDetailViewModel {
@@ -30,10 +32,12 @@ final class BlockDetailViewModel {
     private let postRepository = PostRepository()
     nonisolated(unsafe) private var loadTask: Task<Void, Never>?
     nonisolated(unsafe) private var sendTask: Task<Void, Never>?
+    nonisolated(unsafe) private var postWatchTask: Task<Void, Never>?
 
     deinit {
         loadTask?.cancel()
         sendTask?.cancel()
+        postWatchTask?.cancel()
     }
 
     /// Only block creator or trip owner can edit header.
@@ -64,7 +68,6 @@ final class BlockDetailViewModel {
 
             let trip = try await blockRepository.fetchTrip(tripId: fetchedBlock.tripId)
             self.tripOwnerId = trip.createdBy
-            print("[BlockDetail] Trip loaded: \(trip.title)")
 
             await loadMemberNames(tripId: fetchedBlock.tripId)
         } catch {
@@ -80,7 +83,8 @@ final class BlockDetailViewModel {
         }
         isLoading = false
 
-        await loadPosts()
+        // Start reactive post watching
+        startWatchingPosts(blockId: blockId, userId: userId)
     }
 
     /// Load directly from a block we already have (e.g. after creation).
@@ -92,44 +96,52 @@ final class BlockDetailViewModel {
 
         loadTask?.cancel()
         loadTask = Task { [weak self] in
-            await self?.loadPosts()
+            guard let self else { return }
+            await self.loadMemberNames(tripId: block.tripId)
+            self.startWatchingPosts(blockId: block.id, userId: userId)
         }
     }
 
-    // MARK: - Posts
+    // MARK: - Post Watch
 
-    func loadPosts() async {
-        guard let block, let userId = currentUserId else {
-            print("[BlockDetail] Skipping loadPosts — block=\(block != nil), userId=\(currentUserId ?? "nil")")
-            return
-        }
+    private func startWatchingPosts(blockId: String, userId: String) {
+        postWatchTask?.cancel()
+        postWatchTask = Task { [weak self] in
+            guard let self else { return }
+            do {
+                let stream = try self.postRepository.watchPosts(
+                    blockId: blockId,
+                    currentUserId: userId
+                )
+                var isFirst = true
+                let start = ContinuousClock.now
 
-        let showSkeleton = posts.isEmpty
-        if showSkeleton { isLoadingPosts = true }
-        let start = ContinuousClock.now
+                for try await posts in stream {
+                    guard !Task.isCancelled else { break }
+                    self.posts = posts
 
-        do {
-            let fetched = try await postRepository.fetchPosts(
-                blockId: block.id,
-                currentUserId: userId
-            )
-            self.posts = fetched
-            print("[BlockDetail] Posts loaded: \(fetched.count)")
-        } catch {
-            print("[BlockDetail] ❌ loadPosts failed: \(error)")
-            if posts.isEmpty {
-                errorMessage = String(localized: "post.error.load")
+                    if isFirst && self.isLoadingPosts {
+                        let elapsed = ContinuousClock.now - start
+                        if elapsed < .milliseconds(500) {
+                            try? await Task.sleep(for: .milliseconds(500) - elapsed)
+                        }
+                        self.isLoadingPosts = false
+                        isFirst = false
+                    }
+                }
+            } catch {
+                if !(error is CancellationError) {
+                    print("[BlockDetail] ❌ Post watch error: \(error)")
+                    if self.posts.isEmpty {
+                        self.errorMessage = String(localized: "post.error.load")
+                    }
+                }
             }
+            if self.isLoadingPosts { self.isLoadingPosts = false }
         }
-
-        if showSkeleton {
-            let elapsed = ContinuousClock.now - start
-            if elapsed < .milliseconds(500) {
-                try? await Task.sleep(for: .milliseconds(500) - elapsed)
-            }
-        }
-        isLoadingPosts = false
     }
+
+    // MARK: - Post CRUD
 
     func sendPost(body: String, visibility: PostVisibility) {
         guard let block, let userId = currentUserId else { return }
@@ -139,14 +151,13 @@ final class BlockDetailViewModel {
         sendTask = Task { [weak self] in
             guard let self else { return }
             do {
-                let post = try await self.postRepository.createPost(
+                _ = try await self.postRepository.createPost(
                     blockId: block.id,
                     userId: userId,
                     body: body,
                     visibility: visibility
                 )
-                self.posts.append(post)
-                print("[BlockDetail] Post sent: \(post.id)")
+                // Watch query picks up the new post automatically
             } catch {
                 print("[BlockDetail] ❌ sendPost failed: \(error)")
                 self.failedDrafts.append(FailedDraft(
@@ -168,17 +179,13 @@ final class BlockDetailViewModel {
     }
 
     func deletePost(_ post: Post) {
-        // Optimistic removal
-        posts.removeAll { $0.id == post.id }
-
         Task { [weak self] in
             guard let self else { return }
             do {
+                // Local delete — watch query removes it from UI
                 try await self.postRepository.deletePost(postId: post.id)
             } catch {
-                // Re-add on failure
-                self.posts.append(post)
-                self.posts.sort { $0.createdAt < $1.createdAt }
+                print("[BlockDetail] ❌ deletePost failed: \(error)")
             }
         }
     }
@@ -191,21 +198,24 @@ final class BlockDetailViewModel {
         memberNames[post.userId] ?? String(localized: "post.author.unknown")
     }
 
-    // MARK: - Member Names
+    // MARK: - Member Names (local read)
 
     private func loadMemberNames(tripId: String) async {
+        let db = SyncManager.shared.db
         do {
-            let client = SupabaseConfig.client
-            let rows: [MemberNameRow] = try await client
-                .from("trip_members")
-                .select("user_id, users(display_name)")
-                .eq("trip_id", value: tripId)
-                .execute()
-                .value
-
+            let rows = try await db.getAll(
+                sql: """
+                    SELECT tm.user_id, u.display_name
+                    FROM trip_members tm
+                    JOIN users u ON tm.user_id = u.id
+                    WHERE tm.trip_id = ?
+                    """,
+                parameters: [tripId],
+                mapper: MemberNameEntry.from
+            )
             var names: [String: String] = [:]
             for row in rows {
-                names[row.user_id] = row.users.display_name
+                names[row.userId] = row.displayName
             }
             self.memberNames = names
         } catch {
@@ -250,15 +260,16 @@ struct FailedDraft: Identifiable {
     let visibility: PostVisibility
 }
 
-// MARK: - Member Name DTO
+// MARK: - Member Name Entry
 
-import Supabase
+private struct MemberNameEntry: Sendable {
+    let userId: String
+    let displayName: String
 
-private struct MemberNameRow: Decodable {
-    let user_id: String
-    let users: UserName
-
-    struct UserName: Decodable {
-        let display_name: String
+    static let from: @Sendable (SqlCursor) throws -> MemberNameEntry = { cursor in
+        MemberNameEntry(
+            userId: try cursor.getString(name: "user_id"),
+            displayName: try cursor.getString(name: "display_name")
+        )
     }
 }

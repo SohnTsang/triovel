@@ -1,14 +1,12 @@
 import Foundation
-import Supabase
+import PowerSync
 
-/// Handles block CRUD against Supabase.
-/// Will be replaced by PowerSync local-first writes in Phase 2.
+/// Reads blocks from local PowerSync SQLite. Writes locally first.
 final class BlockRepository {
-    private let client = SupabaseConfig.client
+    private var db: PowerSyncDatabaseProtocol { SyncManager.shared.db }
 
-    // MARK: - Create Block
+    // MARK: - Create Block (local-first)
 
-    /// Creates a block in the given trip. Returns the full block.
     func createBlock(
         tripId: String,
         title: String,
@@ -19,166 +17,155 @@ final class BlockRepository {
     ) async throws -> Block {
         let blockId = UUID().uuidString.lowercased()
         let isoStartAt = Self.isoString(from: startAt)
+        let now = Self.isoString(from: Date())
 
-        let params = CreateBlockParams(
-            id: blockId,
-            trip_id: tripId,
-            title: title,
-            context: context.rawValue,
-            start_at: isoStartAt,
-            display_timezone: displayTimezone,
-            created_by: createdBy
+        try await db.execute(
+            sql: """
+                INSERT INTO blocks (id, trip_id, title, context, start_at, display_timezone, created_by, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+            parameters: [
+                blockId, tripId, title, context.rawValue,
+                isoStartAt, displayTimezone, createdBy, now,
+            ]
         )
 
-        print("[BlockRepo] INSERT block: id=\(blockId), trip=\(tripId), title=\(title)")
+        print("[BlockRepo] Created block locally: \(blockId)")
 
-        do {
-            try await client
-                .from("blocks")
-                .insert(params)
-                .execute()
-
-            print("[BlockRepo] INSERT success: \(blockId)")
-
-            // Build domain object from known params
-            return Block(
-                id: blockId,
-                tripId: tripId,
-                title: title,
-                context: context,
-                createdBy: createdBy,
-                startAt: startAt,
-                endAt: nil,
-                locationText: nil,
-                displayTimezone: displayTimezone,
-                localTimezone: nil,
-                untimedRank: nil,
-                coverMediaId: nil,
-                createdAt: Date()
-            )
-        } catch {
-            print("[BlockRepo] ❌ INSERT failed: \(error)")
-            throw error
-        }
+        return Block(
+            id: blockId,
+            tripId: tripId,
+            title: title,
+            context: context,
+            createdBy: createdBy,
+            startAt: startAt,
+            endAt: nil,
+            locationText: nil,
+            displayTimezone: displayTimezone,
+            localTimezone: nil,
+            untimedRank: nil,
+            coverMediaId: nil,
+            createdAt: Date()
+        )
     }
 
-    // MARK: - Fetch Blocks for Trip
+    // MARK: - Fetch Blocks (local read)
 
-    func fetchBlocks(tripId: String, limit: Int = 20, offset: Int = 0) async throws -> [Block] {
-        print("[BlockRepo] SELECT blocks for trip: \(tripId), limit=\(limit), offset=\(offset)")
-        do {
-            let rows: [BlockDBRow] = try await client
-                .from("blocks")
-                .select()
-                .eq("trip_id", value: tripId)
-                .order("start_at", ascending: true)
-                .range(from: offset, to: offset + limit - 1)
-                .execute()
-                .value
-
-            print("[BlockRepo] SELECT success, rows: \(rows.count)")
-            return rows.map { $0.toDomain() }
-        } catch {
-            print("[BlockRepo] ❌ SELECT blocks failed: \(error)")
-            throw error
-        }
+    func fetchBlocks(tripId: String, limit: Int = 100, offset: Int = 0) async throws -> [Block] {
+        try await db.getAll(
+            sql: """
+                SELECT * FROM blocks
+                WHERE trip_id = ?
+                ORDER BY start_at ASC
+                LIMIT ? OFFSET ?
+                """,
+            parameters: [tripId, limit, offset],
+            mapper: Self.blockMapper
+        )
     }
 
-    // MARK: - Fetch Single Block
+    /// Reactive stream of blocks for a trip.
+    func watchBlocks(tripId: String) throws -> AsyncThrowingStream<[Block], Error> {
+        try db.watch(
+            sql: """
+                SELECT * FROM blocks
+                WHERE trip_id = ?
+                ORDER BY start_at ASC
+                """,
+            parameters: [tripId],
+            mapper: Self.blockMapper
+        )
+    }
+
+    // MARK: - Fetch Single Block (local read)
 
     func fetchBlock(blockId: String) async throws -> Block {
-        print("[BlockRepo] SELECT block: \(blockId)")
-        do {
-            let rows: [BlockDBRow] = try await client
-                .from("blocks")
-                .select()
-                .eq("id", value: blockId)
-                .execute()
-                .value
-
-            print("[BlockRepo] SELECT block success, rows: \(rows.count)")
-
-            guard let row = rows.first else {
-                throw BlockRepositoryError.notFound
-            }
-
-            return row.toDomain()
-        } catch {
-            print("[BlockRepo] ❌ SELECT block failed: \(error)")
-            throw error
+        guard let block = try await db.getOptional(
+            sql: "SELECT * FROM blocks WHERE id = ?",
+            parameters: [blockId],
+            mapper: Self.blockMapper
+        ) else {
+            throw BlockRepositoryError.notFound
         }
+        return block
     }
 
-    // MARK: - Update Block Header
+    // MARK: - Update Block Header (local-first)
 
-    /// Only block creator or trip owner should call this (enforced by RLS).
     func updateBlockHeader(
         blockId: String,
         title: String?,
         locationText: String?,
         startAt: Date?
     ) async throws {
-        var updates: [String: AnyEncodable] = [:]
-        if let title { updates["title"] = AnyEncodable(title) }
-        if let locationText { updates["location_text"] = AnyEncodable(locationText) }
-        if let startAt { updates["start_at"] = AnyEncodable(Self.isoString(from: startAt)) }
+        var setClauses: [String] = []
+        var params: [Sendable?] = []
 
-        guard !updates.isEmpty else { return }
+        if let title {
+            setClauses.append("title = ?")
+            params.append(title)
+        }
+        if let locationText {
+            setClauses.append("location_text = ?")
+            params.append(locationText)
+        }
+        if let startAt {
+            setClauses.append("start_at = ?")
+            params.append(Self.isoString(from: startAt))
+        }
 
-        try await client
-            .from("blocks")
-            .update(updates)
-            .eq("id", value: blockId)
-            .execute()
+        guard !setClauses.isEmpty else { return }
+        params.append(blockId)
+
+        try await db.execute(
+            sql: "UPDATE blocks SET \(setClauses.joined(separator: ", ")) WHERE id = ?",
+            parameters: params
+        )
     }
 
-    // MARK: - Fetch Trip (for block detail context)
+    // MARK: - Fetch Trip (local read, for block detail context)
 
     func fetchTrip(tripId: String) async throws -> Trip {
-        print("[BlockRepo] SELECT trip: \(tripId)")
-        do {
-            let rows: [TripDBRow] = try await client
-                .from("trips")
-                .select()
-                .eq("id", value: tripId)
-                .execute()
-                .value
-
-            print("[BlockRepo] SELECT trip success, rows: \(rows.count)")
-
-            guard let row = rows.first else {
-                throw BlockRepositoryError.notFound
-            }
-
-            return row.toDomain()
-        } catch {
-            print("[BlockRepo] ❌ SELECT trip failed: \(error)")
-            throw error
+        guard let trip = try await db.getOptional(
+            sql: "SELECT * FROM trips WHERE id = ?",
+            parameters: [tripId],
+            mapper: TripRepository.tripMapper
+        ) else {
+            throw BlockRepositoryError.notFound
         }
+        return trip
+    }
+
+    // MARK: - Mapper
+
+    static let blockMapper: @Sendable (SqlCursor) throws -> Block = { cursor in
+        let startAtStr = try cursor.getString(name: "start_at")
+        let endAtStr = try cursor.getStringOptional(name: "end_at")
+        let createdAtStr = try cursor.getString(name: "created_at")
+
+        return Block(
+            id: try cursor.getString(name: "id"),
+            tripId: try cursor.getString(name: "trip_id"),
+            title: try cursor.getString(name: "title"),
+            context: BlockContext(rawValue: try cursor.getString(name: "context")) ?? .group,
+            createdBy: try cursor.getString(name: "created_by"),
+            startAt: parseISO(startAtStr),
+            endAt: endAtStr.flatMap { parseISO($0) },
+            locationText: try cursor.getStringOptional(name: "location_text"),
+            displayTimezone: try cursor.getString(name: "display_timezone"),
+            localTimezone: try cursor.getStringOptional(name: "local_timezone"),
+            untimedRank: try cursor.getIntOptional(name: "untimed_rank"),
+            coverMediaId: try cursor.getStringOptional(name: "cover_media_id"),
+            createdAt: parseISO(createdAtStr)
+        )
     }
 
     // MARK: - Helpers
 
     private static func isoString(from date: Date) -> String {
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime]
-        return formatter.string(from: date)
-    }
-}
-
-// MARK: - Simple AnyEncodable for partial updates
-
-struct AnyEncodable: Encodable {
-    private let _encode: (Encoder) throws -> Void
-
-    init<T: Encodable>(_ wrapped: T) {
-        _encode = { encoder in
-            try wrapped.encode(to: encoder)
-        }
-    }
-
-    func encode(to encoder: Encoder) throws {
-        try _encode(encoder)
+        let f = ISO8601DateFormatter()
+        f.formatOptions = [.withInternetDateTime]
+        return f.string(from: date)
     }
 }
 
@@ -196,97 +183,10 @@ enum BlockRepositoryError: LocalizedError {
     }
 }
 
-// MARK: - DTOs
-
-private struct CreateBlockParams: Encodable {
-    let id: String
-    let trip_id: String
-    let title: String
-    let context: String
-    let start_at: String
-    let display_timezone: String
-    let created_by: String
-}
-
-private struct BlockDBRow: Decodable {
-    let id: String
-    let trip_id: String
-    let title: String
-    let context: String
-    let created_by: String
-    let start_at: String
-    let end_at: String?
-    let location_text: String?
-    let display_timezone: String
-    let local_timezone: String?
-    let untimed_rank: Int?
-    let cover_media_id: String?
-    let created_at: String
-
-    func toDomain() -> Block {
-        let isoFormatter = ISO8601DateFormatter()
-        isoFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-
-        let isoBasic = ISO8601DateFormatter()
-        isoBasic.formatOptions = [.withInternetDateTime]
-
-        func parseDate(_ str: String) -> Date {
-            isoFormatter.date(from: str)
-                ?? isoBasic.date(from: str)
-                ?? Date()
-        }
-
-        return Block(
-            id: id,
-            tripId: trip_id,
-            title: title,
-            context: BlockContext(rawValue: context) ?? .group,
-            createdBy: created_by,
-            startAt: parseDate(start_at),
-            endAt: end_at.flatMap { parseDate($0) },
-            locationText: location_text,
-            displayTimezone: display_timezone,
-            localTimezone: local_timezone,
-            untimedRank: untimed_rank,
-            coverMediaId: cover_media_id,
-            createdAt: parseDate(created_at)
-        )
-    }
-}
-
-// Re-use TripDBRow from TripRepository — extracted here for block context
-private struct TripDBRow: Decodable {
-    let id: String
-    let title: String
-    let start_date: String
-    let end_date: String
-    let cover_image_path: String?
-    let invite_link: String?
-    let display_timezone: String
-    let base_currency: String
-    let archived: Bool
-    let created_by: String
-    let created_at: String
-
-    func toDomain() -> Trip {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd"
-
-        let isoFormatter = ISO8601DateFormatter()
-        isoFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-
-        return Trip(
-            id: id,
-            title: title,
-            startDate: dateFormatter.date(from: start_date) ?? Date(),
-            endDate: dateFormatter.date(from: end_date) ?? Date(),
-            coverImagePath: cover_image_path,
-            inviteLink: invite_link,
-            displayTimezone: display_timezone,
-            baseCurrency: base_currency,
-            archived: archived,
-            createdBy: created_by,
-            createdAt: isoFormatter.date(from: created_at) ?? Date()
-        )
-    }
+private func parseISO(_ str: String) -> Date {
+    let f = ISO8601DateFormatter()
+    f.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+    if let d = f.date(from: str) { return d }
+    f.formatOptions = [.withInternetDateTime]
+    return f.date(from: str) ?? Date()
 }

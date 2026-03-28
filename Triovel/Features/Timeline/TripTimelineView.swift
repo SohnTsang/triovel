@@ -85,9 +85,16 @@ struct TripTimelineView: View {
         .toolbar {
             ToolbarItem(placement: .principal) {
                 if let title = viewModel.trip?.title {
-                    Text(title)
-                        .font(.headline)
-                        .lineLimit(1)
+                    VStack(spacing: 2) {
+                        Text(title)
+                            .font(.headline)
+                            .lineLimit(1)
+                        if !appState.isSyncConnected && appState.hasSynced {
+                            Text(String(localized: "state.offline"))
+                                .font(.caption2)
+                                .foregroundStyle(ColorTokens.pendingTint)
+                        }
+                    }
                 } else {
                     ProgressView()
                         .controlSize(.small)
@@ -126,9 +133,7 @@ struct TripTimelineView: View {
                 dayDate: addMomentDayDate,
                 displayTimezone: viewModel.trip?.displayTimezone ?? TimeZone.current.identifier,
                 onBlockCreated: { blockId in
-                    // Refresh timeline to show new block
-                    Task { await viewModel.refreshBlocks() }
-                    // Navigate into the new block detail
+                    // Watch query auto-updates timeline; just navigate
                     router.push(.blockDetail(blockId: blockId))
                 }
             )

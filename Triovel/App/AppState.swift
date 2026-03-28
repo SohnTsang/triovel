@@ -14,12 +14,18 @@ final class AppState {
     var authStatus: AuthStatus = .unknown
     var currentUserId: String?
 
+    // Sync status (observed by UI for indicators)
+    private(set) var isSyncConnected = false
+    private(set) var hasSynced = false
+    private(set) var lastSyncedAt: Date?
+
     let authService = AuthService()
+    nonisolated(unsafe) private var syncStatusTask: Task<Void, Never>?
 
     /// Called on app launch. Follows the auth refresh flow from sync.md:
     /// 1. Restore local session
     /// 2. Refresh auth token if expired (handled by Supabase SDK automatically)
-    /// 3. Resume data sync (Phase 2)
+    /// 3. Resume data sync via PowerSync
     /// 4. Resume media queue (Phase 3)
     func restoreSession() async {
         let restored = await authService.restoreSession()
@@ -27,6 +33,7 @@ final class AppState {
             currentUserId = user.id.uuidString.lowercased()
             print("[Auth] Session restored, userId: \(currentUserId ?? "nil")")
             authStatus = .signedIn
+            await connectSync()
         } else {
             print("[Auth] No session to restore")
             authStatus = .signedOut
@@ -39,6 +46,10 @@ final class AppState {
         currentUserId = user.id.uuidString.lowercased()
         print("[Auth] Sign-in complete, userId: \(currentUserId ?? "nil")")
         authStatus = .signedIn
+
+        Task {
+            await connectSync()
+        }
     }
 
     /// Called after email sign-up when verification is required.
@@ -62,22 +73,55 @@ final class AppState {
                 completeSignIn()
             } catch {
                 // Link expired or invalid — stay on verification screen
-                // The error is surfaced via the AuthError type
             }
 
         case "trip":
-            // triovel://trip/{invite_code} — handle in Phase 1 follow-up
+            // triovel://trip/{invite_code} — handle in follow-up
             break
 
         default:
-            // Malformed deep link — navigate to Home if signed in, ignore otherwise
             break
         }
     }
 
     func signOut() async {
+        // Disconnect sync and clear local data before signing out
+        await disconnectSync()
         await authService.signOut()
         currentUserId = nil
         authStatus = .signedOut
+    }
+
+    // MARK: - Sync Lifecycle
+
+    private func connectSync() async {
+        do {
+            try await SyncManager.shared.connect()
+            startWatchingSyncStatus()
+        } catch {
+            print("[Sync] ❌ Connect failed: \(error)")
+        }
+    }
+
+    private func disconnectSync() async {
+        syncStatusTask?.cancel()
+        await SyncManager.shared.disconnectAndClear()
+        isSyncConnected = false
+        hasSynced = false
+        lastSyncedAt = nil
+    }
+
+    private func startWatchingSyncStatus() {
+        syncStatusTask?.cancel()
+        syncStatusTask = Task { [weak self] in
+            for await status in SyncManager.shared.db.currentStatus.asFlow() {
+                guard let self, !Task.isCancelled else { break }
+                self.isSyncConnected = status.connected
+                self.lastSyncedAt = status.lastSyncedAt
+                if status.hasSynced == true {
+                    self.hasSynced = true
+                }
+            }
+        }
     }
 }

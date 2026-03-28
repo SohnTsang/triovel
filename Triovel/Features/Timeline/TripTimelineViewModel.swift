@@ -2,6 +2,7 @@ import Foundation
 import Observation
 
 /// Drives the trip timeline: day generation, block grouping, filtering.
+/// Watches blocks reactively — timeline updates when blocks change locally.
 @Observable
 @MainActor
 final class TripTimelineViewModel {
@@ -20,69 +21,28 @@ final class TripTimelineViewModel {
     private var currentTripId: String?
     private var currentUserId: String?
     nonisolated(unsafe) private var loadTask: Task<Void, Never>?
+    nonisolated(unsafe) private var blockWatchTask: Task<Void, Never>?
 
     // MARK: - Load
 
     func load(tripId: String, userId: String) {
         currentTripId = tripId
         currentUserId = userId
+
         loadTask?.cancel()
         loadTask = Task { [weak self] in
-            await self?.fetchTripData(tripId: tripId, userId: userId)
+            await self?.fetchTripData(tripId: tripId)
+        }
+
+        blockWatchTask?.cancel()
+        blockWatchTask = Task { [weak self] in
+            await self?.startWatchingBlocks(tripId: tripId)
         }
     }
 
     deinit {
         loadTask?.cancel()
-    }
-
-    private func fetchTripData(tripId: String, userId: String) async {
-        let showLoading = trip == nil
-        if showLoading { isLoading = true }
-        let start = ContinuousClock.now
-
-        print("[Timeline] Loading trip: \(tripId)")
-
-        do {
-            let fetchedTrip = try await blockRepository.fetchTrip(tripId: tripId)
-            self.trip = fetchedTrip
-            print("[Timeline] Trip loaded: \(fetchedTrip.title)")
-
-            let blocks = try await blockRepository.fetchBlocks(tripId: tripId)
-            allBlocks = blocks
-            days = generateDays(for: fetchedTrip)
-            print("[Timeline] Loaded \(blocks.count) blocks, \(days.count) days")
-
-            let memberMap = try await tripRepository.fetchMembers(tripIds: [tripId])
-            members = memberMap[tripId] ?? []
-            print("[Timeline] Loaded \(members.count) members")
-        } catch {
-            print("[Timeline] ❌ fetchTripData failed: \(error)")
-        }
-
-        if showLoading {
-            let elapsed = ContinuousClock.now - start
-            if elapsed < .milliseconds(500) {
-                try? await Task.sleep(for: .milliseconds(500) - elapsed)
-            }
-        }
-        isLoading = false
-    }
-
-    /// Refresh blocks from Supabase after a new block is created.
-    func refreshBlocks() async {
-        guard let tripId = currentTripId else { return }
-        do {
-            let blocks = try await blockRepository.fetchBlocks(tripId: tripId)
-            allBlocks = blocks
-            print("[Timeline] Refreshed blocks: \(blocks.count)")
-            if let trip {
-                days = generateDays(for: trip)
-            }
-        } catch {
-            print("[Timeline] ❌ refreshBlocks failed: \(error)")
-            // Silently fail — keep showing existing data
-        }
+        blockWatchTask?.cancel()
     }
 
     /// Find creator display name for a block.
@@ -92,7 +52,6 @@ final class TripTimelineViewModel {
 
     // MARK: - Filtered Days
 
-    /// Days with blocks filtered by current filter.
     var filteredDays: [TimelineDay] {
         days.map { day in
             let filtered = day.blocks.filter { block in
@@ -108,6 +67,58 @@ final class TripTimelineViewModel {
                 shortDate: day.shortDate,
                 blocks: filtered
             )
+        }
+    }
+
+    // MARK: - Fetch Trip + Members (one-time)
+
+    private func fetchTripData(tripId: String) async {
+        let showLoading = trip == nil
+        if showLoading { isLoading = true }
+        let start = ContinuousClock.now
+
+        do {
+            let fetchedTrip = try await blockRepository.fetchTrip(tripId: tripId)
+            self.trip = fetchedTrip
+            print("[Timeline] Trip loaded: \(fetchedTrip.title)")
+
+            // Regenerate days if blocks already loaded
+            if !allBlocks.isEmpty {
+                days = generateDays(for: fetchedTrip)
+            }
+
+            let memberMap = try await tripRepository.fetchMembers(tripIds: [tripId])
+            members = memberMap[tripId] ?? []
+        } catch {
+            print("[Timeline] ❌ fetchTripData failed: \(error)")
+        }
+
+        if showLoading {
+            let elapsed = ContinuousClock.now - start
+            if elapsed < .milliseconds(500) {
+                try? await Task.sleep(for: .milliseconds(500) - elapsed)
+            }
+            isLoading = false
+        }
+    }
+
+    // MARK: - Reactive Block Watch
+
+    private func startWatchingBlocks(tripId: String) async {
+        do {
+            let stream = try blockRepository.watchBlocks(tripId: tripId)
+            for try await blocks in stream {
+                guard !Task.isCancelled else { break }
+                allBlocks = blocks
+                if let trip {
+                    days = generateDays(for: trip)
+                }
+                print("[Timeline] Blocks updated: \(blocks.count)")
+            }
+        } catch {
+            if !(error is CancellationError) {
+                print("[Timeline] ❌ Block watch error: \(error)")
+            }
         }
     }
 
@@ -131,7 +142,6 @@ final class TripTimelineViewModel {
             let dayNumber = offset + 1
             let shortDate = shortFormatter.string(from: date)
 
-            // Blocks for this day
             let dayStart = cal.startOfDay(for: date)
             let dayEnd = cal.date(byAdding: .day, value: 1, to: dayStart)!
             let dayBlocks = allBlocks.filter { block in
@@ -146,7 +156,6 @@ final class TripTimelineViewModel {
             )
         }
     }
-
 }
 
 // MARK: - Timeline Day Model
@@ -171,7 +180,6 @@ struct TimelineDay: Identifiable {
         }
 
         return slots.map { key, blocks in
-            // Sort within cluster: group first, then personal, then by createdAt
             let sorted = blocks.sorted { a, b in
                 if a.context != b.context {
                     return a.context == .group

@@ -63,6 +63,11 @@
 		EBA05C9595465B1448441DAC /* TripMembersView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C459CDEFF6D60634C288E360 /* TripMembersView.swift */; };
 		EE72C626B58EC3566BFEB125 /* BlockDetailHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72EC929A2DF4723A3383AC0D /* BlockDetailHeaderView.swift */; };
 		EF216AB5A51B71483A566E21 /* ProfileHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D37FA5E2AF68AA27D92708E /* ProfileHeaderView.swift */; };
+		PS01BF0001000001A0000001 /* AppSchema.swift in Sources */ = {isa = PBXBuildFile; fileRef = PS01FR0001000001A0000001 /* AppSchema.swift */; };
+		PS01BF0002000002A0000002 /* PowerSyncConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = PS01FR0002000002A0000002 /* PowerSyncConfig.swift */; };
+		PS01BF0003000003A0000003 /* SupabaseConnector.swift in Sources */ = {isa = PBXBuildFile; fileRef = PS01FR0003000003A0000003 /* SupabaseConnector.swift */; };
+		PS01BF0004000004A0000004 /* SyncManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = PS01FR0004000004A0000004 /* SyncManager.swift */; };
+		PS01BF0005000005A0000005 /* PowerSync in Frameworks */ = {isa = PBXBuildFile; productRef = PS01PD0001000001A0000001 /* PowerSync */; };
 		22EEB4706AB07F00406FFEB8 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D041FDB8AE49805E56BF8F72 /* LaunchScreen.storyboard */; };
 		7AB84AC4DC6B0A59B113F751 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 4F3133CB82A42C2405ECFE76 /* Localizable.xcstrings */; };
 		A74D3F0F546C24E1AD1BFE96 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8D7172619DB15AD08404D409 /* Assets.xcassets */; };
@@ -132,6 +137,10 @@
 		ECB3DD3D521270A1A28CBFAB /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
 		F0F18C424A110CFFFCA1254D /* ArchivedTripsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArchivedTripsView.swift; sourceTree = "<group>"; };
 		FF32096E140C4392D2BA1DC2 /* BlockDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockDetailView.swift; sourceTree = "<group>"; };
+		PS01FR0001000001A0000001 /* AppSchema.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSchema.swift; sourceTree = "<group>"; };
+		PS01FR0002000002A0000002 /* PowerSyncConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PowerSyncConfig.swift; sourceTree = "<group>"; };
+		PS01FR0003000003A0000003 /* SupabaseConnector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseConnector.swift; sourceTree = "<group>"; };
+		PS01FR0004000004A0000004 /* SyncManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -140,6 +149,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				1971879261248A7A61904A4F /* Supabase in Frameworks */,
+				PS01BF0005000005A0000005 /* PowerSync in Frameworks */,
 				A1C450DEB50DF1EC2656D2CF /* Foundation.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -211,8 +221,20 @@
 				CCA7F2C0B765592BBE489BB1 /* Auth */,
 				55E15E5CE1D91BA1D8A39394 /* Models */,
 				C713FD5D7EA45D079BEF0378 /* Networking */,
+				PS01GR0001000001A0000001 /* Sync */,
 			);
 			path = Core;
+			sourceTree = "<group>";
+		};
+		PS01GR0001000001A0000001 /* Sync */ = {
+			isa = PBXGroup;
+			children = (
+				PS01FR0001000001A0000001 /* AppSchema.swift */,
+				PS01FR0002000002A0000002 /* PowerSyncConfig.swift */,
+				PS01FR0003000003A0000003 /* SupabaseConnector.swift */,
+				PS01FR0004000004A0000004 /* SyncManager.swift */,
+			);
+			path = Sync;
 			sourceTree = "<group>";
 		};
 		CCA7F2C0B765592BBE489BB1 /* Auth */ = {
@@ -416,6 +438,7 @@
 			name = Triovel;
 			packageProductDependencies = (
 				D989E8D899B44A723BCE0072 /* Supabase */,
+				PS01PD0001000001A0000001 /* PowerSync */,
 			);
 			productName = Triovel;
 			productReference = DFFCD16C6F30BA7A4A7F7DC8 /* Triovel.app */;
@@ -441,6 +464,7 @@
 			mainGroup = 2B731CEFC6751AAE0EC69B98;
 			packageReferences = (
 				DA488374B0F67A1CFDC002A6 /* XCRemoteSwiftPackageReference "supabase-swift" */,
+				PS01PR0001000001A0000001 /* XCRemoteSwiftPackageReference "powersync-swift" */,
 			);
 			productRefGroup = 0A2C978E52A76F0AA9F68BB5 /* Products */;
 			projectDirPath = "";
@@ -525,6 +549,10 @@
 				61A04E314EC4ED5771DCE984 /* PostSkeletonView.swift in Sources */,
 				A452848C10679300EB0FD3D0 /* FailedPostCardView.swift in Sources */,
 				EF216AB5A51B71483A566E21 /* ProfileHeaderView.swift in Sources */,
+				PS01BF0001000001A0000001 /* AppSchema.swift in Sources */,
+				PS01BF0002000002A0000002 /* PowerSyncConfig.swift in Sources */,
+				PS01BF0003000003A0000003 /* SupabaseConnector.swift in Sources */,
+				PS01BF0004000004A0000004 /* SyncManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -758,6 +786,14 @@
 				minimumVersion = 2.0.0;
 			};
 		};
+		PS01PR0001000001A0000001 /* XCRemoteSwiftPackageReference "powersync-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/powersync-ja/powersync-swift.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -765,6 +801,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = DA488374B0F67A1CFDC002A6 /* XCRemoteSwiftPackageReference "supabase-swift" */;
 			productName = Supabase;
+		};
+		PS01PD0001000001A0000001 /* PowerSync */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = PS01PR0001000001A0000001 /* XCRemoteSwiftPackageReference "powersync-swift" */;
+			productName = PowerSync;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
