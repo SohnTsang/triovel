@@ -161,6 +161,8 @@ final class BlockDetailViewModel {
         sendTask?.cancel()
         sendTask = Task { [weak self] in
             guard let self else { return }
+            let start = ContinuousClock.now
+
             do {
                 let post = try await self.postRepository.createPost(
                     blockId: block.id,
@@ -188,6 +190,12 @@ final class BlockDetailViewModel {
                     body: body,
                     visibility: visibility
                 ))
+            }
+
+            // Minimum visible spinner so user sees feedback
+            let elapsed = ContinuousClock.now - start
+            if elapsed < .milliseconds(400) {
+                try? await Task.sleep(for: .milliseconds(400) - elapsed)
             }
             self.isSendingPost = false
         }

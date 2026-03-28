@@ -97,15 +97,14 @@ struct PostCardView: View {
                     .strokeBorder(ColorTokens.personalBorder, lineWidth: 1)
                 : nil
         )
-        .confirmationDialog(
+        .alert(
             String(localized: "post.delete.confirm.title"),
-            isPresented: $showingDeleteConfirmation,
-            titleVisibility: .visible
+            isPresented: $showingDeleteConfirmation
         ) {
+            Button(String(localized: "common.cancel"), role: .cancel) {}
             Button(String(localized: "common.delete"), role: .destructive) {
                 onDelete()
             }
-            Button(String(localized: "common.cancel"), role: .cancel) {}
         } message: {
             Text("post.delete.confirm.message")
         }
