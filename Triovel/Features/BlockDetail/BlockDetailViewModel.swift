@@ -25,6 +25,9 @@ final class BlockDetailViewModel {
     private(set) var isSendingPost = false
     private(set) var memberNames: [String: String] = [:]
 
+    // Media
+    private(set) var postMediaMap: [String: [PostMedia]] = [:]
+
     // Failed posts queue — retryable drafts that didn't send
     var failedDrafts: [FailedDraft] = []
 
@@ -32,14 +35,17 @@ final class BlockDetailViewModel {
     private var tripOwnerId: String?
     private let blockRepository = BlockRepository()
     private let postRepository = PostRepository()
+    private let postMediaRepository = PostMediaRepository()
     nonisolated(unsafe) private var loadTask: Task<Void, Never>?
     nonisolated(unsafe) private var sendTask: Task<Void, Never>?
     nonisolated(unsafe) private var postWatchTask: Task<Void, Never>?
+    nonisolated(unsafe) private var mediaWatchTask: Task<Void, Never>?
 
     deinit {
         loadTask?.cancel()
         sendTask?.cancel()
         postWatchTask?.cancel()
+        mediaWatchTask?.cancel()
     }
 
     /// Only block creator or trip owner can edit header.
@@ -107,6 +113,9 @@ final class BlockDetailViewModel {
     // MARK: - Post Watch
 
     private func startWatchingPosts(blockId: String, userId: String) {
+        // Start media watch alongside posts
+        startWatchingMedia(blockId: blockId)
+
         postWatchTask?.cancel()
         postWatchTask = Task { [weak self] in
             guard let self else { return }
@@ -145,7 +154,7 @@ final class BlockDetailViewModel {
 
     // MARK: - Post CRUD
 
-    func sendPost(body: String, visibility: PostVisibility) {
+    func sendPost(body: String, visibility: PostVisibility, mediaItems: [MediaItem] = []) {
         guard let block, let userId = currentUserId else { return }
         isSendingPost = true
 
@@ -153,13 +162,25 @@ final class BlockDetailViewModel {
         sendTask = Task { [weak self] in
             guard let self else { return }
             do {
-                _ = try await self.postRepository.createPost(
+                let post = try await self.postRepository.createPost(
                     blockId: block.id,
                     userId: userId,
                     body: body,
                     visibility: visibility
                 )
-                // Watch query picks up the new post automatically
+
+                // Enqueue media for upload
+                for item in mediaItems {
+                    do {
+                        _ = try await MediaUploadQueue.shared.enqueue(
+                            mediaItem: item,
+                            postId: post.id,
+                            tripId: block.tripId
+                        )
+                    } catch {
+                        print("[BlockDetail] ❌ Media enqueue failed: \(error)")
+                    }
+                }
             } catch {
                 print("[BlockDetail] ❌ sendPost failed: \(error)")
                 self.failedDrafts.append(FailedDraft(
@@ -198,6 +219,40 @@ final class BlockDetailViewModel {
 
     func authorName(for post: Post) -> String {
         memberNames[post.userId] ?? String(localized: "post.author.unknown")
+    }
+
+    func mediaItems(for postId: String) -> [PostMedia] {
+        postMediaMap[postId] ?? []
+    }
+
+    func retryMediaUpload(mediaId: String) {
+        Task {
+            await MediaUploadQueue.shared.retryUpload(mediaId: mediaId)
+        }
+    }
+
+    // MARK: - Media Watch
+
+    private func startWatchingMedia(blockId: String) {
+        mediaWatchTask?.cancel()
+        mediaWatchTask = Task { [weak self] in
+            guard let self else { return }
+            do {
+                let stream = try self.postMediaRepository.watchMediaForBlock(blockId: blockId)
+                for try await allMedia in stream {
+                    guard !Task.isCancelled else { break }
+                    var map: [String: [PostMedia]] = [:]
+                    for item in allMedia {
+                        map[item.postId, default: []].append(item)
+                    }
+                    self.postMediaMap = map
+                }
+            } catch {
+                if !(error is CancellationError) {
+                    print("[BlockDetail] ❌ Media watch error: \(error)")
+                }
+            }
+        }
     }
 
     // MARK: - Member Names (local read)

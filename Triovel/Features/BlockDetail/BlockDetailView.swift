@@ -76,8 +76,10 @@ struct BlockDetailView: View {
                                 post: post,
                                 authorName: viewModel.authorName(for: post),
                                 isOwn: viewModel.isOwnPost(post),
+                                media: viewModel.mediaItems(for: post.id),
                                 onDelete: { viewModel.deletePost(post) },
-                                onRetry: nil
+                                onRetry: nil,
+                                onMediaRetry: { mediaId in viewModel.retryMediaUpload(mediaId: mediaId) }
                             )
                             .id(post.id)
                         }
@@ -106,8 +108,8 @@ struct BlockDetailView: View {
 
         // Composer
         PostComposerView(
-            onSend: { body, visibility in
-                viewModel.sendPost(body: body, visibility: visibility)
+            onSend: { body, visibility, mediaItems in
+                viewModel.sendPost(body: body, visibility: visibility, mediaItems: mediaItems)
             },
             isSending: viewModel.isSendingPost
         )

@@ -6,8 +6,10 @@ struct PostCardView: View {
     let post: Post
     let authorName: String
     let isOwn: Bool
+    var media: [PostMedia] = []
     let onDelete: () -> Void
     let onRetry: (() -> Void)?
+    var onMediaRetry: ((String) -> Void)?
 
     @State private var showingDeleteConfirmation = false
 
@@ -73,6 +75,11 @@ struct PostCardView: View {
                 Text(body)
                     .font(.body)
                     .fixedSize(horizontal: false, vertical: true)
+            }
+
+            // Media attachments
+            if !media.isEmpty {
+                PostMediaGridView(media: media, onRetry: onMediaRetry)
             }
         }
         .padding(16)

@@ -63,6 +63,15 @@
 		EBA05C9595465B1448441DAC /* TripMembersView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C459CDEFF6D60634C288E360 /* TripMembersView.swift */; };
 		EE72C626B58EC3566BFEB125 /* BlockDetailHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72EC929A2DF4723A3383AC0D /* BlockDetailHeaderView.swift */; };
 		EF216AB5A51B71483A566E21 /* ProfileHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D37FA5E2AF68AA27D92708E /* ProfileHeaderView.swift */; };
+		P3BF0001 /* MediaFileManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = P3FR0001 /* MediaFileManager.swift */; };
+		P3BF0002 /* MediaCompressor.swift in Sources */ = {isa = PBXBuildFile; fileRef = P3FR0002 /* MediaCompressor.swift */; };
+		P3BF0003 /* MediaCostController.swift in Sources */ = {isa = PBXBuildFile; fileRef = P3FR0003 /* MediaCostController.swift */; };
+		P3BF0004 /* MediaUploadQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = P3FR0004 /* MediaUploadQueue.swift */; };
+		P3BF0005 /* PostMediaRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = P3FR0005 /* PostMediaRepository.swift */; };
+		P3BF0006 /* CameraPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = P3FR0006 /* CameraPickerView.swift */; };
+		P3BF0007 /* MediaAttachmentPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = P3FR0007 /* MediaAttachmentPreview.swift */; };
+		P3BF0008 /* PostMediaGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = P3FR0008 /* PostMediaGridView.swift */; };
+		P3BF0009 /* MediaItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = P3FR0009 /* MediaItem.swift */; };
 		PS01BF0001000001A0000001 /* AppSchema.swift in Sources */ = {isa = PBXBuildFile; fileRef = PS01FR0001000001A0000001 /* AppSchema.swift */; };
 		PS01BF0002000002A0000002 /* PowerSyncConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = PS01FR0002000002A0000002 /* PowerSyncConfig.swift */; };
 		PS01BF0003000003A0000003 /* SupabaseConnector.swift in Sources */ = {isa = PBXBuildFile; fileRef = PS01FR0003000003A0000003 /* SupabaseConnector.swift */; };
@@ -137,6 +146,15 @@
 		ECB3DD3D521270A1A28CBFAB /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
 		F0F18C424A110CFFFCA1254D /* ArchivedTripsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArchivedTripsView.swift; sourceTree = "<group>"; };
 		FF32096E140C4392D2BA1DC2 /* BlockDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockDetailView.swift; sourceTree = "<group>"; };
+		P3FR0001 /* MediaFileManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaFileManager.swift; sourceTree = "<group>"; };
+		P3FR0002 /* MediaCompressor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaCompressor.swift; sourceTree = "<group>"; };
+		P3FR0003 /* MediaCostController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaCostController.swift; sourceTree = "<group>"; };
+		P3FR0004 /* MediaUploadQueue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaUploadQueue.swift; sourceTree = "<group>"; };
+		P3FR0005 /* PostMediaRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostMediaRepository.swift; sourceTree = "<group>"; };
+		P3FR0006 /* CameraPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPickerView.swift; sourceTree = "<group>"; };
+		P3FR0007 /* MediaAttachmentPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaAttachmentPreview.swift; sourceTree = "<group>"; };
+		P3FR0008 /* PostMediaGridView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostMediaGridView.swift; sourceTree = "<group>"; };
+		P3FR0009 /* MediaItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaItem.swift; sourceTree = "<group>"; };
 		PS01FR0001000001A0000001 /* AppSchema.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSchema.swift; sourceTree = "<group>"; };
 		PS01FR0002000002A0000002 /* PowerSyncConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PowerSyncConfig.swift; sourceTree = "<group>"; };
 		PS01FR0003000003A0000003 /* SupabaseConnector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseConnector.swift; sourceTree = "<group>"; };
@@ -219,11 +237,23 @@
 			isa = PBXGroup;
 			children = (
 				CCA7F2C0B765592BBE489BB1 /* Auth */,
+				P3GR0001 /* MediaQueue */,
 				55E15E5CE1D91BA1D8A39394 /* Models */,
 				C713FD5D7EA45D079BEF0378 /* Networking */,
 				PS01GR0001000001A0000001 /* Sync */,
 			);
 			path = Core;
+			sourceTree = "<group>";
+		};
+		P3GR0001 /* MediaQueue */ = {
+			isa = PBXGroup;
+			children = (
+				P3FR0002 /* MediaCompressor.swift */,
+				P3FR0003 /* MediaCostController.swift */,
+				P3FR0001 /* MediaFileManager.swift */,
+				P3FR0004 /* MediaUploadQueue.swift */,
+			);
+			path = MediaQueue;
 			sourceTree = "<group>";
 		};
 		PS01GR0001000001A0000001 /* Sync */ = {
@@ -269,6 +299,7 @@
 			isa = PBXGroup;
 			children = (
 				B2DB1DF20856703F1CF41D12 /* BlockRepository.swift */,
+				P3FR0005 /* PostMediaRepository.swift */,
 				343BFF66F3F14B08708ED3E0 /* PostRepository.swift */,
 				00634D136B045793FBB55847 /* TripRepository.swift */,
 			);
@@ -333,8 +364,12 @@
 				72EC929A2DF4723A3383AC0D /* BlockDetailHeaderView.swift */,
 				FF32096E140C4392D2BA1DC2 /* BlockDetailView.swift */,
 				BB12DAB167C02F467EACCCB0 /* BlockDetailViewModel.swift */,
+				P3FR0006 /* CameraPickerView.swift */,
+				P3FR0007 /* MediaAttachmentPreview.swift */,
+				P3FR0009 /* MediaItem.swift */,
 				FF7877609F0801F88050EE7B /* PostCardView.swift */,
 				25A2BE176E65296883E2E479 /* PostComposerView.swift */,
+				P3FR0008 /* PostMediaGridView.swift */,
 				FC831200F20368D54B407FCF /* FailedPostCardView.swift */,
 				EBCE3D115C365BB3D6130339 /* PostSkeletonView.swift */,
 			);
@@ -549,6 +584,15 @@
 				61A04E314EC4ED5771DCE984 /* PostSkeletonView.swift in Sources */,
 				A452848C10679300EB0FD3D0 /* FailedPostCardView.swift in Sources */,
 				EF216AB5A51B71483A566E21 /* ProfileHeaderView.swift in Sources */,
+				P3BF0001 /* MediaFileManager.swift in Sources */,
+				P3BF0002 /* MediaCompressor.swift in Sources */,
+				P3BF0003 /* MediaCostController.swift in Sources */,
+				P3BF0004 /* MediaUploadQueue.swift in Sources */,
+				P3BF0005 /* PostMediaRepository.swift in Sources */,
+				P3BF0006 /* CameraPickerView.swift in Sources */,
+				P3BF0007 /* MediaAttachmentPreview.swift in Sources */,
+				P3BF0008 /* PostMediaGridView.swift in Sources */,
+				P3BF0009 /* MediaItem.swift in Sources */,
 				PS01BF0001000001A0000001 /* AppSchema.swift in Sources */,
 				PS01BF0002000002A0000002 /* PowerSyncConfig.swift in Sources */,
 				PS01BF0003000003A0000003 /* SupabaseConnector.swift in Sources */,

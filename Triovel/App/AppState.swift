@@ -98,6 +98,8 @@ final class AppState {
         do {
             try await SyncManager.shared.connect()
             startWatchingSyncStatus()
+            // Step 4 of auth refresh flow: resume media upload queue
+            MediaUploadQueue.shared.resumePendingUploads()
         } catch {
             print("[Sync] ❌ Connect failed: \(error)")
         }
