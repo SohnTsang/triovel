@@ -39,6 +39,7 @@ struct BlockDetailHeaderView: View {
 
     @ViewBuilder
     private var displayContent: some View {
+        // Context chip + edit button
         HStack {
             ContextChip(context: block.context)
             Spacer()
@@ -57,10 +58,29 @@ struct BlockDetailHeaderView: View {
             }
         }
 
+        // Time
+        Label {
+            Text(block.startAt, format: .dateTime.hour().minute())
+        } icon: {
+            Image(systemName: "clock")
+        }
+        .font(.subheadline)
+        .foregroundStyle(.secondary)
+
+        // Title
         Text(block.title)
             .font(.title2.weight(.semibold))
             .lineLimit(3)
 
+        // Location
+        if let location = block.locationText, !location.isEmpty {
+            Label(location, systemImage: "mappin")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .lineLimit(2)
+        }
+
+        // Description
         if let description = block.description, !description.isEmpty {
             Text(description)
                 .font(.subheadline)
@@ -80,23 +100,6 @@ struct BlockDetailHeaderView: View {
                 Text("block.detail.description.placeholder")
                     .font(.subheadline)
                     .foregroundStyle(.tertiary)
-            }
-        }
-
-        HStack(spacing: 12) {
-            Label {
-                Text(block.startAt, format: .dateTime.hour().minute())
-            } icon: {
-                Image(systemName: "clock")
-            }
-            .font(.subheadline)
-            .foregroundStyle(.secondary)
-
-            if let location = block.locationText, !location.isEmpty {
-                Label(location, systemImage: "mappin")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
             }
         }
     }
