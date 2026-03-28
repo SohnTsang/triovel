@@ -45,10 +45,14 @@ struct PostMediaGridView: View {
 
     // MARK: - Media View (handles upload states)
 
-    /// True if the media has finished uploading (storage_path set or local file confirmed).
-    /// Uses storage_path as primary indicator because upload_status can be overwritten by sync.
+    /// True if the media has finished uploading.
+    /// Uses storage_path as primary indicator because upload_status gets overwritten
+    /// by PowerSync sync reconciliation (local 'uploaded' → server 'queued' → loop).
+    /// Also checks local file existence as fallback — if we have the file, show it.
     private func isUploaded(_ item: PostMedia) -> Bool {
-        item.storagePath != nil || item.uploadStatus == .uploaded
+        item.storagePath != nil
+            || item.uploadStatus == .uploaded
+            || MediaFileManager.loadThumbnail(for: item.id) != nil
     }
 
     @ViewBuilder
@@ -79,8 +83,6 @@ struct PostMediaGridView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color(.systemGray5))
             .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
-        }
-
         }
     }
 
