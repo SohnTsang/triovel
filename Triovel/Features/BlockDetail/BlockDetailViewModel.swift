@@ -1,6 +1,7 @@
 import Foundation
 import Observation
 import PowerSync
+import Supabase
 
 /// ViewModel for BlockDetailView. Reads block + posts from local SQLite,
 /// determines edit permissions, handles header edits, and manages post CRUD.
@@ -207,7 +208,29 @@ final class BlockDetailViewModel {
         Task { [weak self] in
             guard let self else { return }
             do {
-                // Local delete — watch query removes it from UI
+                // 1. Fetch media for this post before deleting
+                let media = try await self.postMediaRepository.fetchMediaForPost(postId: post.id)
+
+                // 2. Delete storage files from Supabase bucket
+                let storagePaths = media.compactMap(\.storagePath)
+                if !storagePaths.isEmpty {
+                    do {
+                        _ = try await SupabaseConfig.client.storage
+                            .from("trip-media")
+                            .remove(paths: storagePaths)
+                        print("[BlockDetail] Deleted \(storagePaths.count) storage files")
+                    } catch {
+                        print("[BlockDetail] ⚠️ Storage cleanup failed: \(error)")
+                        // Continue with post deletion even if storage cleanup fails
+                    }
+                }
+
+                // 3. Delete local files (thumbnails + media)
+                for item in media {
+                    MediaFileManager.deleteLocalFiles(for: item.id, type: item.mediaType)
+                }
+
+                // 4. Delete the post (cascade deletes post_media rows)
                 try await self.postRepository.deletePost(postId: post.id)
             } catch {
                 print("[BlockDetail] ❌ deletePost failed: \(error)")
