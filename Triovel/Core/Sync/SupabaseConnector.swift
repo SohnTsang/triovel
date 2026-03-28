@@ -23,20 +23,37 @@ final class SupabaseConnector: PowerSyncBackendConnectorProtocol {
             return
         }
 
+        let client = SupabaseConfig.client
         do {
-            let client = SupabaseConfig.client
             for entry in transaction.crud {
+                let typed = TypedCrudData(
+                    data: (entry.opData ?? [:]).merging(["id": entry.id]) { _, new in new },
+                    table: entry.table
+                )
+
                 switch entry.op {
                 case .put:
-                    var data = entry.opData ?? [:]
-                    data["id"] = entry.id
-                    let typed = TypedCrudData(data: data, table: entry.table)
-                    try await client.from(entry.table).upsert(typed).execute()
+                    // Use insert() first, fall back to update() if row exists.
+                    // Avoids upsert() which requires both INSERT and UPDATE RLS
+                    // permissions (fails for trips because trip_members trigger
+                    // hasn't fired yet when UPDATE policy is checked).
+                    do {
+                        try await client.from(entry.table).insert(typed).execute()
+                    } catch {
+                        let msg = String(describing: error).lowercased()
+                        if msg.contains("23505") || msg.contains("duplicate") || msg.contains("unique") {
+                            // Row already exists — update instead
+                            let updateData = TypedCrudData(data: entry.opData ?? [:], table: entry.table)
+                            try await client.from(entry.table).update(updateData).eq("id", value: entry.id).execute()
+                        } else {
+                            throw error
+                        }
+                    }
 
                 case .patch:
                     guard let opData = entry.opData else { continue }
-                    let typed = TypedCrudData(data: opData, table: entry.table)
-                    try await client.from(entry.table).update(typed).eq("id", value: entry.id).execute()
+                    let patchTyped = TypedCrudData(data: opData, table: entry.table)
+                    try await client.from(entry.table).update(patchTyped).eq("id", value: entry.id).execute()
 
                 case .delete:
                     try await client.from(entry.table).delete().eq("id", value: entry.id).execute()
@@ -44,29 +61,11 @@ final class SupabaseConnector: PowerSyncBackendConnectorProtocol {
             }
             try await transaction.complete()
         } catch {
-            // If the error is a permanent Postgres issue (RLS violation, constraint error),
-            // discard the transaction to prevent infinite retry loops.
-            // Transient errors (network) are rethrown for PowerSync to retry.
-            if isFatalPostgresError(error) {
-                print("[Sync] ⚠️ Discarding transaction due to fatal error: \(error)")
-                try await transaction.complete()
-            } else {
-                print("[Sync] ❌ Upload failed (will retry): \(error)")
-                throw error
-            }
+            print("[Sync] ❌ Upload failed (will retry): \(error)")
+            // Always rethrow — PowerSync will retry with exponential backoff.
+            // Never silently discard data.
+            throw error
         }
-    }
-
-    /// Postgres errors that will never succeed on retry (RLS, constraints, etc.).
-    /// Network errors should be retried.
-    private func isFatalPostgresError(_ error: Error) -> Bool {
-        let message = String(describing: error).lowercased()
-        return message.contains("row-level security")
-            || message.contains("violates")
-            || message.contains("42501")  // insufficient privilege
-            || message.contains("23505")  // unique violation
-            || message.contains("23503")  // foreign key violation
-            || message.contains("23502")  // not-null violation
     }
 }
 
