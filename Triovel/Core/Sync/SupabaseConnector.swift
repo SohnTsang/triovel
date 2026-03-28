@@ -44,9 +44,29 @@ final class SupabaseConnector: PowerSyncBackendConnectorProtocol {
             }
             try await transaction.complete()
         } catch {
-            print("[Sync] ❌ Upload failed: \(error)")
-            throw error
+            // If the error is a permanent Postgres issue (RLS violation, constraint error),
+            // discard the transaction to prevent infinite retry loops.
+            // Transient errors (network) are rethrown for PowerSync to retry.
+            if isFatalPostgresError(error) {
+                print("[Sync] ⚠️ Discarding transaction due to fatal error: \(error)")
+                try await transaction.complete()
+            } else {
+                print("[Sync] ❌ Upload failed (will retry): \(error)")
+                throw error
+            }
         }
+    }
+
+    /// Postgres errors that will never succeed on retry (RLS, constraints, etc.).
+    /// Network errors should be retried.
+    private func isFatalPostgresError(_ error: Error) -> Bool {
+        let message = String(describing: error).lowercased()
+        return message.contains("row-level security")
+            || message.contains("violates")
+            || message.contains("42501")  // insufficient privilege
+            || message.contains("23505")  // unique violation
+            || message.contains("23503")  // foreign key violation
+            || message.contains("23502")  // not-null violation
     }
 }
 
