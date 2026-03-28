@@ -12,6 +12,7 @@ final class TripTimelineViewModel {
     private(set) var isLoading = false
     var selectedDayIndex: Int = 0
     var activeFilter: TimelineFilter = .all
+    var selectedPersonId: String?
 
     /// All blocks for the trip, before filtering.
     private var allBlocks: [Block] = []
@@ -50,15 +51,41 @@ final class TripTimelineViewModel {
         members.first(where: { $0.userId == block.createdBy })?.displayName
     }
 
+    /// Reset all filter state to defaults (session-only behavior).
+    func resetFilters() {
+        activeFilter = .all
+        selectedPersonId = nil
+    }
+
+    // MARK: - Person Chips
+
+    /// People who have at least one personal block. Shown as chips when Personal filter is active.
+    var personalBlockAuthors: [PersonChipData] {
+        let personalCreatorIds = Set(allBlocks.filter { $0.context == .personal }.map(\.createdBy))
+        guard personalCreatorIds.count > 1 else { return [] }
+
+        return personalCreatorIds.compactMap { userId in
+            guard let name = members.first(where: { $0.userId == userId })?.displayName else { return nil }
+            return PersonChipData(userId: userId, displayName: name)
+        }
+        .sorted { $0.displayName < $1.displayName }
+    }
+
     // MARK: - Filtered Days
 
     var filteredDays: [TimelineDay] {
         days.map { day in
             let filtered = day.blocks.filter { block in
                 switch activeFilter {
-                case .all: return true
-                case .group: return block.context == .group
-                case .personal: return block.context == .personal
+                case .all:
+                    return true
+                case .group:
+                    return block.context == .group
+                case .personal:
+                    if let personId = selectedPersonId {
+                        return block.context == .personal && block.createdBy == personId
+                    }
+                    return block.context == .personal
                 }
             }
             return TimelineDay(
@@ -82,7 +109,6 @@ final class TripTimelineViewModel {
             self.trip = fetchedTrip
             print("[Timeline] Trip loaded: \(fetchedTrip.title)")
 
-            // Regenerate days if blocks already loaded
             if !allBlocks.isEmpty {
                 days = generateDays(for: fetchedTrip)
             }
@@ -169,6 +195,8 @@ struct TimelineDay: Identifiable {
     var id: Int { dayNumber }
 
     /// Blocks grouped by start time for same-time clustering.
+    /// Sort within cluster: group first, then personal, then by createdAt.
+    /// Timestamps are NEVER mutated — clustering is pure UI grouping.
     var timeSlots: [TimeSlot] {
         var slots: [String: [Block]] = [:]
         let formatter = DateFormatter()

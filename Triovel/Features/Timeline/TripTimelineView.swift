@@ -31,7 +31,11 @@ struct TripTimelineView: View {
                         selectedIndex: $vm.selectedDayIndex
                     )
 
-                    FilterBarView(activeFilter: $vm.activeFilter)
+                    FilterBarView(
+                        activeFilter: $vm.activeFilter,
+                        selectedPersonId: $vm.selectedPersonId,
+                        personalBlockAuthors: viewModel.personalBlockAuthors
+                    )
 
                     ScrollViewReader { proxy in
                         ScrollView {
@@ -144,7 +148,7 @@ struct TripTimelineView: View {
             }
         }
         .onDisappear {
-            viewModel.activeFilter = .all
+            viewModel.resetFilters()
         }
     }
 }

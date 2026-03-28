@@ -8,9 +8,9 @@
 | One-liner | Plan the anchors. Capture the reality. Share the trip. |
 | Stack | SwiftUI (iOS 17+), Supabase (Postgres, Auth, Storage), PowerSync (local-first SQLite sync) |
 | Repo | https://github.com/SohnTsang/triovel |
-| Current phase | Phase 2 (in progress) |
-| Current branch | `feature/p2-sync` |
-| Latest tag | `v0.1.0-phase1` |
+| Current phase | Phase 2 (complete) |
+| Current branch | `main` |
+| Latest tag | `v0.2.0-phase2` |
 | Bundle ID | com.triovel.app |
 | Languages | English, Japanese, Chinese Traditional, Chinese Simplified |
 
@@ -67,7 +67,7 @@ Triovel/
 │   │   ├── TripTimelineViewModel.swift — Day generation, block grouping, time-slot clustering
 │   │   ├── DayRibbonView.swift       — Horizontal scrolling day selector with auto-scroll
 │   │   ├── DaySectionView.swift      — Day header + time-slot groups with ghost block placeholders
-│   │   ├── FilterBarView.swift       — All/Group/Personal segmented picker + TimelineFilter enum
+│   │   ├── FilterBarView.swift       — All/Group/Personal picker + person chips + PersonChipData model
 │   │   └── BlockCardView.swift       — Block card with context chip, sync indicator, location + time
 │   ├── AddMoment/
 │   │   └── AddMomentView.swift       — Half-sheet: title + context toggle + time picker (3 inputs only)
@@ -208,15 +208,17 @@ docs/
 |---|---|
 | Key files | `TripTimelineView.swift`, `TripTimelineViewModel.swift`, `DayRibbonView.swift`, `DaySectionView.swift`, `FilterBarView.swift`, `BlockCardView.swift` |
 | Day ribbon | Horizontal scroll pills; tap = jump to day; scroll = auto-highlight |
-| Filters | All / Group / Personal segmented picker; session-only (resets on leave) |
+| Filters | All / Group / Personal segmented picker; session-only (resets on leave via `resetFilters()`) |
+| Person chips | When Personal is selected and multiple users have personal blocks, shows scrollable person chips to filter by specific user. "All" chip to show all personal blocks. Chips auto-hide when only one person has personal blocks. |
+| Filter state | `activeFilter` and `selectedPersonId` are view state only — reset to `.all` / `nil` on `onDisappear`. Not persisted to disk, UserDefaults, or database. |
 | Ghost blocks | Inline dashed placeholders (Breakfast/Lunch/Dinner); tap converts to real block |
-| Same-time clusters | Shared time label + stacked full-width cards; group first, then personal, then by createdAt |
+| Same-time clusters | Shared time label + stacked full-width cards. Sort within cluster: group first, then personal, then by createdAt. Timestamps are NEVER mutated — clustering is pure UI grouping by HH:mm key. |
 | Block cards | Title, context chip, location, time, sync state indicator |
 | Offline indicator | Subtle "Offline" label in toolbar title when disconnected but has cached data |
 | Reactive | `watchBlocks()` stream auto-updates timeline when blocks change |
 | Error handling | Prints errors, keeps showing existing data |
 | UI | FAB for Add Moment, plain toolbar buttons, maxWidth 600 on iPad |
-| Localization | All strings in 4 languages |
+| Localization | All strings in 4 languages (including person chip "All" label) |
 | Performance | LazyVStack with pinnedViews, generateDays only recalculates when blocks change |
 
 ### Blocks (Add Moment + Block Detail)
@@ -407,7 +409,7 @@ docs/
 | Phase | Status | Tag | Details |
 |---|---|---|---|
 | Phase 1 | Complete | `v0.1.0-phase1` | Auth, Home, Trip Setup, Trip Members, Timeline shell, Blocks, Group/Personal, Ghost blocks, Add Moment |
-| Phase 2 | In progress | — | Posts (done), Shared/Just Me composer (done), PowerSync sync (done), Filters (done), Same-time clusters (done) |
+| Phase 2 | Complete | `v0.2.0-phase2` | Posts, Shared/Just Me composer, PowerSync local-first sync, Filters with person chips, Same-time clusters |
 | Phase 3 | Not started | — | Media metadata, media upload queue, upload states, placeholders, retry handling |
 | Phase 4 | Not started | — | Bills, bill shares, payments, summary screen, multi-currency balances |
 | Phase 5 | Not started | — | Archive, empty states polish, pending indicators, cost controls, instrumentation, beta testing |
@@ -415,11 +417,14 @@ docs/
 ### Phase 2 Commit History
 
 ```
-2b8e413 [Phase 2] Add PowerSync local-first sync integration
-e3a75f4 [Phase 2] UI polish: inline ghost blocks, header edits, toolbar cleanup
-0a2054a [Phase 2] Performance audit: migrate to @Observable, fix ForEach IDs, add Task cancellation
-da672d7 [Phase 2] Rename Add Moment to Activity across all UI labels
-c1dd315 [Phase 2] Add post system with composer, stream, and CRUD
+[Phase 2] Complete filters with person chips, verify same-time clustering
+[Phase 2] Set PowerSync endpoint URL
+[Phase 2] Add comprehensive project status document
+[Phase 2] Add PowerSync local-first sync integration
+[Phase 2] UI polish: inline ghost blocks, header edits, toolbar cleanup
+[Phase 2] Performance audit: migrate to @Observable, fix ForEach IDs, add Task cancellation
+[Phase 2] Rename Add Moment to Activity across all UI labels
+[Phase 2] Add post system with composer, stream, and CRUD
 ```
 
 ---
