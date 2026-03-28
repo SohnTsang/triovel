@@ -1,7 +1,6 @@
 import SwiftUI
 
 /// A single post in the block detail stream.
-/// Shows author avatar, name, time, body text, and privacy indicator.
 struct PostCardView: View {
     let post: Post
     let authorName: String
@@ -14,23 +13,23 @@ struct PostCardView: View {
     @State private var showingDeleteConfirmation = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 10) {
             // Author row
             HStack(spacing: 10) {
                 // Avatar
                 Circle()
-                    .fill(Color(.systemGray4))
-                    .frame(width: 32, height: 32)
+                    .fill(Color.accentColor.opacity(0.15))
+                    .frame(width: 34, height: 34)
                     .overlay {
                         Text(initials)
-                            .font(.caption2.weight(.medium))
-                            .foregroundStyle(.white)
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(Color.accentColor)
                     }
 
-                VStack(alignment: .leading, spacing: 1) {
+                VStack(alignment: .leading, spacing: 2) {
                     HStack(spacing: 6) {
                         Text(authorName)
-                            .font(.subheadline.weight(.medium))
+                            .font(.subheadline.weight(.semibold))
                             .lineLimit(1)
 
                         if post.visibility == .private {
@@ -45,14 +44,15 @@ struct PostCardView: View {
                         }
                     }
 
-                    Text(post.createdAt, format: .dateTime.hour().minute())
+                    // Time: h:mm · yyyy-MM-dd
+                    Text(formattedTime)
                         .font(.caption)
-                        .foregroundStyle(.tertiary)
+                        .foregroundStyle(.secondary)
                 }
 
                 Spacer()
 
-                // Own post actions
+                // Own post actions — visible icon
                 if isOwn {
                     Menu {
                         Button(role: .destructive) {
@@ -62,9 +62,9 @@ struct PostCardView: View {
                         }
                     } label: {
                         Image(systemName: "ellipsis")
-                            .font(.subheadline)
-                            .foregroundStyle(.tertiary)
-                            .frame(width: 32, height: 32)
+                            .font(.body.weight(.medium))
+                            .foregroundStyle(.secondary)
+                            .frame(width: 36, height: 36)
                             .contentShape(Rectangle())
                     }
                 }
@@ -82,31 +82,41 @@ struct PostCardView: View {
                 PostMediaGridView(media: media, onRetry: onMediaRetry)
             }
         }
-        .padding(16)
+        .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             post.visibility == .private
                 ? ColorTokens.personalBackground
-                : Color(.secondarySystemBackground)
+                : Color(.systemBackground)
         )
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .clipShape(RoundedRectangle(cornerRadius: 14))
+        .shadow(color: .black.opacity(0.06), radius: 6, y: 2)
         .overlay(
             post.visibility == .private
-                ? RoundedRectangle(cornerRadius: 12)
-                    .strokeBorder(ColorTokens.personalBorder, lineWidth: 0.5)
+                ? RoundedRectangle(cornerRadius: 14)
+                    .strokeBorder(ColorTokens.personalBorder, lineWidth: 1)
                 : nil
         )
-        .alert(
+        .confirmationDialog(
             String(localized: "post.delete.confirm.title"),
-            isPresented: $showingDeleteConfirmation
+            isPresented: $showingDeleteConfirmation,
+            titleVisibility: .visible
         ) {
-            Button(String(localized: "common.cancel"), role: .cancel) {}
             Button(String(localized: "common.delete"), role: .destructive) {
                 onDelete()
             }
+            Button(String(localized: "common.cancel"), role: .cancel) {}
         } message: {
             Text("post.delete.confirm.message")
         }
+    }
+
+    // MARK: - Helpers
+
+    private var formattedTime: String {
+        let time = post.createdAt.formatted(.dateTime.hour().minute())
+        let date = post.createdAt.formatted(.dateTime.year().month(.twoDigits).day(.twoDigits))
+        return "\(time) · \(date)"
     }
 
     private var initials: String {
