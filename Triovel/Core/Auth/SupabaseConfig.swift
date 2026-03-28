@@ -15,6 +15,12 @@ enum SupabaseConfig {
     /// The shared Supabase client.
     static let client = SupabaseClient(
         supabaseURL: projectURL,
-        supabaseKey: anonKey
+        supabaseKey: anonKey,
+        options: .init(
+            auth: .init(
+                autoRefreshToken: true,
+                emitLocalSessionAsInitialSession: true
+            )
+        )
     )
 }
