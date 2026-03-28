@@ -73,6 +73,7 @@ enum AppSchema {
             name: "posts",
             columns: [
                 .text("block_id"),
+                .text("trip_id"),
                 .text("user_id"),
                 .text("body"),
                 .text("visibility"),

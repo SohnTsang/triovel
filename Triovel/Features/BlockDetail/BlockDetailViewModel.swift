@@ -164,6 +164,7 @@ final class BlockDetailViewModel {
             do {
                 let post = try await self.postRepository.createPost(
                     blockId: block.id,
+                    tripId: block.tripId,
                     userId: userId,
                     body: body,
                     visibility: visibility

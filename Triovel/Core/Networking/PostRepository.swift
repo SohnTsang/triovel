@@ -10,6 +10,7 @@ final class PostRepository {
 
     func createPost(
         blockId: String,
+        tripId: String,
         userId: String,
         body: String,
         visibility: PostVisibility
@@ -19,10 +20,10 @@ final class PostRepository {
 
         try await db.execute(
             sql: """
-                INSERT INTO posts (id, block_id, user_id, body, visibility, created_at)
-                VALUES (?, ?, ?, ?, ?, ?)
+                INSERT INTO posts (id, block_id, trip_id, user_id, body, visibility, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
                 """,
-            parameters: [postId, blockId, userId, body, visibility.rawValue, now]
+            parameters: [postId, blockId, tripId, userId, body, visibility.rawValue, now]
         )
 
         print("[PostRepo] Created post locally: \(postId)")
