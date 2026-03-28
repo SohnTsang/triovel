@@ -55,6 +55,7 @@ struct BlockDetailView: View {
             editTitle: $vm.editTitle,
             editLocation: $vm.editLocation,
             editDescription: $vm.editDescription,
+            editTime: $vm.editTime,
             onSave: { viewModel.saveHeaderEdits() }
         )
 
