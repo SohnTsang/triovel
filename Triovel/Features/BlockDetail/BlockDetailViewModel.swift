@@ -211,9 +211,14 @@ final class BlockDetailViewModel {
                 // 1. Fetch media for this post before deleting
                 let media = try await self.postMediaRepository.fetchMediaForPost(postId: post.id)
 
-                // 2. Delete storage files from Supabase bucket
-                let storagePaths = media.compactMap(\.storagePath)
-                if !storagePaths.isEmpty {
+                if !media.isEmpty {
+                    // 2. Delete storage files from Supabase bucket
+                    // Build paths deterministically — don't rely on storagePath field
+                    // (it gets overwritten to nil by PowerSync sync reconciliation)
+                    let storagePaths = media.map { item in
+                        let ext = item.mediaType == .photo ? "jpg" : "mp4"
+                        return "posts/\(post.id)/\(item.id).\(ext)"
+                    }
                     do {
                         _ = try await SupabaseConfig.client.storage
                             .from("trip-media")
@@ -221,13 +226,12 @@ final class BlockDetailViewModel {
                         print("[BlockDetail] Deleted \(storagePaths.count) storage files")
                     } catch {
                         print("[BlockDetail] ⚠️ Storage cleanup failed: \(error)")
-                        // Continue with post deletion even if storage cleanup fails
                     }
-                }
 
-                // 3. Delete local files (thumbnails + media)
-                for item in media {
-                    MediaFileManager.deleteLocalFiles(for: item.id, type: item.mediaType)
+                    // 3. Delete local files (thumbnails + media)
+                    for item in media {
+                        MediaFileManager.deleteLocalFiles(for: item.id, type: item.mediaType)
+                    }
                 }
 
                 // 4. Delete the post (cascade deletes post_media rows)
