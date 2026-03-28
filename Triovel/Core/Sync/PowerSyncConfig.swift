@@ -5,5 +5,5 @@ import Foundation
 enum PowerSyncConfig {
     /// PowerSync instance endpoint URL.
     /// Get this from https://powersync.journeyapps.com after creating an instance.
-    static let powersyncURL = "https://YOUR-INSTANCE.powersync.journeyapps.com"
+    static let powersyncURL = "https://69c73e69a112d86b20541c05.powersync.journeyapps.com"
 }
