@@ -90,7 +90,7 @@ struct PostCardView: View {
                 : Color(.systemBackground)
         )
         .clipShape(RoundedRectangle(cornerRadius: 14))
-        .shadow(color: .black.opacity(0.06), radius: 6, y: 2)
+        .shadow(color: .black.opacity(0.08), radius: 2, y: 1)
         .overlay(
             post.visibility == .private
                 ? RoundedRectangle(cornerRadius: 14)
