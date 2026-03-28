@@ -45,11 +45,23 @@ struct PostMediaGridView: View {
 
     // MARK: - Media View (handles upload states)
 
+    /// True if the media has finished uploading (storage_path set or local file confirmed).
+    /// Uses storage_path as primary indicator because upload_status can be overwritten by sync.
+    private func isUploaded(_ item: PostMedia) -> Bool {
+        item.storagePath != nil || item.uploadStatus == .uploaded
+    }
+
     @ViewBuilder
     private func mediaView(_ item: PostMedia) -> some View {
-        switch item.uploadStatus {
-        case .queued, .uploading:
-            // Skeleton with syncing overlay
+        if item.uploadStatus == .failed {
+            failedView(item)
+        } else if isUploaded(item) {
+            // Uploaded — show image
+            thumbnailImage(for: item)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
+        } else {
+            // Queued / uploading — syncing overlay
             ZStack {
                 thumbnailImage(for: item)
                     .opacity(0.5)
@@ -67,42 +79,39 @@ struct PostMediaGridView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color(.systemGray5))
             .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
+        }
 
-        case .uploaded:
-            // Show local thumbnail (or remote image if local is missing)
+        }
+    }
+
+    @ViewBuilder
+    private func failedView(_ item: PostMedia) -> some View {
+        ZStack {
             thumbnailImage(for: item)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
+                .opacity(0.3)
 
-        case .failed:
-            // Retry card
-            ZStack {
-                thumbnailImage(for: item)
-                    .opacity(0.3)
-
-                VStack(spacing: 4) {
-                    Image(systemName: "exclamationmark.triangle")
-                        .font(.title3)
-                        .foregroundStyle(.white)
-                    Text("media.failed.retry")
-                        .font(.caption2)
-                        .foregroundStyle(.white)
-                        .multilineTextAlignment(.center)
-                }
-                .padding(8)
-                .background(.black.opacity(0.5), in: RoundedRectangle(cornerRadius: 6))
+            VStack(spacing: 4) {
+                Image(systemName: "exclamationmark.triangle")
+                    .font(.title3)
+                    .foregroundStyle(.white)
+                Text("media.failed.retry")
+                    .font(.caption2)
+                    .foregroundStyle(.white)
+                    .multilineTextAlignment(.center)
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Color(.systemGray5))
-            .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
-            .overlay(
-                RoundedRectangle(cornerRadius: cornerRadius)
-                    .stroke(ColorTokens.failedTint, lineWidth: 1)
-            )
-            .contentShape(Rectangle())
-            .onTapGesture {
-                onRetry?(item.id)
-            }
+            .padding(8)
+            .background(.black.opacity(0.5), in: RoundedRectangle(cornerRadius: 6))
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color(.systemGray5))
+        .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
+        .overlay(
+            RoundedRectangle(cornerRadius: cornerRadius)
+                .stroke(ColorTokens.failedTint, lineWidth: 1)
+        )
+        .contentShape(Rectangle())
+        .onTapGesture {
+            onRetry?(item.id)
         }
     }
 
