@@ -106,16 +106,21 @@ final class MediaUploadQueue {
 
     private func processLoop() async {
         defer { isProcessing = false }
+        var failedIds: Set<String> = []
 
         while !Task.isCancelled {
             do {
                 let pending = try await repository.fetchPendingUploads()
-                guard let item = pending.first else {
+                // Skip any items we already failed in this loop run
+                guard let item = pending.first(where: { !failedIds.contains($0.id) }) else {
                     print("[MediaQueue] Queue empty")
                     break
                 }
 
-                await uploadItem(item)
+                let success = await uploadItem(item)
+                if !success {
+                    failedIds.insert(item.id)
+                }
             } catch {
                 print("[MediaQueue] ❌ Process loop error: \(error)")
                 break
@@ -123,13 +128,14 @@ final class MediaUploadQueue {
         }
     }
 
-    private func uploadItem(_ item: PostMedia) async {
+    /// Returns true if upload succeeded, false if failed.
+    private func uploadItem(_ item: PostMedia) async -> Bool {
         let fileURL = MediaFileManager.localMediaURL(for: item.id, type: item.mediaType)
 
         guard FileManager.default.fileExists(atPath: fileURL.path) else {
             print("[MediaQueue] ⚠️ Local file missing for \(item.id), marking failed")
             try? await repository.updateUploadStatus(mediaId: item.id, status: .failed)
-            return
+            return false
         }
 
         // Mark as uploading
@@ -160,13 +166,12 @@ final class MediaUploadQueue {
             )
 
             print("[MediaQueue] ✓ Uploaded \(item.id) → \(remotePath)")
+            return true
 
         } catch {
             print("[MediaQueue] ❌ Upload failed for \(item.id): \(error)")
             try? await repository.updateUploadStatus(mediaId: item.id, status: .failed)
-
-            // Brief delay before next item (basic backoff)
-            try? await Task.sleep(for: .seconds(2))
+            return false
         }
     }
 }
