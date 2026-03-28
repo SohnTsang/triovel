@@ -37,33 +37,41 @@ struct TripTimelineView: View {
                         personalBlockAuthors: viewModel.personalBlockAuthors
                     )
 
-                    ScrollViewReader { proxy in
-                        ScrollView {
-                            LazyVStack(spacing: 24) {
-                                ForEach(filteredDays) { day in
-                                    DaySectionView(
-                                        day: day,
-                                        creatorNameForBlock: { viewModel.creatorName(for: $0) },
-                                        onBlockTap: { block in
-                                            router.push(.blockDetail(blockId: block.id))
-                                        }
-                                    )
-                                    .id(day.dayNumber)
+                    // Show only the selected day's content
+                    ScrollView {
+                        if let selectedDay = filteredDays.indices.contains(viewModel.selectedDayIndex)
+                            ? filteredDays[viewModel.selectedDayIndex] : nil {
+                            DaySectionView(
+                                day: selectedDay,
+                                creatorNameForBlock: { viewModel.creatorName(for: $0) },
+                                onBlockTap: { block in
+                                    router.push(.blockDetail(blockId: block.id))
                                 }
-                            }
+                            )
                             .padding(.vertical, 12)
                             .padding(.bottom, 80)
                             .frame(maxWidth: sizeClass == .regular ? 600 : .infinity)
                             .frame(maxWidth: .infinity)
-                        }
-                        .onChange(of: viewModel.selectedDayIndex) { _, newIndex in
-                            let dayNumber = filteredDays.indices.contains(newIndex)
-                                ? filteredDays[newIndex].dayNumber : 1
-                            withAnimation(.easeInOut(duration: 0.2)) {
-                                proxy.scrollTo(dayNumber, anchor: .top)
-                            }
+                            .id(viewModel.selectedDayIndex)
+                            .transition(.opacity)
                         }
                     }
+                    .gesture(
+                        DragGesture(minimumDistance: 50, coordinateSpace: .local)
+                            .onEnded { value in
+                                let horizontal = value.translation.width
+                                let vertical = value.translation.height
+                                // Only trigger on predominantly horizontal swipes
+                                guard abs(horizontal) > abs(vertical) else { return }
+                                withAnimation(.easeInOut(duration: 0.2)) {
+                                    if horizontal < 0 && viewModel.selectedDayIndex < filteredDays.count - 1 {
+                                        viewModel.selectedDayIndex += 1
+                                    } else if horizontal > 0 && viewModel.selectedDayIndex > 0 {
+                                        viewModel.selectedDayIndex -= 1
+                                    }
+                                }
+                            }
+                    )
                 }
             }
 
