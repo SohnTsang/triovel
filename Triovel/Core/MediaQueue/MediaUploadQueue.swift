@@ -48,8 +48,9 @@ final class MediaUploadQueue {
         // Save thumbnail
         try MediaFileManager.saveThumbnail(image: mediaItem.thumbnail, for: mediaItem.id)
 
-        // Create post_media record in local DB
+        // Create post_media record with SAME ID as the local file
         let media = try await repository.createPostMedia(
+            id: mediaItem.id,
             postId: postId,
             mediaType: mediaItem.type,
             tripId: tripId

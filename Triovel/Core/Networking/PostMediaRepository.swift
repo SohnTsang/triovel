@@ -8,11 +8,12 @@ final class PostMediaRepository {
     // MARK: - Create
 
     func createPostMedia(
+        id: String? = nil,
         postId: String,
         mediaType: MediaType,
         tripId: String
     ) async throws -> PostMedia {
-        let mediaId = UUID().uuidString.lowercased()
+        let mediaId = id ?? UUID().uuidString.lowercased()
         let now = Self.isoString(from: Date())
 
         try await db.execute(
@@ -76,10 +77,10 @@ final class PostMediaRepository {
         )
     }
 
-    /// All items pending upload (queued or failed).
+    /// Items ready to upload (queued only). Failed items retry on explicit user tap.
     func fetchPendingUploads() async throws -> [PostMedia] {
         try await db.getAll(
-            sql: "SELECT * FROM post_media WHERE upload_status IN ('queued', 'failed') ORDER BY created_at ASC",
+            sql: "SELECT * FROM post_media WHERE upload_status = 'queued' ORDER BY created_at ASC",
             parameters: nil,
             mapper: Self.postMediaMapper
         )
