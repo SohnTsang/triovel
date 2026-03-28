@@ -1,23 +1,44 @@
-# PowerSync Sync Rules for Triovel
+# PowerSync Sync Streams for Triovel
 #
 # Deploy in the PowerSync Dashboard under "Sync Streams".
-# Use request.user_id() to access the JWT sub claim (authenticated user ID).
+# Uses edition 3 (Sync Streams format, not legacy Sync Rules).
+# Use auth.user_id() to access the JWT sub claim (authenticated user ID).
 #
 # Key privacy rule: private posts sync ONLY to the owning user.
 # All other trip-scoped data syncs to all trip members.
 
-bucket_definitions:
+streams:
   global_users:
-    data:
-      - SELECT * FROM users
+    auto_subscribe: true
+    query: SELECT * FROM users
 
-  by_trip:
-    parameters: SELECT trip_id FROM trip_members WHERE user_id = request.user_id()
-    data:
-      - SELECT * FROM trips WHERE id = bucket.trip_id
-      - SELECT * FROM trip_members WHERE trip_id = bucket.trip_id
-      - SELECT * FROM blocks WHERE trip_id = bucket.trip_id
-      - SELECT * FROM posts WHERE trip_id = bucket.trip_id AND (visibility = 'shared' OR user_id = request.user_id())
-      - SELECT * FROM bills WHERE trip_id = bucket.trip_id
-      - SELECT * FROM bill_shares WHERE trip_id = bucket.trip_id
-      - SELECT * FROM payments WHERE trip_id = bucket.trip_id
+  trips:
+    auto_subscribe: true
+    query: SELECT t.* FROM trips t JOIN trip_members tm ON t.id = tm.trip_id WHERE tm.user_id = auth.user_id()
+
+  trip_members:
+    auto_subscribe: true
+    query: SELECT tm2.* FROM trip_members tm2 JOIN trip_members tm ON tm2.trip_id = tm.trip_id WHERE tm.user_id = auth.user_id()
+
+  blocks:
+    auto_subscribe: true
+    query: SELECT b.* FROM blocks b JOIN trip_members tm ON b.trip_id = tm.trip_id WHERE tm.user_id = auth.user_id()
+
+  posts:
+    auto_subscribe: true
+    query: SELECT p.* FROM posts p JOIN trip_members tm ON p.trip_id = tm.trip_id WHERE tm.user_id = auth.user_id() AND (p.visibility = 'shared' OR p.user_id = auth.user_id())
+
+  bills:
+    auto_subscribe: true
+    query: SELECT bi.* FROM bills bi JOIN trip_members tm ON bi.trip_id = tm.trip_id WHERE tm.user_id = auth.user_id()
+
+  bill_shares:
+    auto_subscribe: true
+    query: SELECT bs.* FROM bill_shares bs JOIN trip_members tm ON bs.trip_id = tm.trip_id WHERE tm.user_id = auth.user_id()
+
+  payments:
+    auto_subscribe: true
+    query: SELECT pay.* FROM payments pay JOIN trip_members tm ON pay.trip_id = tm.trip_id WHERE tm.user_id = auth.user_id()
+
+config:
+  edition: 3
