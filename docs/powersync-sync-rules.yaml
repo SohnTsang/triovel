@@ -1,53 +1,23 @@
 # PowerSync Sync Rules for Triovel
 #
-# Configure these in the PowerSync Dashboard under "Sync Rules".
-# These rules determine which data syncs to which user's device.
+# Deploy in the PowerSync Dashboard under "Sync Streams".
+# Use request.user_id() to access the JWT sub claim (authenticated user ID).
 #
 # Key privacy rule: private posts sync ONLY to the owning user.
 # All other trip-scoped data syncs to all trip members.
 
 bucket_definitions:
-  # ---- User profile (always available to the user) ----
-  user_profile:
-    parameters: SELECT id AS user_id FROM users WHERE id = token_parameters.user_id
+  global_users:
     data:
-      - SELECT * FROM users WHERE id = bucket.user_id
+      - SELECT * FROM users
 
-  # ---- Per-trip bucket: syncs all trip data to members ----
-  trip_data:
-    parameters: SELECT trip_id FROM trip_members WHERE user_id = token_parameters.user_id
+  by_trip:
+    parameters: SELECT trip_id FROM trip_members WHERE user_id = request.user_id()
     data:
-      # Trip details
       - SELECT * FROM trips WHERE id = bucket.trip_id
-
-      # All members of the trip (needed for avatars, names)
       - SELECT * FROM trip_members WHERE trip_id = bucket.trip_id
-
-      # User profiles for all members (for display names, avatars)
-      - SELECT u.* FROM users u
-        JOIN trip_members tm ON u.id = tm.user_id
-        WHERE tm.trip_id = bucket.trip_id
-
-      # All blocks in the trip
       - SELECT * FROM blocks WHERE trip_id = bucket.trip_id
-
-      # Posts: shared posts visible to all members,
-      # private posts visible ONLY to the owner
-      - SELECT * FROM posts
-        WHERE block_id IN (SELECT id FROM blocks WHERE trip_id = bucket.trip_id)
-          AND (visibility = 'shared' OR user_id = token_parameters.user_id)
-
-      # Post media follows same visibility as parent post
-      - SELECT pm.* FROM post_media pm
-        JOIN posts p ON pm.post_id = p.id
-        WHERE p.block_id IN (SELECT id FROM blocks WHERE trip_id = bucket.trip_id)
-          AND (p.visibility = 'shared' OR p.user_id = token_parameters.user_id)
-
-      # Bills and shares (always shared within trip)
+      - SELECT * FROM posts WHERE trip_id = bucket.trip_id AND (visibility = 'shared' OR user_id = request.user_id())
       - SELECT * FROM bills WHERE trip_id = bucket.trip_id
-      - SELECT bs.* FROM bill_shares bs
-        JOIN bills b ON bs.bill_id = b.id
-        WHERE b.trip_id = bucket.trip_id
-
-      # Payments
+      - SELECT * FROM bill_shares WHERE trip_id = bucket.trip_id
       - SELECT * FROM payments WHERE trip_id = bucket.trip_id
