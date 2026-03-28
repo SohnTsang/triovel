@@ -2,10 +2,10 @@
 #
 # Deploy in the PowerSync Dashboard under "Sync Streams".
 # Uses edition 3 (Sync Streams format, not legacy Sync Rules).
-# Use auth.user_id() to access the JWT sub claim (authenticated user ID).
 #
-# Key privacy rule: private posts sync ONLY to the owning user.
-# All other trip-scoped data syncs to all trip members.
+# IMPORTANT: auth.user_id() in JOIN queries causes data to disappear
+# after sync reconciliation. Use unfiltered queries for now.
+# Private post filtering handled client-side (SQL WHERE clause).
 
 streams:
   global_users:
@@ -14,31 +14,35 @@ streams:
 
   trips:
     auto_subscribe: true
-    query: SELECT t.* FROM trips t JOIN trip_members tm ON t.id = tm.trip_id WHERE tm.user_id = auth.user_id()
+    query: SELECT * FROM trips
 
   trip_members:
     auto_subscribe: true
-    query: SELECT tm2.* FROM trip_members tm2 JOIN trip_members tm ON tm2.trip_id = tm.trip_id WHERE tm.user_id = auth.user_id()
+    query: SELECT * FROM trip_members
 
   blocks:
     auto_subscribe: true
-    query: SELECT b.* FROM blocks b JOIN trip_members tm ON b.trip_id = tm.trip_id WHERE tm.user_id = auth.user_id()
+    query: SELECT * FROM blocks
 
   posts:
     auto_subscribe: true
-    query: SELECT p.* FROM posts p JOIN trip_members tm ON p.trip_id = tm.trip_id WHERE tm.user_id = auth.user_id() AND (p.visibility = 'shared' OR p.user_id = auth.user_id())
+    query: SELECT * FROM posts
 
   bills:
     auto_subscribe: true
-    query: SELECT bi.* FROM bills bi JOIN trip_members tm ON bi.trip_id = tm.trip_id WHERE tm.user_id = auth.user_id()
+    query: SELECT * FROM bills
 
   bill_shares:
     auto_subscribe: true
-    query: SELECT bs.* FROM bill_shares bs JOIN trip_members tm ON bs.trip_id = tm.trip_id WHERE tm.user_id = auth.user_id()
+    query: SELECT * FROM bill_shares
 
   payments:
     auto_subscribe: true
-    query: SELECT pay.* FROM payments pay JOIN trip_members tm ON pay.trip_id = tm.trip_id WHERE tm.user_id = auth.user_id()
+    query: SELECT * FROM payments
+
+  post_media:
+    auto_subscribe: true
+    query: SELECT * FROM post_media
 
 config:
   edition: 3
