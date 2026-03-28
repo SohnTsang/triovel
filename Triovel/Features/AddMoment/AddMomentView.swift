@@ -25,10 +25,6 @@ struct AddMomentView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 20) {
-                // Day indicator — so user knows which day they're adding to
-                dayBadge
-                    .padding(.horizontal)
-
                 // Title — large auto-focused input
                 TextField(String(localized: "block.add.placeholder"), text: $title)
                     .font(.title3)
@@ -63,9 +59,19 @@ struct AddMomentView: View {
                 Spacer()
             }
             .padding(.top, 24)
-            .navigationTitle(String(localized: "block.add.title"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .principal) {
+                    VStack(spacing: 1) {
+                        Text("block.add.title")
+                            .font(.headline)
+                        if let dayDate {
+                            Text("Day \(defaultDay) · \(dayDate, format: .dateTime.month(.abbreviated).day())")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                }
                 if #available(iOS 26, *) {
                     ToolbarItem(placement: .cancellationAction) {
                         Button(String(localized: "common.cancel")) { dismiss() }
@@ -110,28 +116,6 @@ struct AddMomentView: View {
             }
         }
         .presentationDetents(sizeClass == .regular ? [.medium, .large] : [.medium])
-    }
-
-    // MARK: - Day Badge
-
-    private var dayBadge: some View {
-        HStack(spacing: 8) {
-            Image(systemName: "calendar")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-
-            Text("Day \(defaultDay)")
-                .font(.subheadline.weight(.semibold))
-
-            if let dayDate {
-                Text(dayDate, format: .dateTime.month(.abbreviated).day())
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-            }
-        }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 8)
-        .background(Color(.tertiarySystemBackground), in: RoundedRectangle(cornerRadius: 10))
     }
 
     private func createBlock() {
