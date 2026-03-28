@@ -17,7 +17,7 @@ final class BlockDetailViewModel {
     var editTitle = ""
     var editLocation = ""
     var editDescription = ""
-    var editTime = Date()
+    var editStartAt = Date()
 
     // Posts
     private(set) var posts: [Post] = []
@@ -234,24 +234,23 @@ final class BlockDetailViewModel {
 
         let newLocation = editLocation.trimmingCharacters(in: .whitespaces)
         let newDescription = editDescription.trimmingCharacters(in: .whitespacesAndNewlines)
+        let timeChanged = abs(editStartAt.timeIntervalSince(block.startAt)) > 60
 
         Task { [weak self] in
             guard let self else { return }
             do {
-                let timeChanged = abs(self.editTime.timeIntervalSince(block.startAt)) > 60
-
                 try await self.blockRepository.updateBlockHeader(
                     blockId: block.id,
                     title: trimmedTitle != block.title ? trimmedTitle : nil,
                     locationText: newLocation != (block.locationText ?? "") ? newLocation : nil,
                     description: newDescription != (block.description ?? "") ? newDescription : nil,
-                    startAt: timeChanged ? self.editTime : nil
+                    startAt: timeChanged ? self.editStartAt : nil
                 )
 
                 self.block?.title = trimmedTitle
                 self.block?.locationText = newLocation.isEmpty ? nil : newLocation
                 self.block?.description = newDescription.isEmpty ? nil : newDescription
-                if timeChanged { self.block?.startAt = self.editTime }
+                if timeChanged { self.block?.startAt = self.editStartAt }
                 self.isEditingHeader = false
             } catch {
                 self.errorMessage = String(localized: "block.detail.error.save")
