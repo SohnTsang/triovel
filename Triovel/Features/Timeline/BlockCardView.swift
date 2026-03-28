@@ -12,7 +12,7 @@ struct BlockCardView: View {
     private var hasEndTime: Bool { block.endAt != nil }
 
     var body: some View {
-        HStack(alignment: .top, spacing: 0) {
+        HStack(alignment: .top, spacing: 12) {
             // Left: time column with vertical line
             timeColumn
                 .frame(width: 56)
