@@ -6,17 +6,42 @@ struct TripMembersView: View {
     let inviteLink: String?
 
     @State private var showingCopied = false
+    @State private var showingShareSheet = false
 
     var body: some View {
         List {
+            // Members
             Section {
                 ForEach(sortedMembers) { member in
                     MemberRow(member: member)
                 }
             }
 
+            // Solo trip hint
+            if members.count <= 1 {
+                Section {
+                    HStack(spacing: 10) {
+                        Image(systemName: "person.badge.plus")
+                            .font(.body)
+                            .foregroundStyle(.secondary)
+                        Text("members.invite.only.you")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            }
+
+            // Share section
             if let link = inviteLink, !link.isEmpty {
                 Section {
+                    // Share button (native share sheet)
+                    Button {
+                        showingShareSheet = true
+                    } label: {
+                        Label(String(localized: "members.invite.share"), systemImage: "square.and.arrow.up")
+                    }
+
+                    // Copy link
                     Button {
                         UIPasteboard.general.string = link
                         showingCopied = true
@@ -45,6 +70,11 @@ struct TripMembersView: View {
                 }
             }
         }
+        .sheet(isPresented: $showingShareSheet) {
+            if let link = inviteLink {
+                ShareSheet(items: [shareMessage(link: link)])
+            }
+        }
     }
 
     /// Owners first, then alphabetical by name.
@@ -55,6 +85,10 @@ struct TripMembersView: View {
             }
             return a.displayName.localizedCaseInsensitiveCompare(b.displayName) == .orderedAscending
         }
+    }
+
+    private func shareMessage(link: String) -> String {
+        "Join my trip on Triovel!\n\nInvite code: \(link)"
     }
 
     private var copiedToast: some View {
@@ -73,6 +107,18 @@ struct TripMembersView: View {
     }
 }
 
+// MARK: - Share Sheet (UIKit wrapper)
+
+private struct ShareSheet: UIViewControllerRepresentable {
+    let items: [Any]
+
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        UIActivityViewController(activityItems: items, applicationActivities: nil)
+    }
+
+    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
+}
+
 // MARK: - Member Row
 
 private struct MemberRow: View {
@@ -80,21 +126,14 @@ private struct MemberRow: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            // Avatar
-            ZStack {
-                if member.avatarPath != nil {
-                    Circle().fill(Color(.systemGray4))
-                } else {
-                    Circle()
-                        .fill(Color(.systemGray4))
-                        .overlay {
-                            Text(member.initials)
-                                .font(.subheadline.weight(.medium))
-                                .foregroundStyle(.white)
-                        }
+            Circle()
+                .fill(Color.accentColor.opacity(0.15))
+                .frame(width: 40, height: 40)
+                .overlay {
+                    Text(member.initials)
+                        .font(.subheadline.weight(.medium))
+                        .foregroundStyle(Color.accentColor)
                 }
-            }
-            .frame(width: 40, height: 40)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(member.displayName)

@@ -89,6 +89,24 @@ final class TripRepository {
         return tripId
     }
 
+    // MARK: - Archive / Unarchive
+
+    func archiveTrip(tripId: String) async throws {
+        try await db.execute(
+            sql: "UPDATE trips SET archived = 1 WHERE id = ?",
+            parameters: [tripId]
+        )
+        print("[TripRepo] Archived trip: \(tripId)")
+    }
+
+    func unarchiveTrip(tripId: String) async throws {
+        try await db.execute(
+            sql: "UPDATE trips SET archived = 0 WHERE id = ?",
+            parameters: [tripId]
+        )
+        print("[TripRepo] Unarchived trip: \(tripId)")
+    }
+
     // MARK: - Fetch Trips (local read)
 
     func fetchTrips(userId: String) async throws -> (active: [Trip], archived: [Trip]) {

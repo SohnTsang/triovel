@@ -8,6 +8,9 @@ struct TripSummaryView: View {
     @Environment(AppState.self) private var appState
     @State private var viewModel = TripSummaryViewModel()
     @State private var showingPaymentSheet = false
+    @State private var showingArchiveConfirmation = false
+    @State private var isArchiving = false
+    @Environment(Router.self) private var router
 
     var body: some View {
         ScrollView {
@@ -66,12 +69,26 @@ struct TripSummaryView: View {
                         .background(Color.accentColor, in: RoundedRectangle(cornerRadius: 14))
                     }
                     .padding(.horizontal)
-                    .padding(.bottom, 30)
+
+                    // Archive section
+                    archiveSection
+                        .padding(.bottom, 30)
                 }
             }
         }
         .navigationTitle(String(localized: "summary.title"))
         .plainBackButton()
+        .alert(
+            String(localized: "trip.archive.title"),
+            isPresented: $showingArchiveConfirmation
+        ) {
+            Button(String(localized: "common.cancel"), role: .cancel) {}
+            Button(String(localized: "trip.archive.button"), role: .destructive) {
+                archiveTrip()
+            }
+        } message: {
+            Text("trip.archive.description")
+        }
         .sheet(isPresented: $showingPaymentSheet) {
             PaymentEntrySheet(
                 tripId: tripId,
@@ -358,6 +375,70 @@ struct TripSummaryView: View {
     }
 
     // MARK: - Helpers
+
+    // MARK: - Archive
+
+    private var archiveSection: some View {
+        VStack(spacing: 12) {
+            Divider()
+                .padding(.horizontal)
+
+            let isArchived = viewModel.trip?.archived == true
+
+            Button {
+                if isArchived {
+                    unarchiveTrip()
+                } else {
+                    showingArchiveConfirmation = true
+                }
+            } label: {
+                if isArchiving {
+                    ProgressView()
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 12)
+                } else {
+                    Text(isArchived ? "trip.unarchive.button" : "trip.archive.button")
+                        .font(.body)
+                        .foregroundStyle(isArchived ? Color.accentColor : .red)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 12)
+                }
+            }
+            .disabled(isArchiving)
+            .padding(.horizontal)
+        }
+    }
+
+    private func archiveTrip() {
+        isArchiving = true
+        Task {
+            do {
+                try await TripRepository().archiveTrip(tripId: tripId)
+                try? await Task.sleep(for: .milliseconds(500))
+                router.popToRoot()
+            } catch {
+                print("[Summary] ❌ Archive failed: \(error)")
+            }
+            isArchiving = false
+        }
+    }
+
+    private func unarchiveTrip() {
+        isArchiving = true
+        Task {
+            do {
+                try await TripRepository().unarchiveTrip(tripId: tripId)
+                try? await Task.sleep(for: .milliseconds(500))
+                // Reload to pick up the change
+                if let userId = appState.currentUserId {
+                    viewModel.load(tripId: tripId, userId: userId)
+                }
+            } catch {
+                print("[Summary] ❌ Unarchive failed: \(error)")
+            }
+            isArchiving = false
+        }
+    }
 
     private func memberInitials(_ name: String) -> String {
         let parts = name.split(separator: " ")
