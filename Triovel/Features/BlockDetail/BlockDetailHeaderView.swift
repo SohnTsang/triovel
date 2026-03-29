@@ -2,10 +2,11 @@ import SwiftUI
 
 /// Block header showing title, context chip, time, location, and description.
 /// Editable by block creator or trip owner only.
-/// Edit mode uses a compact grouped layout: Title → Location + Time row → Details.
+/// Edit mode: grouped card with Title, Location, Start+End time, Local TZ, Description.
 struct BlockDetailHeaderView: View {
     let block: Block
     let canEdit: Bool
+    let tripDisplayTimezone: String
     var isSaving: Bool = false
     var billSummary: String?
     @Binding var isEditing: Bool
@@ -13,6 +14,8 @@ struct BlockDetailHeaderView: View {
     @Binding var editLocation: String
     @Binding var editDescription: String
     @Binding var editStartAt: Date
+    @Binding var editEndAt: Date?
+    @Binding var editLocalTimezone: String?
     let onSave: () -> Void
 
     @FocusState private var focusedField: EditField?
@@ -55,14 +58,35 @@ struct BlockDetailHeaderView: View {
             }
         }
 
-        // Time
-        Label {
-            Text(block.startAt, format: .dateTime.hour().minute())
-        } icon: {
-            Image(systemName: "clock")
+        // Time row
+        HStack(spacing: 4) {
+            Label {
+                HStack(spacing: 4) {
+                    Text(block.startAt, format: .dateTime.hour().minute())
+                    if let endAt = block.endAt {
+                        Text("–")
+                            .foregroundStyle(.tertiary)
+                        Text(endAt, format: .dateTime.hour().minute())
+                    }
+                }
+            } icon: {
+                Image(systemName: "clock")
+            }
+            .font(.subheadline)
+            .foregroundStyle(.secondary)
+
+            // Local timezone label (e.g. "JST")
+            if let localTz = block.localTimezone,
+               !localTz.isEmpty,
+               localTz != tripDisplayTimezone {
+                Text(shortTimezoneLabel(localTz))
+                    .font(.caption2.weight(.medium))
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2)
+                    .background(Color(.systemGray5), in: Capsule())
+            }
         }
-        .font(.subheadline)
-        .foregroundStyle(.secondary)
 
         // Title
         Text(block.title)
@@ -89,6 +113,8 @@ struct BlockDetailHeaderView: View {
                 editLocation = block.locationText ?? ""
                 editDescription = ""
                 editStartAt = block.startAt
+                editEndAt = block.endAt
+                editLocalTimezone = block.localTimezone
                 isEditing = true
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                     focusedField = .description
@@ -101,11 +127,11 @@ struct BlockDetailHeaderView: View {
         }
     }
 
-    // MARK: - Editing Mode (Compact Grouped Layout)
+    // MARK: - Editing Mode
 
     @ViewBuilder
     private var editingContent: some View {
-        // Action bar: Cancel — "Edit" — Save
+        // Action bar
         HStack {
             Button {
                 focusedField = nil
@@ -146,9 +172,9 @@ struct BlockDetailHeaderView: View {
         }
         .padding(.bottom, 4)
 
-        // Compact grouped card
+        // Grouped edit card
         VStack(spacing: 0) {
-            // Row 1: Title
+            // Title
             editRow {
                 HStack(spacing: 10) {
                     Image(systemName: "textformat")
@@ -158,15 +184,15 @@ struct BlockDetailHeaderView: View {
                     TextField(String(localized: "block.edit.title.placeholder"), text: $editTitle)
                         .font(.body)
                         .focused($focusedField, equals: .title)
-                        .onChange(of: editTitle) { _, newValue in
-                            if newValue.count > 150 { editTitle = String(newValue.prefix(150)) }
+                        .onChange(of: editTitle) { _, v in
+                            if v.count > 150 { editTitle = String(v.prefix(150)) }
                         }
                 }
             }
 
             groupDivider
 
-            // Row 2: Location
+            // Location
             editRow {
                 HStack(spacing: 10) {
                     Image(systemName: "mappin")
@@ -176,34 +202,93 @@ struct BlockDetailHeaderView: View {
                     TextField(String(localized: "block.edit.location.placeholder"), text: $editLocation)
                         .font(.body)
                         .focused($focusedField, equals: .location)
-                        .onChange(of: editLocation) { _, newValue in
-                            if newValue.count > 100 { editLocation = String(newValue.prefix(100)) }
+                        .onChange(of: editLocation) { _, v in
+                            if v.count > 100 { editLocation = String(v.prefix(100)) }
                         }
                 }
             }
 
             groupDivider
 
-            // Row 3: Time
+            // Start + End time (same row)
             editRow {
                 HStack(spacing: 10) {
                     Image(systemName: "clock")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                         .frame(width: 20)
-                    DatePicker(
-                        "",
-                        selection: $editStartAt,
-                        displayedComponents: .hourAndMinute
-                    )
-                    .labelsHidden()
+
+                    DatePicker("", selection: $editStartAt, displayedComponents: .hourAndMinute)
+                        .labelsHidden()
+
+                    Text("–")
+                        .foregroundStyle(.tertiary)
+
+                    if let endAt = Binding($editEndAt) {
+                        DatePicker("", selection: endAt, in: editStartAt..., displayedComponents: .hourAndMinute)
+                            .labelsHidden()
+
+                        Button {
+                            editEndAt = nil
+                        } label: {
+                            Image(systemName: "xmark.circle.fill")
+                                .font(.caption)
+                                .foregroundStyle(.tertiary)
+                        }
+                    } else {
+                        Button {
+                            editEndAt = Calendar.current.date(byAdding: .hour, value: 1, to: editStartAt) ?? editStartAt
+                        } label: {
+                            Text("block.edit.end.time.add")
+                                .font(.subheadline)
+                                .foregroundStyle(Color.accentColor)
+                        }
+                    }
+
                     Spacer()
                 }
             }
 
             groupDivider
 
-            // Row 4: Details (taller)
+            // Local timezone (optional)
+            editRow {
+                HStack(spacing: 10) {
+                    Image(systemName: "globe")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .frame(width: 20)
+
+                    if let tz = editLocalTimezone, !tz.isEmpty {
+                        Text(shortTimezoneLabel(tz))
+                            .font(.body)
+                        Spacer()
+                        Button {
+                            editLocalTimezone = nil
+                        } label: {
+                            Image(systemName: "xmark.circle.fill")
+                                .font(.caption)
+                                .foregroundStyle(.tertiary)
+                        }
+                    } else {
+                        Picker(String(localized: "block.edit.local.timezone"), selection: Binding(
+                            get: { editLocalTimezone ?? "" },
+                            set: { editLocalTimezone = $0.isEmpty ? nil : $0 }
+                        )) {
+                            Text("block.edit.local.timezone.none").tag("")
+                            ForEach(commonTimezones, id: \.self) { tz in
+                                Text("\(shortTimezoneLabel(tz)) — \(tz)").tag(tz)
+                            }
+                        }
+                        .labelsHidden()
+                        Spacer()
+                    }
+                }
+            }
+
+            groupDivider
+
+            // Description
             editRow(minHeight: 80) {
                 HStack(alignment: .top, spacing: 10) {
                     Image(systemName: "text.alignleft")
@@ -219,8 +304,8 @@ struct BlockDetailHeaderView: View {
                     .font(.body)
                     .lineLimit(3...8)
                     .focused($focusedField, equals: .description)
-                    .onChange(of: editDescription) { _, newValue in
-                        if newValue.count > 500 { editDescription = String(newValue.prefix(500)) }
+                    .onChange(of: editDescription) { _, v in
+                        if v.count > 500 { editDescription = String(v.prefix(500)) }
                     }
                 }
             }
@@ -234,16 +319,30 @@ struct BlockDetailHeaderView: View {
 
     // MARK: - Helpers
 
-    /// A single row inside the grouped edit card.
     private func editRow<Content: View>(minHeight: CGFloat = 44, @ViewBuilder content: () -> Content) -> some View {
         content()
             .padding(.horizontal, 14)
             .frame(minHeight: minHeight, alignment: .center)
     }
 
-    /// Thin divider inside the grouped card.
     private var groupDivider: some View {
         Divider()
             .padding(.leading, 44)
     }
+
+    private func shortTimezoneLabel(_ identifier: String) -> String {
+        let tz = TimeZone(identifier: identifier) ?? .current
+        return tz.abbreviation() ?? identifier
+    }
+
+    private let commonTimezones = [
+        "Asia/Tokyo", "Asia/Hong_Kong", "Asia/Shanghai", "Asia/Taipei",
+        "Asia/Seoul", "Asia/Singapore", "Asia/Bangkok",
+        "Australia/Sydney", "Australia/Melbourne",
+        "Pacific/Auckland",
+        "America/New_York", "America/Chicago", "America/Denver", "America/Los_Angeles",
+        "America/Vancouver", "America/Toronto",
+        "Europe/London", "Europe/Paris", "Europe/Berlin", "Europe/Rome",
+        "Pacific/Honolulu",
+    ]
 }

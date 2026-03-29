@@ -3,10 +3,11 @@ import SwiftUI
 /// Timeline block card with itinerary-style layout:
 ///   from time   Title
 ///   |           Location
-///   to time
+///   to time     Local TZ label (if different from trip)
 struct BlockCardView: View {
     let block: Block
     var creatorName: String?
+    var tripDisplayTimezone: String = ""
     var syncState: SyncState = .synced
 
     private var hasEndTime: Bool { block.endAt != nil }
@@ -73,6 +74,16 @@ struct BlockCardView: View {
                 .foregroundStyle(.primary)
                 .padding(.top, 12)
 
+            // Local timezone label (e.g. "JST") — shown if different from trip
+            if let localTz = block.localTimezone,
+               !localTz.isEmpty,
+               localTz != tripDisplayTimezone {
+                Text(shortTimezoneLabel(localTz))
+                    .font(.system(size: 9, weight: .medium))
+                    .foregroundStyle(.tertiary)
+                    .padding(.top, 1)
+            }
+
             // Vertical line
             if hasEndTime {
                 RoundedRectangle(cornerRadius: 1)
@@ -93,5 +104,10 @@ struct BlockCardView: View {
         }
         .frame(maxHeight: .infinity)
         .padding(.leading, 14)
+    }
+
+    private func shortTimezoneLabel(_ identifier: String) -> String {
+        let tz = TimeZone(identifier: identifier) ?? .current
+        return tz.abbreviation() ?? identifier
     }
 }

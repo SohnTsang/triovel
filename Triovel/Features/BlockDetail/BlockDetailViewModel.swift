@@ -19,6 +19,8 @@ final class BlockDetailViewModel {
     var editLocation = ""
     var editDescription = ""
     var editStartAt = Date()
+    var editEndAt: Date?
+    var editLocalTimezone: String?
 
     // Posts
     private var allPosts: [Post] = []
@@ -97,6 +99,7 @@ final class BlockDetailViewModel {
             let trip = try await blockRepository.fetchTrip(tripId: fetchedBlock.tripId)
             self.tripOwnerId = trip.createdBy
             self.tripBaseCurrency = trip.baseCurrency
+            self.tripDisplayTimezone = trip.displayTimezone
             self.tripPayments = (try? await self.paymentRepository.fetchPaymentsForTrip(tripId: fetchedBlock.tripId)) ?? []
 
             await loadMemberNames(tripId: fetchedBlock.tripId)
@@ -426,6 +429,9 @@ final class BlockDetailViewModel {
     /// Trip base currency — set during load from the trip record.
     private(set) var tripBaseCurrency: String = "USD"
 
+    /// Trip display timezone — set during load from the trip record.
+    private(set) var tripDisplayTimezone: String = TimeZone.current.identifier
+
     /// Bill share displays for the detail view.
     func billShareDisplays(for billId: String) -> [BillShareDisplay] {
         guard let shares = billSharesMap[billId] else { return [] }
@@ -496,28 +502,32 @@ final class BlockDetailViewModel {
         let newLocation = editLocation.trimmingCharacters(in: .whitespaces)
         let newDescription = editDescription.trimmingCharacters(in: .whitespacesAndNewlines)
         let timeChanged = abs(editStartAt.timeIntervalSince(block.startAt)) > 60
+        let endAtChanged = editEndAt != block.endAt
+        let localTzChanged = editLocalTimezone != block.localTimezone
         isSavingHeader = true
 
         Task { [weak self] in
             guard let self else { return }
 
             do {
-                // Write to DB immediately (offline-safe)
                 try await self.blockRepository.updateBlockHeader(
                     blockId: block.id,
                     title: trimmedTitle != block.title ? trimmedTitle : nil,
                     locationText: newLocation != (block.locationText ?? "") ? newLocation : nil,
                     description: newDescription != (block.description ?? "") ? newDescription : nil,
-                    startAt: timeChanged ? self.editStartAt : nil
+                    startAt: timeChanged ? self.editStartAt : nil,
+                    endAt: endAtChanged ? .some(self.editEndAt) : nil,
+                    localTimezone: localTzChanged ? .some(self.editLocalTimezone) : nil
                 )
 
-                // 500ms minimum spinner, then update UI
                 try? await Task.sleep(for: .milliseconds(500))
 
                 self.block?.title = trimmedTitle
                 self.block?.locationText = newLocation.isEmpty ? nil : newLocation
                 self.block?.description = newDescription.isEmpty ? nil : newDescription
                 if timeChanged { self.block?.startAt = self.editStartAt }
+                if endAtChanged { self.block?.endAt = self.editEndAt }
+                if localTzChanged { self.block?.localTimezone = self.editLocalTimezone }
                 self.isEditingHeader = false
             } catch {
                 self.errorMessage = String(localized: "block.detail.error.save")

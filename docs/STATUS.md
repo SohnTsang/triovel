@@ -445,6 +445,19 @@ docs/
 
 ## Phase Status
 
+### Plan Audit Fixes (feature/plan-audit-fixes)
+
+| Feature | Details | Files |
+|---|---|---|
+| Block end time | Optional end time in Add Moment sheet + Block Detail edit mode. Stored as `end_at` in DB. Displayed on block cards (vertical line between start/end) and Block Detail header (start – end range). | `AddMomentView.swift`, `BlockDetailHeaderView.swift`, `BlockRepository.swift` |
+| Local timezone label | Per plan 11.2: if block's `local_timezone` differs from trip's `display_timezone`, shows abbreviation (e.g. "JST") on block card time column and Block Detail header. Editable in Block Detail edit mode via timezone picker. | `BlockCardView.swift`, `BlockDetailHeaderView.swift`, `DaySectionView.swift` |
+| Block Detail edit redesign | Grouped card with all editable fields: Title, Location, Start+End time (same row), Local timezone (picker), Description (multiline). End time removable with X button. | `BlockDetailHeaderView.swift`, `BlockDetailViewModel.swift` |
+| Trip timezone UX | Edit Trip now shows "Trip timezone" picker with common zones displayed as "JST (UTC+9) — Asia/Tokyo". Helper text: "All activity times will display in this timezone". | `EditTripView.swift` |
+
+---
+
+## Phase Status
+
 | Phase | Status | Tag | Details |
 |---|---|---|---|
 | Phase 1 | Complete | `v0.1.0-phase1` | Auth, Home, Trip Setup, Trip Members, Timeline shell, Blocks, Group/Personal, Ghost blocks, Add Moment |

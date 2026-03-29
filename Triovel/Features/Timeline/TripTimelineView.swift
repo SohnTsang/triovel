@@ -52,6 +52,7 @@ struct TripTimelineView: View {
                             ? filteredDays[viewModel.selectedDayIndex] : nil {
                             DaySectionView(
                                 day: selectedDay,
+                                tripDisplayTimezone: viewModel.trip?.displayTimezone ?? "",
                                 creatorNameForBlock: { viewModel.creatorName(for: $0) },
                                 onBlockTap: { block in
                                     router.push(.blockDetail(blockId: block.id))

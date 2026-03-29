@@ -70,6 +70,17 @@ struct EditTripView: View {
                     }
                 }
 
+                Section {
+                    Picker(String(localized: "trip.edit.timezone"), selection: $displayTimezone) {
+                        ForEach(commonTimezones, id: \.self) { tz in
+                            Text(timezoneDisplayLabel(tz)).tag(tz)
+                        }
+                    }
+                } footer: {
+                    Text("trip.edit.timezone.helper")
+                        .font(.caption)
+                }
+
                 if let error = errorMessage {
                     Section {
                         Text(error)
@@ -138,6 +149,26 @@ struct EditTripView: View {
             }
         }
     }
+
+    private func timezoneDisplayLabel(_ identifier: String) -> String {
+        let tz = TimeZone(identifier: identifier) ?? .current
+        let abbr = tz.abbreviation() ?? ""
+        let offset = tz.secondsFromGMT()
+        let hours = offset / 3600
+        let sign = hours >= 0 ? "+" : ""
+        return "\(abbr) (UTC\(sign)\(hours)) — \(identifier.replacingOccurrences(of: "_", with: " "))"
+    }
+
+    private let commonTimezones = [
+        "Asia/Tokyo", "Asia/Hong_Kong", "Asia/Shanghai", "Asia/Taipei",
+        "Asia/Seoul", "Asia/Singapore", "Asia/Bangkok", "Asia/Kolkata",
+        "Australia/Sydney", "Australia/Melbourne", "Pacific/Auckland",
+        "America/New_York", "America/Chicago", "America/Denver",
+        "America/Los_Angeles", "America/Vancouver", "America/Toronto",
+        "Europe/London", "Europe/Paris", "Europe/Berlin", "Europe/Rome",
+        "Europe/Madrid", "Europe/Amsterdam",
+        "Pacific/Honolulu", "America/Anchorage",
+    ]
 
     private let commonCurrencies = [
         "USD", "EUR", "GBP", "JPY", "AUD", "CAD", "CHF",

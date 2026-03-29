@@ -141,6 +141,7 @@ struct BlockDetailView: View {
         BlockDetailHeaderView(
             block: block,
             canEdit: viewModel.canEditHeader,
+            tripDisplayTimezone: viewModel.tripDisplayTimezone,
             isSaving: viewModel.isSavingHeader,
             billSummary: viewModel.billSummary,
             isEditing: $vm.isEditingHeader,
@@ -148,6 +149,8 @@ struct BlockDetailView: View {
             editLocation: $vm.editLocation,
             editDescription: $vm.editDescription,
             editStartAt: $vm.editStartAt,
+            editEndAt: $vm.editEndAt,
+            editLocalTimezone: $vm.editLocalTimezone,
             onSave: { viewModel.saveHeaderEdits() }
         )
 
@@ -239,6 +242,8 @@ struct BlockDetailView: View {
                         viewModel.editLocation = block.locationText ?? ""
                         viewModel.editDescription = block.description ?? ""
                         viewModel.editStartAt = block.startAt
+                        viewModel.editEndAt = block.endAt
+                        viewModel.editLocalTimezone = block.localTimezone
                         viewModel.isEditingHeader = true
                     }
                 } label: {
