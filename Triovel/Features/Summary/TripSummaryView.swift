@@ -133,39 +133,49 @@ struct TripSummaryView: View {
     // MARK: - My Balance Card
 
     private var myBalanceCard: some View {
-        VStack(spacing: 12) {
-            ForEach(viewModel.currencyBalances) { balance in
-                if let myBalance = balance.userBalances.first(where: { $0.userId == appState.currentUserId }) {
-                    HStack {
-                        VStack(alignment: .leading, spacing: 4) {
-                            if myBalance.amount > 0 {
-                                Text("summary.you.are.owed")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                                Text(myBalance.amount.formattedCurrency(balance.currency))
-                                    .font(.title2.weight(.bold))
-                                    .foregroundStyle(.green)
-                            } else if myBalance.amount < 0 {
-                                Text("summary.you.owe")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                                Text((-myBalance.amount).formattedCurrency(balance.currency))
-                                    .font(.title2.weight(.bold))
-                                    .foregroundStyle(.red)
-                            } else {
-                                Text("summary.all.settled")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                                Text("✓")
-                                    .font(.title2)
-                                    .foregroundStyle(.green)
-                            }
+        VStack(alignment: .leading, spacing: 4) {
+            Text("summary.my.balance")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+
+            let nonZero = viewModel.currencyBalances.compactMap { balance -> (Int, String)? in
+                guard let my = balance.userBalances.first(where: { $0.userId == appState.currentUserId }),
+                      my.amount != 0 else { return nil }
+                return (my.amount, balance.currency)
+            }
+
+            if nonZero.isEmpty {
+                HStack(spacing: 6) {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundStyle(.green)
+                    Text("summary.all.settled")
+                        .font(.body.weight(.medium))
+                        .foregroundStyle(.primary)
+                }
+                .padding(.top, 2)
+            } else {
+                ForEach(nonZero, id: \.1) { amount, currency in
+                    HStack(spacing: 6) {
+                        if amount > 0 {
+                            Text("summary.you.are.owed")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                            Text(amount.formattedCurrency(currency))
+                                .font(.title3.weight(.bold))
+                                .foregroundStyle(.green)
+                        } else {
+                            Text("summary.you.owe")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                            Text((-amount).formattedCurrency(currency))
+                                .font(.title3.weight(.bold))
+                                .foregroundStyle(.red)
                         }
-                        Spacer()
                     }
                 }
             }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
         .padding(16)
         .background(Color(.systemBackground))
         .clipShape(RoundedRectangle(cornerRadius: 16))
@@ -178,11 +188,16 @@ struct TripSummaryView: View {
     private func currencySection(_ balance: BalanceCalculator.CurrencyBalance) -> some View {
         VStack(alignment: .leading, spacing: 0) {
             // Header
-            Text(balance.currency)
-                .font(.footnote.weight(.semibold))
-                .foregroundStyle(.secondary)
-                .padding(.horizontal)
-                .padding(.bottom, 8)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(balance.currency)
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                Text("summary.section.balances")
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+            }
+            .padding(.horizontal)
+            .padding(.bottom, 8)
 
             VStack(spacing: 0) {
                 // Member balances
@@ -280,11 +295,16 @@ struct TripSummaryView: View {
 
     private var paymentHistorySection: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Text("summary.payment.history")
-                .font(.footnote.weight(.semibold))
-                .foregroundStyle(.secondary)
-                .padding(.horizontal)
-                .padding(.bottom, 8)
+            VStack(alignment: .leading, spacing: 2) {
+                Text("summary.payment.history")
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                Text("summary.section.payments")
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+            }
+            .padding(.horizontal)
+            .padding(.bottom, 8)
 
             VStack(spacing: 0) {
                 ForEach(Array(viewModel.payments.enumerated()), id: \.element.id) { index, payment in
