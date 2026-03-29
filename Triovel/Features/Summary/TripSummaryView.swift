@@ -18,11 +18,14 @@ struct TripSummaryView: View {
             } else if viewModel.currencyBalances.isEmpty && viewModel.totalBillCount == 0 {
                 emptyState
             } else {
-                VStack(spacing: 20) {
-                    // Total expenses header
-                    totalExpensesCard
+                VStack(spacing: 24) {
+                    // Trip header
+                    tripHeader
 
-                    // Per-currency balance sections
+                    // My balance overview
+                    myBalanceCard
+
+                    // Per-currency sections
                     ForEach(viewModel.currencyBalances) { balance in
                         currencySection(balance)
                     }
@@ -36,16 +39,19 @@ struct TripSummaryView: View {
                     Button {
                         showingPaymentSheet = true
                     } label: {
-                        Label(String(localized: "summary.record.payment"), systemImage: "plus.circle")
-                            .font(.body.weight(.medium))
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 14)
-                            .background(Color.accentColor.opacity(0.1), in: RoundedRectangle(cornerRadius: 12))
+                        HStack(spacing: 8) {
+                            Image(systemName: "plus.circle.fill")
+                            Text("summary.record.payment")
+                        }
+                        .font(.body.weight(.semibold))
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                        .background(Color.accentColor, in: RoundedRectangle(cornerRadius: 14))
                     }
                     .padding(.horizontal)
-                    .padding(.bottom, 20)
+                    .padding(.bottom, 30)
                 }
-                .padding(.top, 12)
             }
         }
         .navigationTitle(String(localized: "summary.title"))
@@ -69,163 +75,221 @@ struct TripSummaryView: View {
     // MARK: - Empty State
 
     private var emptyState: some View {
-        VStack(spacing: 12) {
-            Image(systemName: "banknote")
-                .font(.largeTitle)
+        VStack(spacing: 16) {
+            Image(systemName: "receipt")
+                .font(.system(size: 44))
                 .foregroundStyle(.tertiary)
             Text("summary.no.expenses")
-                .font(.subheadline)
+                .font(.body)
                 .foregroundStyle(.secondary)
+
+            Button {
+                showingPaymentSheet = true
+            } label: {
+                Text("summary.record.payment")
+                    .font(.subheadline.weight(.medium))
+            }
         }
         .padding(.top, 80)
     }
 
-    // MARK: - Total Expenses Card
+    // MARK: - Trip Header
 
-    private var totalExpensesCard: some View {
-        VStack(spacing: 8) {
-            Text("summary.total.expenses")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
+    private var tripHeader: some View {
+        VStack(spacing: 6) {
+            if let trip = viewModel.trip {
+                Text(trip.title)
+                    .font(.title2.weight(.bold))
 
-            // Show total per currency
-            ForEach(viewModel.totalExpensesByCurrency, id: \.currency) { item in
-                Text(item.total.formattedCurrency(item.currency))
-                    .font(.title.weight(.bold))
+                Text("\(trip.startDate, format: .dateTime.month(.abbreviated).day()) – \(trip.endDate, format: .dateTime.month(.abbreviated).day().year())")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
             }
+
+            // Total expenses
+            HStack(spacing: 16) {
+                ForEach(viewModel.totalExpensesByCurrency, id: \.currency) { item in
+                    VStack(spacing: 2) {
+                        Text(item.total.formattedCurrency(item.currency))
+                            .font(.title3.weight(.bold))
+                        Text("summary.total.spent")
+                            .font(.caption2)
+                            .foregroundStyle(.tertiary)
+                    }
+                }
+            }
+            .padding(.top, 8)
 
             Text("summary.bill.count \(viewModel.totalBillCount)")
                 .font(.caption)
                 .foregroundStyle(.tertiary)
+                .padding(.top, 2)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 20)
-        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 16))
+        .padding(.top, 8)
+    }
+
+    // MARK: - My Balance Card
+
+    private var myBalanceCard: some View {
+        VStack(spacing: 12) {
+            ForEach(viewModel.currencyBalances) { balance in
+                if let myBalance = balance.userBalances.first(where: { $0.userId == appState.currentUserId }) {
+                    HStack {
+                        VStack(alignment: .leading, spacing: 4) {
+                            if myBalance.amount > 0 {
+                                Text("summary.you.are.owed")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                Text(myBalance.amount.formattedCurrency(balance.currency))
+                                    .font(.title2.weight(.bold))
+                                    .foregroundStyle(.green)
+                            } else if myBalance.amount < 0 {
+                                Text("summary.you.owe")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                Text((-myBalance.amount).formattedCurrency(balance.currency))
+                                    .font(.title2.weight(.bold))
+                                    .foregroundStyle(.red)
+                            } else {
+                                Text("summary.all.settled")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                Text("✓")
+                                    .font(.title2)
+                                    .foregroundStyle(.green)
+                            }
+                        }
+                        Spacer()
+                    }
+                }
+            }
+        }
+        .padding(16)
+        .background(Color(.systemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .shadow(color: .black.opacity(0.06), radius: 3, y: 1)
         .padding(.horizontal)
     }
 
     // MARK: - Currency Section
 
     private func currencySection(_ balance: BalanceCalculator.CurrencyBalance) -> some View {
-        VStack(alignment: .leading, spacing: 14) {
-            // Currency header
-            HStack {
-                Text(balance.currency)
-                    .font(.headline)
-                Spacer()
-            }
+        VStack(alignment: .leading, spacing: 0) {
+            // Header
+            Text(balance.currency)
+                .font(.footnote.weight(.semibold))
+                .foregroundStyle(.secondary)
+                .padding(.horizontal)
+                .padding(.bottom, 8)
 
-            // My status — clear, human-readable
-            if let myBalance = balance.userBalances.first(where: { $0.userId == appState.currentUserId }) {
-                myBalanceRow(amount: myBalance.amount, currency: balance.currency)
-            }
+            VStack(spacing: 0) {
+                // Member balances
+                ForEach(Array(balance.userBalances.enumerated()), id: \.element.id) { index, userBalance in
+                    HStack(spacing: 12) {
+                        Circle()
+                            .fill(userBalance.userId == appState.currentUserId
+                                  ? Color.accentColor.opacity(0.15)
+                                  : Color(.systemGray5))
+                            .frame(width: 32, height: 32)
+                            .overlay {
+                                Text(memberInitials(viewModel.memberName(for: userBalance.userId)))
+                                    .font(.caption2.weight(.semibold))
+                                    .foregroundStyle(userBalance.userId == appState.currentUserId
+                                                     ? Color.accentColor : .secondary)
+                            }
 
-            Divider()
-
-            // Per-member breakdown
-            ForEach(balance.userBalances) { userBalance in
-                if userBalance.userId != appState.currentUserId {
-                    HStack {
                         Text(viewModel.memberName(for: userBalance.userId))
                             .font(.subheadline)
+                            .lineLimit(1)
+
                         Spacer()
-                        Text(balanceDescription(userBalance.amount, currency: balance.currency))
-                            .font(.subheadline)
-                            .foregroundStyle(userBalance.amount >= 0 ? .green : .red)
+
+                        if userBalance.amount > 0 {
+                            Text("+\(userBalance.amount.formattedCurrency(balance.currency))")
+                                .font(.subheadline.weight(.medium))
+                                .foregroundStyle(.green)
+                        } else if userBalance.amount < 0 {
+                            Text(userBalance.amount.formattedCurrency(balance.currency))
+                                .font(.subheadline.weight(.medium))
+                                .foregroundStyle(.red)
+                        } else {
+                            Text("summary.settled")
+                                .font(.caption)
+                                .foregroundStyle(.tertiary)
+                        }
+                    }
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 10)
+
+                    if index < balance.userBalances.count - 1 {
+                        Divider().padding(.leading, 58)
                     }
                 }
-            }
 
-            // Debts: who needs to pay whom
-            if !balance.debts.isEmpty {
-                Divider()
+                // Settlements
+                if !balance.debts.isEmpty {
+                    Divider()
 
-                Text("summary.settlements")
-                    .font(.caption.weight(.medium))
-                    .foregroundStyle(.secondary)
+                    VStack(spacing: 0) {
+                        ForEach(Array(balance.debts.enumerated()), id: \.element.id) { index, debt in
+                            HStack(spacing: 10) {
+                                Image(systemName: "arrow.right.circle.fill")
+                                    .font(.body)
+                                    .foregroundStyle(.orange)
 
-                ForEach(balance.debts) { debt in
-                    HStack(spacing: 10) {
-                        Image(systemName: "arrow.right.circle.fill")
-                            .font(.title3)
-                            .foregroundStyle(.orange)
+                                VStack(alignment: .leading, spacing: 1) {
+                                    Text(viewModel.memberName(for: debt.fromUserId))
+                                        .font(.subheadline.weight(.medium))
+                                    HStack(spacing: 3) {
+                                        Text("summary.pays")
+                                            .font(.caption2)
+                                            .foregroundStyle(.tertiary)
+                                        Text(viewModel.memberName(for: debt.toUserId))
+                                            .font(.caption2.weight(.medium))
+                                            .foregroundStyle(.secondary)
+                                    }
+                                }
 
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(viewModel.memberName(for: debt.fromUserId))
-                                .font(.subheadline.weight(.medium))
-                            HStack(spacing: 4) {
-                                Text("summary.pays")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                                Text(viewModel.memberName(for: debt.toUserId))
-                                    .font(.caption.weight(.medium))
-                                    .foregroundStyle(.secondary)
+                                Spacer()
+
+                                Text(debt.amount.formattedCurrency(debt.currency))
+                                    .font(.subheadline.weight(.bold))
+                                    .foregroundStyle(.orange)
+                            }
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 10)
+
+                            if index < balance.debts.count - 1 {
+                                Divider().padding(.leading, 44)
                             }
                         }
-
-                        Spacer()
-
-                        Text(debt.amount.formattedCurrency(debt.currency))
-                            .font(.body.weight(.bold))
-                            .foregroundStyle(.orange)
                     }
-                    .padding(12)
-                    .background(Color.orange.opacity(0.05), in: RoundedRectangle(cornerRadius: 10))
+                    .background(Color.orange.opacity(0.03))
                 }
             }
-        }
-        .padding(16)
-        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 16))
-        .padding(.horizontal)
-    }
-
-    // MARK: - My Balance Row
-
-    private func myBalanceRow(amount: Int, currency: String) -> some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 2) {
-                if amount > 0 {
-                    Text("summary.you.are.owed")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                    Text(amount.formattedCurrency(currency))
-                        .font(.title3.weight(.bold))
-                        .foregroundStyle(.green)
-                } else if amount < 0 {
-                    Text("summary.you.owe")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                    Text((-amount).formattedCurrency(currency))
-                        .font(.title3.weight(.bold))
-                        .foregroundStyle(.red)
-                } else {
-                    Text("summary.all.settled")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                    Text("summary.no.outstanding")
-                        .font(.caption)
-                        .foregroundStyle(.tertiary)
-                }
-            }
-            Spacer()
+            .background(Color(.systemBackground))
+            .clipShape(RoundedRectangle(cornerRadius: 14))
+            .shadow(color: .black.opacity(0.06), radius: 3, y: 1)
+            .padding(.horizontal)
         }
     }
-
-    // MARK: - Helpers
 
     // MARK: - Payment History
 
     private var paymentHistorySection: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 0) {
             Text("summary.payment.history")
-                .font(.caption.weight(.medium))
+                .font(.footnote.weight(.semibold))
                 .foregroundStyle(.secondary)
                 .padding(.horizontal)
+                .padding(.bottom, 8)
 
             VStack(spacing: 0) {
                 ForEach(Array(viewModel.payments.enumerated()), id: \.element.id) { index, payment in
                     HStack(spacing: 10) {
-                        Image(systemName: "arrow.right.circle.fill")
+                        Image(systemName: "checkmark.circle.fill")
                             .font(.body)
                             .foregroundStyle(.blue)
 
@@ -263,20 +327,21 @@ struct TripSummaryView: View {
                     }
                 }
             }
-            .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 12))
+            .background(Color(.systemBackground))
+            .clipShape(RoundedRectangle(cornerRadius: 14))
+            .shadow(color: .black.opacity(0.06), radius: 3, y: 1)
             .padding(.horizontal)
         }
     }
 
     // MARK: - Helpers
 
-    private func balanceDescription(_ amount: Int, currency: String) -> String {
-        if amount > 0 {
-            return "+\(amount.formattedCurrency(currency))"
-        } else if amount < 0 {
-            return amount.formattedCurrency(currency)
+    private func memberInitials(_ name: String) -> String {
+        let parts = name.split(separator: " ")
+        if parts.count >= 2 {
+            return "\(parts[0].prefix(1))\(parts[1].prefix(1))"
         }
-        return String(localized: "summary.settled")
+        return String(name.prefix(2)).uppercased()
     }
 }
 
@@ -332,7 +397,6 @@ final class TripSummaryViewModel {
 
                     self.totalBillCount = bills.count
 
-                    // Total expenses per currency
                     var totals: [String: Int] = [:]
                     for bill in bills {
                         totals[bill.currency, default: 0] += bill.amount

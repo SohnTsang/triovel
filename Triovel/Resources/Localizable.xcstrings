@@ -3668,6 +3668,15 @@
         }
       }
     },
+    "summary.total.spent": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "total spent" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "合計支出" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "总支出" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "總支出" } }
+      }
+    },
     "summary.total.expenses" : {
       "extractionState" : "manual",
       "localizations" : {
