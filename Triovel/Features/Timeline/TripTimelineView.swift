@@ -9,7 +9,6 @@ struct TripTimelineView: View {
     @Environment(\.horizontalSizeClass) private var sizeClass
 
     @State private var showingAddMoment = false
-    @State private var addMomentDayDate: Date?
 
     var body: some View {
         @Bindable var vm = viewModel
@@ -77,9 +76,6 @@ struct TripTimelineView: View {
 
             // Floating + Activity
             Button {
-                let currentDay = filteredDays.indices.contains(viewModel.selectedDayIndex)
-                    ? filteredDays[viewModel.selectedDayIndex] : nil
-                addMomentDayDate = currentDay?.date
                 showingAddMoment = true
             } label: {
                 Label(String(localized: "timeline.add.moment"), systemImage: "plus")
@@ -139,10 +135,14 @@ struct TripTimelineView: View {
             }
         }
         .sheet(isPresented: $showingAddMoment) {
+            let days = viewModel.filteredDays
+            let dayIndex = viewModel.selectedDayIndex
+            let dayDate = days.indices.contains(dayIndex) ? days[dayIndex].date : viewModel.trip?.startDate
+
             AddMomentView(
                 tripId: tripId,
-                defaultDay: viewModel.selectedDayIndex + 1,
-                dayDate: addMomentDayDate,
+                defaultDay: dayIndex + 1,
+                dayDate: dayDate,
                 displayTimezone: viewModel.trip?.displayTimezone ?? TimeZone.current.identifier,
                 onBlockCreated: { blockId in
                     // Watch query auto-updates timeline; just navigate
