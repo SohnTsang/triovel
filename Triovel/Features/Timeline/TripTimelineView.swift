@@ -110,25 +110,24 @@ struct TripTimelineView: View {
             }
             if #available(iOS 26, *) {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        router.push(.tripMembers(tripId: tripId, members: viewModel.members, inviteLink: viewModel.trip?.inviteLink))
-                    } label: { Image(systemName: "person.2").font(.body.weight(.semibold)).foregroundStyle(Color(.label)) }
-                }
-                .sharedBackgroundVisibility(.hidden)
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button { router.push(.tripSummary(tripId: tripId)) } label: {
-                        Image(systemName: "banknote").font(.body.weight(.semibold)).foregroundStyle(Color(.label))
+                    HStack(spacing: 6) {
+                        Button {
+                            router.push(.tripMembers(tripId: tripId, members: viewModel.members, inviteLink: viewModel.trip?.inviteLink))
+                        } label: { Image(systemName: "person.2").font(.body.weight(.semibold)).foregroundStyle(Color(.label)) }
+                        Button { router.push(.tripSummary(tripId: tripId)) } label: {
+                            Image(systemName: "receipt").font(.body.weight(.semibold)).foregroundStyle(Color(.label))
+                        }
                     }
                 }
                 .sharedBackgroundVisibility(.hidden)
             } else {
                 ToolbarItem(placement: .topBarTrailing) {
-                    HStack(spacing: 12) {
+                    HStack(spacing: 6) {
                         Button {
                             router.push(.tripMembers(tripId: tripId, members: viewModel.members, inviteLink: viewModel.trip?.inviteLink))
                         } label: { Image(systemName: "person.2").font(.body.weight(.semibold)).foregroundStyle(Color(.label)) }
                         Button { router.push(.tripSummary(tripId: tripId)) } label: {
-                            Image(systemName: "banknote").font(.body.weight(.semibold)).foregroundStyle(Color(.label))
+                            Image(systemName: "receipt").font(.body.weight(.semibold)).foregroundStyle(Color(.label))
                         }
                     }
                 }
