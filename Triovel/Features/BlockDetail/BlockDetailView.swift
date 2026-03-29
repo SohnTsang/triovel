@@ -145,6 +145,7 @@ struct BlockDetailView: View {
                                 bill: bill,
                                 payerName: viewModel.payerName(for: bill),
                                 shareCount: viewModel.billShareCounts[bill.id] ?? 0,
+                                isDeleting: viewModel.deletingBillId == bill.id,
                                 onTap: { selectedBill = bill }
                             )
                             .id("bill-\(bill.id)")

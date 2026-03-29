@@ -391,15 +391,23 @@ final class BlockDetailViewModel {
         }
     }
 
+    private(set) var deletingBillId: String?
+
     func deleteBill(_ bill: Bill) {
+        deletingBillId = bill.id
+
         Task { [weak self] in
             guard let self else { return }
-            try? await Task.sleep(for: .milliseconds(500))
             do {
+                // Write immediately (offline-safe)
                 try await self.billRepository.deleteBill(billId: bill.id)
             } catch {
                 print("[BlockDetail] ❌ deleteBill failed: \(error)")
             }
+
+            // 500ms minimum spinner on card
+            try? await Task.sleep(for: .milliseconds(500))
+            self.deletingBillId = nil
         }
     }
 

@@ -6,6 +6,7 @@ struct BillCardView: View {
     let bill: Bill
     let payerName: String
     let shareCount: Int
+    var isDeleting: Bool = false
     var onTap: (() -> Void)?
 
     var body: some View {
@@ -64,8 +65,16 @@ struct BillCardView: View {
             RoundedRectangle(cornerRadius: 14)
                 .stroke(Color.green.opacity(0.2), lineWidth: 1)
         )
+        .opacity(isDeleting ? 0.5 : 1.0)
+        .overlay {
+            if isDeleting {
+                ProgressView()
+                    .tint(.secondary)
+            }
+        }
+        .allowsHitTesting(!isDeleting)
         .contentShape(Rectangle())
-        .onTapGesture { onTap?() }
+        .onTapGesture { if !isDeleting { onTap?() } }
     }
 
     private var formattedTime: String {
