@@ -21,10 +21,18 @@ final class BlockDetailViewModel {
     var editStartAt = Date()
 
     // Posts
-    private(set) var posts: [Post] = []
+    private var allPosts: [Post] = []
     private(set) var isLoadingPosts = false
     private(set) var isSendingPost = false
     private(set) var memberNames: [String: String] = [:]
+
+    // Pending IDs: written to DB but hidden from UI until 500ms loading finishes
+    private var pendingPostIds: Set<String> = []
+
+    /// Posts visible in the UI — filters out pending (not yet revealed) posts
+    var posts: [Post] {
+        allPosts.filter { !pendingPostIds.contains($0.id) }
+    }
 
     // Media
     private(set) var postMediaMap: [String: [PostMedia]] = [:]
@@ -130,7 +138,7 @@ final class BlockDetailViewModel {
 
                 for try await posts in stream {
                     guard !Task.isCancelled else { break }
-                    self.posts = posts
+                    self.allPosts = posts
 
                     if isFirst && self.isLoadingPosts {
                         let elapsed = ContinuousClock.now - start
@@ -144,7 +152,7 @@ final class BlockDetailViewModel {
             } catch {
                 if !(error is CancellationError) {
                     print("[BlockDetail] ❌ Post watch error: \(error)")
-                    if self.posts.isEmpty {
+                    if self.allPosts.isEmpty {
                         self.errorMessage = String(localized: "post.error.load")
                     }
                 }
@@ -163,11 +171,8 @@ final class BlockDetailViewModel {
         sendTask = Task { [weak self] in
             guard let self else { return }
 
-            // 500ms minimum spinner BEFORE writing to DB
-            // (writing triggers reactive watch which shows the post immediately)
-            try? await Task.sleep(for: .milliseconds(500))
-
             do {
+                // Write to DB immediately (offline-safe, survives app kill)
                 let post = try await self.postRepository.createPost(
                     blockId: block.id,
                     tripId: block.tripId,
@@ -175,6 +180,9 @@ final class BlockDetailViewModel {
                     body: body,
                     visibility: visibility
                 )
+
+                // Hide from UI until 500ms loading finishes
+                self.pendingPostIds.insert(post.id)
 
                 // Enqueue media for upload
                 for item in mediaItems {
@@ -188,6 +196,10 @@ final class BlockDetailViewModel {
                         print("[BlockDetail] ❌ Media enqueue failed: \(error)")
                     }
                 }
+
+                // 500ms minimum spinner, then reveal
+                try? await Task.sleep(for: .milliseconds(500))
+                self.pendingPostIds.remove(post.id)
             } catch {
                 print("[BlockDetail] ❌ sendPost failed: \(error)")
                 self.failedDrafts.append(FailedDraft(
@@ -217,15 +229,15 @@ final class BlockDetailViewModel {
         Task { [weak self] in
             guard let self else { return }
 
-            // 500ms minimum loading before post disappears
-            let start = ContinuousClock.now
-
             do {
                 // 1. Fetch media before deleting
                 let media = try await self.postMediaRepository.fetchMediaForPost(postId: post.id)
 
+                // 2. Delete from DB immediately (offline-safe)
+                try await self.postRepository.deletePost(postId: post.id)
+
+                // 3. Clean up storage files (deterministic paths, no orphans)
                 if !media.isEmpty {
-                    // 2. Delete storage files (deterministic paths)
                     let storagePaths = media.map { item in
                         let ext = item.mediaType == .photo ? "jpg" : "mp4"
                         return "posts/\(post.id)/\(item.id).\(ext)"
@@ -239,24 +251,19 @@ final class BlockDetailViewModel {
                         print("[BlockDetail] ⚠️ Storage cleanup failed: \(error)")
                     }
 
-                    // 3. Delete local files
+                    // 4. Delete local files
                     for item in media {
                         MediaFileManager.deleteLocalFiles(for: item.id, type: item.mediaType)
                     }
                 }
-
-                // Ensure 500ms minimum before post disappears
-                let elapsed = ContinuousClock.now - start
-                if elapsed < .milliseconds(500) {
-                    try? await Task.sleep(for: .milliseconds(500) - elapsed)
-                }
-
-                // 4. Delete the post (cascade deletes post_media rows, triggers watch)
-                try await self.postRepository.deletePost(postId: post.id)
             } catch {
                 print("[BlockDetail] ❌ deletePost failed: \(error)")
             }
 
+            // 500ms minimum spinner on the card, then it disappears
+            // (the watch already removed it from allPosts, but deletingPostId
+            // kept the spinner showing — now we clear it)
+            try? await Task.sleep(for: .milliseconds(500))
             self.deletingPostId = nil
         }
     }
@@ -345,10 +352,8 @@ final class BlockDetailViewModel {
         Task { [weak self] in
             guard let self else { return }
 
-            // 500ms minimum loading before UI updates
-            try? await Task.sleep(for: .milliseconds(500))
-
             do {
+                // Write to DB immediately (offline-safe)
                 try await self.blockRepository.updateBlockHeader(
                     blockId: block.id,
                     title: trimmedTitle != block.title ? trimmedTitle : nil,
@@ -356,6 +361,9 @@ final class BlockDetailViewModel {
                     description: newDescription != (block.description ?? "") ? newDescription : nil,
                     startAt: timeChanged ? self.editStartAt : nil
                 )
+
+                // 500ms minimum spinner, then update UI
+                try? await Task.sleep(for: .milliseconds(500))
 
                 self.block?.title = trimmedTitle
                 self.block?.locationText = newLocation.isEmpty ? nil : newLocation
