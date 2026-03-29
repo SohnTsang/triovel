@@ -117,7 +117,7 @@ struct TripTimelineView: View {
                 .sharedBackgroundVisibility(.hidden)
                 ToolbarItem(placement: .topBarTrailing) {
                     Button { router.push(.tripSummary(tripId: tripId)) } label: {
-                        Image(systemName: "chart.bar").font(.body.weight(.semibold)).foregroundStyle(Color(.label))
+                        Image(systemName: "banknote").font(.body.weight(.semibold)).foregroundStyle(Color(.label))
                     }
                 }
                 .sharedBackgroundVisibility(.hidden)
@@ -128,7 +128,7 @@ struct TripTimelineView: View {
                             router.push(.tripMembers(tripId: tripId, members: viewModel.members, inviteLink: viewModel.trip?.inviteLink))
                         } label: { Image(systemName: "person.2").font(.body.weight(.semibold)).foregroundStyle(Color(.label)) }
                         Button { router.push(.tripSummary(tripId: tripId)) } label: {
-                            Image(systemName: "chart.bar").font(.body.weight(.semibold)).foregroundStyle(Color(.label))
+                            Image(systemName: "banknote").font(.body.weight(.semibold)).foregroundStyle(Color(.label))
                         }
                     }
                 }
