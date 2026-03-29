@@ -8,9 +8,9 @@
 | One-liner | Plan the anchors. Capture the reality. Share the trip. |
 | Stack | SwiftUI (iOS 17+), Supabase (Postgres, Auth, Storage), PowerSync (local-first SQLite sync) |
 | Repo | https://github.com/SohnTsang/triovel |
-| Current phase | Phase 2 (complete) |
+| Current phase | Phase 5 (complete) |
 | Current branch | `main` |
-| Latest tag | `v0.2.0-phase2` |
+| Latest tag | `v0.5.0-phase5` |
 | Bundle ID | com.triovel.app |
 | Languages | English, Japanese, Chinese Traditional, Chinese Simplified |
 
@@ -412,8 +412,8 @@ docs/
 | Phase 1 | Complete | `v0.1.0-phase1` | Auth, Home, Trip Setup, Trip Members, Timeline shell, Blocks, Group/Personal, Ghost blocks, Add Moment |
 | Phase 2 | Complete | `v0.2.0-phase2` | Posts, Shared/Just Me composer, PowerSync local-first sync, Filters with person chips, Same-time clusters |
 | Phase 3 | Complete | `v0.3.0-phase3` | Media picker, compression, upload queue, upload states, retry, storage cleanup on delete, 500ms loading on all actions |
-| Phase 4 | Not started | — | Bills, bill shares, payments, summary screen, multi-currency balances |
-| Phase 5 | Not started | — | Archive, empty states polish, pending indicators, cost controls, instrumentation, beta testing |
+| Phase 4 | Complete | `v0.4.0-phase4` | Bills, bill shares, payments, multi-currency summary, bill detail, payment history, receipt layout |
+| Phase 5 | Complete | `v0.5.0-phase5` | Archive/unarchive, share invite, beta analytics, cost controls, empty states verified |
 
 ### Phase 2 Commit History
 
