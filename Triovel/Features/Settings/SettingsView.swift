@@ -1,10 +1,14 @@
 import SwiftUI
+import SafariServices
 
 struct SettingsView: View {
     @Environment(AppState.self) private var appState
     @Environment(\.horizontalSizeClass) private var sizeClass
     @State private var showingDeleteConfirmation = false
     @State private var showingSignOutConfirmation = false
+    @State private var isDeletingAccount = false
+    @State private var deleteError: String?
+    @State private var safariURL: URL?
     @AppStorage("appearanceMode") private var appearanceMode: AppearanceMode = .system
 
     private var authService: AuthService { appState.authService }
@@ -30,16 +34,16 @@ struct SettingsView: View {
                 }
             }
 
-            // Legal — placeholder slots per compliance.md
+            // Legal
             Section(String(localized: "settings.legal")) {
                 Button {
-                    // Privacy Policy — link to hosted page before App Store submission
+                    safariURL = URL(string: "https://sohntsang.github.io/triovel/privacy-policy.html")
                 } label: {
                     Label(String(localized: "settings.privacy.policy"), systemImage: "hand.raised")
                 }
 
                 Button {
-                    // Terms of Service — link to hosted page before App Store submission
+                    safariURL = URL(string: "https://sohntsang.github.io/triovel/terms-and-conditions.html")
                 } label: {
                     Label(String(localized: "settings.terms"), systemImage: "doc.text")
                 }
@@ -57,6 +61,14 @@ struct SettingsView: View {
                     showingDeleteConfirmation = true
                 } label: {
                     Label(String(localized: "settings.delete.account"), systemImage: "trash")
+                }
+            }
+
+            if let error = deleteError {
+                Section {
+                    Text(error)
+                        .font(.subheadline)
+                        .foregroundStyle(.red)
                 }
             }
         }
@@ -79,10 +91,40 @@ struct SettingsView: View {
         ) {
             Button(String(localized: "common.cancel"), role: .cancel) {}
             Button(String(localized: "settings.delete.account"), role: .destructive) {
-                // Full deletion flow — before App Store submission
+                performDeleteAccount()
             }
         } message: {
             Text("settings.delete.message")
+        }
+        .overlay {
+            if isDeletingAccount {
+                Color.black.opacity(0.3).ignoresSafeArea()
+                    .overlay { ProgressView().controlSize(.large).tint(.white) }
+            }
+        }
+        .sheet(item: $safariURL) { url in
+            SafariView(url: url)
+                .ignoresSafeArea()
+        }
+    }
+
+    private func performDeleteAccount() {
+        isDeletingAccount = true
+        deleteError = nil
+
+        Task {
+            let start = ContinuousClock.now
+            do {
+                try await appState.deleteAccount()
+                let elapsed = ContinuousClock.now - start
+                if elapsed < .milliseconds(500) {
+                    try? await Task.sleep(for: .milliseconds(500) - elapsed)
+                }
+            } catch {
+                print("[Settings] ❌ Delete account failed: \(error)")
+                deleteError = String(localized: "settings.delete.error")
+                isDeletingAccount = false
+            }
         }
     }
 }
@@ -101,4 +143,22 @@ enum AppearanceMode: String, CaseIterable {
         case .system: return nil
         }
     }
+}
+
+// MARK: - URL Identifiable
+
+extension URL: @retroactive Identifiable {
+    public var id: String { absoluteString }
+}
+
+// MARK: - Safari View
+
+struct SafariView: UIViewControllerRepresentable {
+    let url: URL
+
+    func makeUIViewController(context: Context) -> SFSafariViewController {
+        SFSafariViewController(url: url)
+    }
+
+    func updateUIViewController(_ uiViewController: SFSafariViewController, context: Context) {}
 }

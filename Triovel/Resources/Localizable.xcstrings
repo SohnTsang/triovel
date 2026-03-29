@@ -3278,6 +3278,15 @@
         }
       }
     },
+    "settings.delete.error" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Couldn't delete account. Please try again." } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "アカウントを削除できませんでした。もう一度お試しください。" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "无法删除账户，请重试。" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "無法刪除帳戶，請重試。" } }
+      }
+    },
     "settings.delete.confirm" : {
       "extractionState" : "manual",
       "localizations" : {

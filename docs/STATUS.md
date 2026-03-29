@@ -428,6 +428,19 @@ docs/
 | CRUD Audit | All models verified: Trip, Block, Post have full CRUD. Bill/Payment deliberately exclude update (delete+recreate per blueprint). PostMedia managed via parent post cascade. | — |
 | Dark Mode Toggle | Settings > Appearance section. Light/Dark/System picker. Persisted to @AppStorage (UserDefaults) — survives sign-out/sign-in. Applied via .preferredColorScheme() on RootView. | `SettingsView.swift`, `RootView.swift` |
 
+### Pre-Beta TestFlight Prep (feature/pre-beta-prep)
+
+| Feature | Details | Files |
+|---|---|---|
+| Apple Sign-In | Verified: nonce generation, SHA256 hashing, ASAuthorization, Supabase integration, entitlements — all production-ready. | `AuthService.swift`, `AppleSignInCoordinator.swift` |
+| Privacy Policy | Mobile-responsive HTML page: data collected, usage, sharing, retention, deletion, contact. Hosted at GitHub Pages. | `docs/privacy-policy.html` |
+| Terms of Service | Mobile-responsive HTML page: acceptable use, user content, beta disclaimer, liability, no warranty. Hosted at GitHub Pages. | `docs/terms-and-conditions.html` |
+| Legal links in Settings | Privacy Policy + Terms open in SFSafariViewController (in-app browser). | `SettingsView.swift` |
+| Account Deletion | Full flow: confirmation alert, delete from Supabase Auth (cascade), clear local DB + image cache, navigate to auth. Error state with inline message. | `AuthService.swift`, `AppState.swift`, `SettingsView.swift` |
+| Privacy Manifest | PrivacyInfo.xcprivacy declares: no tracking, collected data types (name, email, photos, payment info, user ID), accessed APIs (UserDefaults, file timestamps). | `PrivacyInfo.xcprivacy` |
+| App Icon | Brand teal background with white "T", 1024x1024 PNG, no alpha, auto-generates all sizes. | `Assets.xcassets/AppIcon.appiconset/` |
+| Crash Audit | Eliminated all force-unwraps that could crash in production: FileManager `.first!` → nil-coalescing, `TimeSlot.first!` → guard/compactMap, `SecRandomCopyBytes` fatalError → UUID fallback, date arithmetic `!` → `?? default`. Zero `try!` found. All Tasks use `[weak self]`. | Multiple files |
+
 ---
 
 ## Phase Status

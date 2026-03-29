@@ -66,6 +66,7 @@
 		D5654F655A54771EA9C40FE0 /* SupabaseConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E33BD05BBE7973E19AFE2A6 /* SupabaseConfig.swift */; };
 		D8A7D4E61A8339904961D6B2 /* BillEntryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 046B24F1977F74C981837C7E /* BillEntryView.swift */; };
 		DB798B9D9DDCD5CDF8DA0AE1 /* BlockRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2DB1DF20856703F1CF41D12 /* BlockRepository.swift */; };
+		DD3025B0C3EBDC789D04A9FE /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 4744E429B9D2984BFAB8747F /* PrivacyInfo.xcprivacy */; };
 		E0E12A3E8B776076166ACA8D /* TriovelApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BB191F7BAA778BACA46EA4D /* TriovelApp.swift */; };
 		E3FC084F3B55DA0CC0685646 /* HomeContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B2D4F71149C6B8544141A8C /* HomeContentView.swift */; };
 		E9AE73965485EECDF30A4643 /* Payment.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9C218D2F661A161061EC46B /* Payment.swift */; };
@@ -113,6 +114,7 @@
 		419AFE4DF400582FC595B4F3 /* Block.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Block.swift; sourceTree = "<group>"; };
 		44D47CF8E79B0BCDAFAA1088 /* ColorTokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorTokens.swift; sourceTree = "<group>"; };
 		46C2D656E7DD3FFFDE9E09BF /* JoinTripView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoinTripView.swift; sourceTree = "<group>"; };
+		4744E429B9D2984BFAB8747F /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		4889E11CC0A5A927E3C26223 /* DependencyContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DependencyContainer.swift; sourceTree = "<group>"; };
 		4D37FA5E2AF68AA27D92708E /* ProfileHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileHeaderView.swift; sourceTree = "<group>"; };
 		4DB17EE1B5470619A4A394AE /* TripSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TripSetupView.swift; sourceTree = "<group>"; };
@@ -286,6 +288,7 @@
 				984D844B917CCD4C29DE2A97 /* Features */,
 				887A6F90336FF23D95C3914B /* Resources */,
 				9021D2FAC036FC5D483E9E11 /* Utilities */,
+				4744E429B9D2984BFAB8747F /* PrivacyInfo.xcprivacy */,
 			);
 			path = Triovel;
 			sourceTree = "<group>";
@@ -560,6 +563,7 @@
 				22EEB4706AB07F00406FFEB8 /* LaunchScreen.storyboard in Resources */,
 				7AB84AC4DC6B0A59B113F751 /* Localizable.xcstrings in Resources */,
 				A74D3F0F546C24E1AD1BFE96 /* Assets.xcassets in Resources */,
+				DD3025B0C3EBDC789D04A9FE /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
