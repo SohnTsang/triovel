@@ -29,7 +29,8 @@ struct TripSummaryView: View {
                     if !viewModel.currencyBalances.isEmpty {
                         VStack(alignment: .leading, spacing: 12) {
                             Text("summary.section.balances")
-                                .font(.title3.weight(.semibold))
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundStyle(.secondary)
                                 .padding(.horizontal)
 
                             ForEach(viewModel.currencyBalances) { balance in
@@ -42,7 +43,8 @@ struct TripSummaryView: View {
                     if !viewModel.payments.isEmpty {
                         VStack(alignment: .leading, spacing: 12) {
                             Text("summary.payment.history")
-                                .font(.title3.weight(.semibold))
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundStyle(.secondary)
                                 .padding(.horizontal)
 
                             paymentHistoryCard
@@ -147,10 +149,11 @@ struct TripSummaryView: View {
     // MARK: - My Balance Card
 
     private var myBalanceCard: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: 8) {
             Text("summary.my.balance")
-                .font(.caption)
+                .font(.subheadline.weight(.semibold))
                 .foregroundStyle(.secondary)
+                .padding(.horizontal)
 
             let nonZero = viewModel.currencyBalances.compactMap { balance -> (Int, String)? in
                 guard let my = balance.userBalances.first(where: { $0.userId == appState.currentUserId }),
@@ -158,43 +161,45 @@ struct TripSummaryView: View {
                 return (my.amount, balance.currency)
             }
 
-            if nonZero.isEmpty {
-                HStack(spacing: 6) {
-                    Image(systemName: "checkmark.circle.fill")
-                        .foregroundStyle(.green)
-                    Text("summary.all.settled")
-                        .font(.body.weight(.medium))
-                        .foregroundStyle(.primary)
-                }
-                .padding(.top, 2)
-            } else {
-                ForEach(nonZero, id: \.1) { amount, currency in
+            // Card
+            VStack(alignment: .leading, spacing: 6) {
+                if nonZero.isEmpty {
                     HStack(spacing: 6) {
-                        if amount > 0 {
-                            Text("summary.you.are.owed")
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
-                            Text(amount.formattedCurrency(currency))
-                                .font(.title3.weight(.bold))
-                                .foregroundStyle(.green)
-                        } else {
-                            Text("summary.you.owe")
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
-                            Text((-amount).formattedCurrency(currency))
-                                .font(.title3.weight(.bold))
-                                .foregroundStyle(.red)
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundStyle(.green)
+                        Text("summary.all.settled")
+                            .font(.body.weight(.medium))
+                            .foregroundStyle(.primary)
+                    }
+                } else {
+                    ForEach(nonZero, id: \.1) { amount, currency in
+                        HStack(spacing: 6) {
+                            if amount > 0 {
+                                Text("summary.you.are.owed")
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
+                                Text(amount.formattedCurrency(currency))
+                                    .font(.title3.weight(.bold))
+                                    .foregroundStyle(.green)
+                            } else {
+                                Text("summary.you.owe")
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
+                                Text((-amount).formattedCurrency(currency))
+                                    .font(.title3.weight(.bold))
+                                    .foregroundStyle(.red)
+                            }
                         }
                     }
                 }
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(16)
+            .background(Color(.systemBackground))
+            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .shadow(color: .black.opacity(0.06), radius: 3, y: 1)
+            .padding(.horizontal)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(16)
-        .background(Color(.systemBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 16))
-        .shadow(color: .black.opacity(0.06), radius: 3, y: 1)
-        .padding(.horizontal)
     }
 
     // MARK: - Currency Section
