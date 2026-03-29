@@ -25,14 +25,28 @@ struct TripSummaryView: View {
                     // My balance overview
                     myBalanceCard
 
-                    // Per-currency sections
-                    ForEach(viewModel.currencyBalances) { balance in
-                        currencySection(balance)
+                    // Who owes who — single title, all currencies below
+                    if !viewModel.currencyBalances.isEmpty {
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("summary.section.balances")
+                                .font(.title3.weight(.semibold))
+                                .padding(.horizontal)
+
+                            ForEach(viewModel.currencyBalances) { balance in
+                                currencySection(balance)
+                            }
+                        }
                     }
 
-                    // Payment history
+                    // Payment history — single title, all payments below
                     if !viewModel.payments.isEmpty {
-                        paymentHistorySection
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("summary.payment.history")
+                                .font(.title3.weight(.semibold))
+                                .padding(.horizontal)
+
+                            paymentHistoryCard
+                        }
                     }
 
                     // Record Payment button
@@ -187,17 +201,12 @@ struct TripSummaryView: View {
 
     private func currencySection(_ balance: BalanceCalculator.CurrencyBalance) -> some View {
         VStack(alignment: .leading, spacing: 0) {
-            // Header
-            VStack(alignment: .leading, spacing: 2) {
-                Text(balance.currency)
-                    .font(.footnote.weight(.semibold))
-                    .foregroundStyle(.secondary)
-                Text("summary.section.balances")
-                    .font(.caption2)
-                    .foregroundStyle(.tertiary)
-            }
-            .padding(.horizontal)
-            .padding(.bottom, 8)
+            // Currency label
+            Text(balance.currency)
+                .font(.footnote.weight(.semibold))
+                .foregroundStyle(.secondary)
+                .padding(.horizontal)
+                .padding(.bottom, 4)
 
             VStack(spacing: 0) {
                 // Member balances
@@ -293,19 +302,8 @@ struct TripSummaryView: View {
 
     // MARK: - Payment History
 
-    private var paymentHistorySection: some View {
+    private var paymentHistoryCard: some View {
         VStack(alignment: .leading, spacing: 0) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text("summary.payment.history")
-                    .font(.footnote.weight(.semibold))
-                    .foregroundStyle(.secondary)
-                Text("summary.section.payments")
-                    .font(.caption2)
-                    .foregroundStyle(.tertiary)
-            }
-            .padding(.horizontal)
-            .padding(.bottom, 8)
-
             VStack(spacing: 0) {
                 ForEach(Array(viewModel.payments.enumerated()), id: \.element.id) { index, payment in
                     HStack(spacing: 10) {
