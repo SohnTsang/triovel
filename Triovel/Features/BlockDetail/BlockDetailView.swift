@@ -36,6 +36,24 @@ struct BlockDetailView: View {
                         .controlSize(.small)
                 }
             }
+            if #available(iOS 26, *) {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button { showingBillEntry = true } label: {
+                        Image(systemName: "banknote")
+                            .font(.body.weight(.semibold))
+                            .foregroundStyle(Color(.label))
+                    }
+                }
+                .sharedBackgroundVisibility(.hidden)
+            } else {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button { showingBillEntry = true } label: {
+                        Image(systemName: "banknote")
+                            .font(.body.weight(.semibold))
+                            .foregroundStyle(Color(.label))
+                    }
+                }
+            }
         }
         .sheet(isPresented: $showingBillEntry) {
             if let block = viewModel.block {
@@ -130,29 +148,13 @@ struct BlockDetailView: View {
             }
         }
 
-        // Composer + Bill button
-        VStack(spacing: 0) {
-            PostComposerView(
-                onSend: { body, visibility, mediaItems in
-                    viewModel.sendPost(body: body, visibility: visibility, mediaItems: mediaItems)
-                },
-                isSending: viewModel.isSendingPost
-            )
-
-            // Add bill button
-            Button {
-                showingBillEntry = true
-            } label: {
-                Label(String(localized: "bill.add.button"), systemImage: "banknote")
-                    .font(.caption.weight(.medium))
-                    .foregroundStyle(.green)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .background(Color.green.opacity(0.08), in: Capsule())
-            }
-            .buttonStyle(.plain)
-            .padding(.bottom, 8)
-        }
+        // Composer
+        PostComposerView(
+            onSend: { body, visibility, mediaItems in
+                viewModel.sendPost(body: body, visibility: visibility, mediaItems: mediaItems)
+            },
+            isSending: viewModel.isSendingPost
+        )
     }
 
     // MARK: - Empty State
