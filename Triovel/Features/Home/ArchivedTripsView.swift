@@ -3,6 +3,7 @@ import SwiftUI
 struct ArchivedTripsView: View {
     let trips: [Trip]
     @Environment(\.horizontalSizeClass) private var sizeClass
+    @Environment(Router.self) private var router
 
     var body: some View {
         Group {
@@ -17,6 +18,10 @@ struct ArchivedTripsView: View {
                     LazyVStack(spacing: 16) {
                         ForEach(trips) { trip in
                             TripCardView(trip: trip, members: [])
+                                .contentShape(Rectangle())
+                                .onTapGesture {
+                                    router.push(.tripTimeline(tripId: trip.id))
+                                }
                         }
                     }
                     .padding(.horizontal)

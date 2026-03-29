@@ -9,6 +9,7 @@ struct TripTimelineView: View {
     @Environment(\.horizontalSizeClass) private var sizeClass
 
     @State private var showingAddMoment = false
+    @State private var showingArchiveAlert = false
 
     var body: some View {
         @Bindable var vm = viewModel
@@ -110,28 +111,29 @@ struct TripTimelineView: View {
             }
             if #available(iOS 26, *) {
                 ToolbarItem(placement: .topBarTrailing) {
-                    HStack(spacing: 6) {
-                        Button {
-                            router.push(.tripMembers(tripId: tripId, members: viewModel.members, inviteLink: viewModel.trip?.inviteLink))
-                        } label: { Image(systemName: "person.2").font(.body.weight(.semibold)).foregroundStyle(Color(.label)) }
-                        Button { router.push(.tripSummary(tripId: tripId)) } label: {
-                            Image(systemName: "receipt").font(.body.weight(.semibold)).foregroundStyle(Color(.label))
-                        }
-                    }
+                    tripMenu
                 }
                 .sharedBackgroundVisibility(.hidden)
             } else {
                 ToolbarItem(placement: .topBarTrailing) {
-                    HStack(spacing: 6) {
-                        Button {
-                            router.push(.tripMembers(tripId: tripId, members: viewModel.members, inviteLink: viewModel.trip?.inviteLink))
-                        } label: { Image(systemName: "person.2").font(.body.weight(.semibold)).foregroundStyle(Color(.label)) }
-                        Button { router.push(.tripSummary(tripId: tripId)) } label: {
-                            Image(systemName: "receipt").font(.body.weight(.semibold)).foregroundStyle(Color(.label))
-                        }
-                    }
+                    tripMenu
                 }
             }
+        }
+        .alert(
+            String(localized: "trip.archive.title"),
+            isPresented: $showingArchiveAlert
+        ) {
+            Button(String(localized: "common.cancel"), role: .cancel) {}
+            Button(String(localized: "trip.archive.button"), role: .destructive) {
+                Task {
+                    try? await TripRepository().archiveTrip(tripId: tripId)
+                    try? await Task.sleep(for: .milliseconds(500))
+                    router.popToRoot()
+                }
+            }
+        } message: {
+            Text("trip.archive.description")
         }
         .sheet(isPresented: $showingAddMoment) {
             let days = viewModel.filteredDays
@@ -156,6 +158,36 @@ struct TripTimelineView: View {
         }
         .onDisappear {
             viewModel.resetFilters()
+        }
+    }
+
+    // MARK: - Trip Menu
+
+    private var tripMenu: some View {
+        Menu {
+            Button {
+                router.push(.tripSummary(tripId: tripId))
+            } label: {
+                Label(String(localized: "summary.title"), systemImage: "receipt")
+            }
+
+            Button {
+                router.push(.tripMembers(tripId: tripId, members: viewModel.members, inviteLink: viewModel.trip?.inviteLink))
+            } label: {
+                Label(String(localized: "trip.members.title"), systemImage: "person.2")
+            }
+
+            Divider()
+
+            Button(role: .destructive) {
+                showingArchiveAlert = true
+            } label: {
+                Label(String(localized: "trip.archive.button"), systemImage: "archivebox")
+            }
+        } label: {
+            Image(systemName: "ellipsis.circle")
+                .font(.body.weight(.semibold))
+                .foregroundStyle(Color(.label))
         }
     }
 }

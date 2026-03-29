@@ -119,8 +119,15 @@ struct TripSummaryView: View {
             Button {
                 showingPaymentSheet = true
             } label: {
-                Text("summary.record.payment")
-                    .font(.subheadline.weight(.medium))
+                HStack(spacing: 8) {
+                    Image(systemName: "plus.circle.fill")
+                    Text("summary.record.payment")
+                }
+                .font(.body.weight(.semibold))
+                .foregroundStyle(.white)
+                .padding(.horizontal, 24)
+                .padding(.vertical, 14)
+                .background(Color.accentColor, in: RoundedRectangle(cornerRadius: 14))
             }
         }
         .padding(.top, 80)

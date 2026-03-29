@@ -11,15 +11,26 @@ struct PaymentEntrySheet: View {
 
     @Environment(\.dismiss) private var dismiss
 
-    @State private var payerId: String = ""
-    @State private var receiverId: String = ""
+    @State private var payerId: String
+    @State private var receiverId: String
     @State private var amountText = ""
-    @State private var currency: String = ""
+    @State private var currency: String
     @State private var note: String = ""
     @State private var isSaving = false
     @State private var errorMessage: String?
 
     private let paymentRepository = PaymentRepository()
+
+    init(tripId: String, members: [TripMemberDisplay], baseCurrency: String, currentUserId: String, onPaymentCreated: (() -> Void)? = nil) {
+        self.tripId = tripId
+        self.members = members
+        self.baseCurrency = baseCurrency
+        self.currentUserId = currentUserId
+        self.onPaymentCreated = onPaymentCreated
+        self._payerId = State(initialValue: currentUserId)
+        self._receiverId = State(initialValue: members.first(where: { $0.userId != currentUserId })?.userId ?? "")
+        self._currency = State(initialValue: baseCurrency)
+    }
 
     private var amountInSmallestUnit: Int? {
         guard let value = Double(amountText.replacingOccurrences(of: ",", with: "")) else { return nil }
@@ -132,13 +143,6 @@ struct PaymentEntrySheet: View {
                 }
             }
             .interactiveDismissDisabled(isSaving)
-            .onAppear {
-                currency = baseCurrency
-                payerId = currentUserId
-                if let first = members.first(where: { $0.userId != currentUserId }) {
-                    receiverId = first.userId
-                }
-            }
         }
     }
 

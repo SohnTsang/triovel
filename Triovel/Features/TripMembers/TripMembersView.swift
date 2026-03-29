@@ -20,13 +20,19 @@ struct TripMembersView: View {
             // Solo trip hint
             if members.count <= 1 {
                 Section {
-                    HStack(spacing: 10) {
-                        Image(systemName: "person.badge.plus")
-                            .font(.body)
-                            .foregroundStyle(.secondary)
-                        Text("members.invite.only.you")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
+                    Button {
+                        if inviteLink != nil {
+                            showingShareSheet = true
+                        }
+                    } label: {
+                        HStack(spacing: 10) {
+                            Image(systemName: "person.badge.plus")
+                                .font(.body)
+                                .foregroundStyle(Color.accentColor)
+                            Text("members.invite.only.you")
+                                .font(.subheadline)
+                                .foregroundStyle(Color.accentColor)
+                        }
                     }
                 }
             }

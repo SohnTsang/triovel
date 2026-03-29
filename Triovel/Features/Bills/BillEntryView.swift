@@ -14,13 +14,25 @@ struct BillEntryView: View {
     @Environment(\.horizontalSizeClass) private var sizeClass
 
     @State private var amountText = ""
-    @State private var currency: String = ""
-    @State private var payerId: String = ""
-    @State private var includedMemberIds: Set<String> = []
+    @State private var currency: String
+    @State private var payerId: String
+    @State private var includedMemberIds: Set<String>
     @State private var isSaving = false
     @State private var errorMessage: String?
 
     private let billRepository = BillRepository()
+
+    init(blockId: String, tripId: String, members: [TripMemberDisplay], baseCurrency: String, currentUserId: String, onBillCreated: (() -> Void)? = nil) {
+        self.blockId = blockId
+        self.tripId = tripId
+        self.members = members
+        self.baseCurrency = baseCurrency
+        self.currentUserId = currentUserId
+        self.onBillCreated = onBillCreated
+        self._currency = State(initialValue: baseCurrency)
+        self._payerId = State(initialValue: currentUserId)
+        self._includedMemberIds = State(initialValue: Set(members.map(\.userId)))
+    }
 
     /// Amount in smallest currency unit (cents or yen etc.)
     private var amountInSmallestUnit: Int? {
@@ -144,11 +156,6 @@ struct BillEntryView: View {
                 }
             }
             .interactiveDismissDisabled(isSaving)
-            .onAppear {
-                currency = baseCurrency
-                payerId = currentUserId
-                includedMemberIds = Set(members.map(\.userId))
-            }
         }
         .presentationDetents(sizeClass == .regular ? [.large] : [.large])
     }

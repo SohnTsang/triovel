@@ -16,6 +16,7 @@ final class MediaUploadQueue {
     static let shared = MediaUploadQueue()
 
     private(set) var isProcessing = false
+    private(set) var isStoragePaused = false
 
     private let repository = PostMediaRepository()
     private let storageBucket = "trip-media"
@@ -142,6 +143,7 @@ final class MediaUploadQueue {
         let fileSize = (try? FileManager.default.attributesOfItem(atPath: fileURL.path)[.size] as? Int64) ?? 0
         if MediaCostController.shouldPauseUploads(tripStorageBytes: fileSize) {
             print("[MediaQueue] ⚠️ Storage ceiling reached, pausing upload for \(item.id)")
+            await MainActor.run { self.isStoragePaused = true }
             return false
         }
 
