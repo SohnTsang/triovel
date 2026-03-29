@@ -14,6 +14,7 @@ struct BillDetailView: View {
 
     @Environment(\.dismiss) private var dismiss
     @State private var showingDeleteConfirmation = false
+    @State private var isDeleting = false
 
     var body: some View {
         NavigationStack {
@@ -69,8 +70,12 @@ struct BillDetailView: View {
             ) {
                 Button(String(localized: "common.cancel"), role: .cancel) {}
                 Button(String(localized: "common.delete"), role: .destructive) {
+                    isDeleting = true
                     onDelete?()
-                    dismiss()
+                    Task {
+                        try? await Task.sleep(for: .milliseconds(500))
+                        dismiss()
+                    }
                 }
             } message: {
                 Text("bill.delete.confirm.message")
@@ -249,11 +254,18 @@ struct BillDetailView: View {
         Button(role: .destructive) {
             showingDeleteConfirmation = true
         } label: {
-            Text("bill.delete")
-                .font(.body)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 12)
+            if isDeleting {
+                ProgressView()
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+            } else {
+                Text("bill.delete")
+                    .font(.body)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+            }
         }
+        .disabled(isDeleting)
         .padding(.horizontal)
     }
 
