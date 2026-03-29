@@ -10,8 +10,12 @@ struct PostCardView: View {
     let onDelete: () -> Void
     let onRetry: (() -> Void)?
     var onMediaRetry: ((String) -> Void)?
+    var onEdit: ((String) -> Void)?
 
     @State private var showingDeleteConfirmation = false
+    @State private var showingEditSheet = false
+    @State private var editText = ""
+    @State private var isSavingEdit = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -56,6 +60,15 @@ struct PostCardView: View {
                 // Own post actions — visible icon
                 if isOwn {
                     Menu {
+                        if post.body != nil && !post.body!.isEmpty {
+                            Button {
+                                editText = post.body ?? ""
+                                showingEditSheet = true
+                            } label: {
+                                Label(String(localized: "common.edit"), systemImage: "pencil")
+                            }
+                        }
+
                         Button(role: .destructive) {
                             showingDeleteConfirmation = true
                         } label: {
@@ -116,6 +129,74 @@ struct PostCardView: View {
             }
         } message: {
             Text("post.delete.confirm.message")
+        }
+        .sheet(isPresented: $showingEditSheet) {
+            editPostSheet
+        }
+    }
+
+    // MARK: - Edit Post Sheet
+
+    private var editPostSheet: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    TextField(String(localized: "post.edit.placeholder"), text: $editText, axis: .vertical)
+                        .lineLimit(2...10)
+                }
+
+                if post.visibility == .private {
+                    Section {
+                        Label {
+                            Text("post.edit.visibility.locked")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        } icon: {
+                            Image(systemName: "lock.fill")
+                                .font(.caption)
+                                .foregroundStyle(ColorTokens.personalTint)
+                        }
+                    }
+                }
+            }
+            .navigationTitle(String(localized: "post.edit.title"))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button(String(localized: "common.cancel")) {
+                        showingEditSheet = false
+                    }
+                    .disabled(isSavingEdit)
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    if isSavingEdit {
+                        ProgressView()
+                    } else {
+                        Button(String(localized: "common.save")) {
+                            saveEdit()
+                        }
+                        .disabled(
+                            editText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                            || editText.trimmingCharacters(in: .whitespacesAndNewlines) == post.body
+                        )
+                    }
+                }
+            }
+            .interactiveDismissDisabled(isSavingEdit)
+        }
+        .presentationDetents([.medium])
+    }
+
+    private func saveEdit() {
+        let trimmed = editText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty, trimmed != post.body else { return }
+
+        isSavingEdit = true
+        Task {
+            try? await Task.sleep(for: .milliseconds(500))
+            onEdit?(trimmed)
+            isSavingEdit = false
+            showingEditSheet = false
         }
     }
 

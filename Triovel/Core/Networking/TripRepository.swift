@@ -108,6 +108,151 @@ final class TripRepository {
         print("[TripRepo] Unarchived trip: \(tripId)")
     }
 
+    // MARK: - Update Trip (local-first)
+
+    func updateTrip(
+        tripId: String,
+        title: String?,
+        startDate: Date?,
+        endDate: Date?,
+        displayTimezone: String?,
+        baseCurrency: String?
+    ) async throws {
+        var setClauses: [String] = []
+        var params: [Sendable?] = []
+
+        if let title {
+            setClauses.append("title = ?")
+            params.append(title)
+        }
+        if let startDate {
+            setClauses.append("start_date = ?")
+            params.append(Self.dateOnlyString(from: startDate))
+        }
+        if let endDate {
+            setClauses.append("end_date = ?")
+            params.append(Self.dateOnlyString(from: endDate))
+        }
+        if let displayTimezone {
+            setClauses.append("display_timezone = ?")
+            params.append(displayTimezone)
+        }
+        if let baseCurrency {
+            setClauses.append("base_currency = ?")
+            params.append(baseCurrency)
+        }
+
+        guard !setClauses.isEmpty else { return }
+        params.append(tripId)
+
+        try await db.execute(
+            sql: "UPDATE trips SET \(setClauses.joined(separator: ", ")) WHERE id = ?",
+            parameters: params
+        )
+        print("[TripRepo] Updated trip: \(tripId)")
+    }
+
+    // MARK: - Delete Trip (local-first, cascade)
+
+    /// Permanently deletes a trip and all related data.
+    /// Cascade: trip_members, blocks, posts, post_media, bills, bill_shares, payments.
+    /// Also cleans up Supabase Storage files for all media in the trip.
+    func deleteTrip(tripId: String) async throws {
+        // 1. Gather media files for storage cleanup
+        let mediaItems: [(id: String, postId: String, mediaType: String)] = try await db.getAll(
+            sql: """
+                SELECT pm.id, pm.post_id, pm.media_type FROM post_media pm
+                JOIN posts p ON pm.post_id = p.id
+                JOIN blocks b ON p.block_id = b.id
+                WHERE b.trip_id = ?
+                """,
+            parameters: [tripId],
+            mapper: { cursor in (
+                id: try cursor.getString(name: "id"),
+                postId: try cursor.getString(name: "post_id"),
+                mediaType: try cursor.getString(name: "media_type")
+            )}
+        )
+
+        // 2. Delete all local DB records in dependency order
+        try await db.writeTransaction { tx in
+            // post_media (via posts via blocks)
+            try tx.execute(
+                sql: """
+                    DELETE FROM post_media WHERE post_id IN (
+                        SELECT p.id FROM posts p
+                        JOIN blocks b ON p.block_id = b.id
+                        WHERE b.trip_id = ?
+                    )
+                    """,
+                parameters: [tripId]
+            )
+            // bill_shares (via bills)
+            try tx.execute(
+                sql: "DELETE FROM bill_shares WHERE trip_id = ?",
+                parameters: [tripId]
+            )
+            // posts (via blocks)
+            try tx.execute(
+                sql: """
+                    DELETE FROM posts WHERE block_id IN (
+                        SELECT id FROM blocks WHERE trip_id = ?
+                    )
+                    """,
+                parameters: [tripId]
+            )
+            // bills
+            try tx.execute(
+                sql: "DELETE FROM bills WHERE trip_id = ?",
+                parameters: [tripId]
+            )
+            // payments
+            try tx.execute(
+                sql: "DELETE FROM payments WHERE trip_id = ?",
+                parameters: [tripId]
+            )
+            // blocks
+            try tx.execute(
+                sql: "DELETE FROM blocks WHERE trip_id = ?",
+                parameters: [tripId]
+            )
+            // trip_members
+            try tx.execute(
+                sql: "DELETE FROM trip_members WHERE trip_id = ?",
+                parameters: [tripId]
+            )
+            // trip
+            try tx.execute(
+                sql: "DELETE FROM trips WHERE id = ?",
+                parameters: [tripId]
+            )
+        }
+
+        // 3. Clean up Supabase Storage (best-effort, non-blocking)
+        if !mediaItems.isEmpty {
+            let storagePaths = mediaItems.map { item in
+                let ext = item.mediaType == "photo" ? "jpg" : "mp4"
+                return "posts/\(item.postId)/\(item.id).\(ext)"
+            }
+            do {
+                _ = try await SupabaseConfig.client.storage
+                    .from("trip-media")
+                    .remove(paths: storagePaths)
+                print("[TripRepo] Deleted \(storagePaths.count) storage files")
+            } catch {
+                print("[TripRepo] ⚠️ Storage cleanup failed: \(error)")
+            }
+        }
+
+        // 4. Clean up local media files
+        for item in mediaItems {
+            let type: MediaType = item.mediaType == "photo" ? .photo : .video
+            MediaFileManager.deleteLocalFiles(for: item.id, type: type)
+        }
+
+        print("[TripRepo] Deleted trip and all related data: \(tripId)")
+    }
+
     // MARK: - Fetch Trips (local read)
 
     func fetchTrips(userId: String) async throws -> (active: [Trip], archived: [Trip]) {

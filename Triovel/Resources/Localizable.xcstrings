@@ -5022,6 +5022,168 @@
         }
       }
     },
+    "trip.delete.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Delete Trip?" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "旅行を削除しますか？" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "删除旅行？" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "刪除旅行？" } }
+      }
+    },
+    "trip.delete.description" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "All blocks, posts, photos, and bills will be permanently deleted. This cannot be undone." } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "すべてのブロック、投稿、写真、請求書が完全に削除されます。この操作は取り消せません。" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "所有区块、帖子、照片和账单将被永久删除，此操作无法撤销。" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "所有區塊、貼文、照片和帳單將被永久刪除，此操作無法復原。" } }
+      }
+    },
+    "trip.delete.button" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Delete Trip" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "旅行を削除" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "删除旅行" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "刪除旅行" } }
+      }
+    },
+    "trip.edit.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Edit Trip" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "旅行を編集" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "编辑旅行" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "編輯旅行" } }
+      }
+    },
+    "trip.edit.currency" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Currency" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "通貨" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "货币" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "貨幣" } }
+      }
+    },
+    "trip.edit.error" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Couldn't save changes. Please try again." } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "変更を保存できませんでした。もう一度お試しください。" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "无法保存更改，请重试。" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "無法儲存變更，請重試。" } }
+      }
+    },
+    "block.delete.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Delete Block?" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "ブロックを削除しますか？" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "删除区块？" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "刪除區塊？" } }
+      }
+    },
+    "block.delete.description" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "All posts and bills inside will be deleted." } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "中のすべての投稿と請求書が削除されます。" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "其中所有帖子和账单都将被删除。" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "其中所有貼文和帳單都將被刪除。" } }
+      }
+    },
+    "block.delete.button" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Delete Block" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "ブロックを削除" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "删除区块" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "刪除區塊" } }
+      }
+    },
+    "common.edit" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Edit" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "編集" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "编辑" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "編輯" } }
+      }
+    },
+    "post.edit.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Edit Post" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "投稿を編集" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "编辑帖子" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "編輯貼文" } }
+      }
+    },
+    "post.edit.placeholder" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Edit your post..." } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "投稿を編集…" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "编辑帖子…" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "編輯貼文…" } }
+      }
+    },
+    "post.edit.visibility.locked" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Visibility cannot be changed after posting" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "投稿後に公開設定は変更できません" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "发布后无法更改可见性" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "發布後無法更改可見性" } }
+      }
+    },
+    "settings.appearance" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Appearance" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "外観" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "外观" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "外觀" } }
+      }
+    },
+    "settings.appearance.theme" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Theme" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "テーマ" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "主题" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "主題" } }
+      }
+    },
+    "settings.appearance.light" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Light" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "ライト" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "浅色" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "淺色" } }
+      }
+    },
+    "settings.appearance.dark" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Dark" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "ダーク" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "深色" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "深色" } }
+      }
+    },
+    "settings.appearance.system" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "System" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "システム" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "系统" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "系統" } }
+      }
+    },
     "Visibility" : {
       "comment" : "A label for the visibility of a post.",
       "isCommentAutoGenerated" : true

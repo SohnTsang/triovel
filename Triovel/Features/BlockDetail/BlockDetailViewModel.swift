@@ -235,6 +235,18 @@ final class BlockDetailViewModel {
         failedDrafts.removeAll { $0.id == draft.id }
     }
 
+    func editPost(_ post: Post, newBody: String) {
+        Task { [weak self] in
+            guard let self else { return }
+            do {
+                try await self.postRepository.updatePost(postId: post.id, body: newBody)
+                print("[BlockDetail] Edited post: \(post.id)")
+            } catch {
+                print("[BlockDetail] ❌ Edit post failed: \(error)")
+            }
+        }
+    }
+
     private(set) var deletingPostId: String?
 
     func deletePost(_ post: Post) {

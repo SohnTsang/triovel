@@ -9,8 +9,14 @@ struct TripSummaryView: View {
     @State private var viewModel = TripSummaryViewModel()
     @State private var showingPaymentSheet = false
     @State private var showingArchiveConfirmation = false
+    @State private var showingDeleteConfirmation = false
     @State private var isArchiving = false
+    @State private var isDeletingTrip = false
     @Environment(Router.self) private var router
+
+    private var isOwner: Bool {
+        viewModel.trip?.createdBy == appState.currentUserId
+    }
 
     var body: some View {
         ScrollView {
@@ -88,6 +94,23 @@ struct TripSummaryView: View {
             }
         } message: {
             Text("trip.archive.description")
+        }
+        .alert(
+            String(localized: "trip.delete.title"),
+            isPresented: $showingDeleteConfirmation
+        ) {
+            Button(String(localized: "common.cancel"), role: .cancel) {}
+            Button(String(localized: "common.delete"), role: .destructive) {
+                deleteTripPermanently()
+            }
+        } message: {
+            Text("trip.delete.description")
+        }
+        .overlay {
+            if isDeletingTrip {
+                Color.black.opacity(0.3).ignoresSafeArea()
+                    .overlay { ProgressView().controlSize(.large).tint(.white) }
+            }
         }
         .sheet(isPresented: $showingPaymentSheet) {
             PaymentEntrySheet(
@@ -413,6 +436,19 @@ struct TripSummaryView: View {
             }
             .disabled(isArchiving)
             .padding(.horizontal)
+
+            if isOwner {
+                Button {
+                    showingDeleteConfirmation = true
+                } label: {
+                    Text("trip.delete.button")
+                        .font(.body)
+                        .foregroundStyle(.red)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 12)
+                }
+                .padding(.horizontal)
+            }
         }
     }
 
@@ -427,6 +463,24 @@ struct TripSummaryView: View {
                 print("[Summary] ❌ Archive failed: \(error)")
             }
             isArchiving = false
+        }
+    }
+
+    private func deleteTripPermanently() {
+        isDeletingTrip = true
+        Task {
+            let start = ContinuousClock.now
+            do {
+                try await TripRepository().deleteTrip(tripId: tripId)
+                let elapsed = ContinuousClock.now - start
+                if elapsed < .milliseconds(500) {
+                    try? await Task.sleep(for: .milliseconds(500) - elapsed)
+                }
+                router.popToRoot()
+            } catch {
+                print("[Summary] ❌ Delete trip failed: \(error)")
+                isDeletingTrip = false
+            }
         }
     }
 
