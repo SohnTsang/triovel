@@ -17,6 +17,19 @@ final class TripTimelineViewModel {
     /// All blocks for the trip, before filtering.
     private var allBlocks: [Block] = []
 
+    /// Block IDs hidden from UI until loading finishes (write-immediately + hide pattern).
+    private var pendingBlockIds: Set<String> = []
+
+    /// Hide a block from the timeline until revealed. Called by AddMomentView.
+    func hideBlockUntilReady(_ blockId: String) {
+        pendingBlockIds.insert(blockId)
+    }
+
+    /// Reveal a previously hidden block. Called after 500ms loading finishes.
+    func revealBlock(_ blockId: String) {
+        pendingBlockIds.remove(blockId)
+    }
+
     private let blockRepository = BlockRepository()
     private let tripRepository = TripRepository()
     private var currentTripId: String?
@@ -171,6 +184,7 @@ final class TripTimelineViewModel {
             let dayEnd = cal.date(byAdding: .day, value: 1, to: dayStart)!
             let dayBlocks = allBlocks.filter { block in
                 block.startAt >= dayStart && block.startAt < dayEnd
+                && !pendingBlockIds.contains(block.id)
             }.sorted { $0.startAt < $1.startAt }
 
             return TimelineDay(

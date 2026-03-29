@@ -173,7 +173,8 @@ struct BlockDetailView: View {
                                 onDelete: { viewModel.deletePost(post) },
                                 onRetry: nil,
                                 onMediaRetry: { mediaId in viewModel.retryMediaUpload(mediaId: mediaId) },
-                                onEdit: { newBody in viewModel.editPost(post, newBody: newBody) }
+                                onEdit: { newBody in viewModel.editPost(post, newBody: newBody) },
+                                onRemoveMedia: { mediaId in viewModel.deleteMedia(mediaId: mediaId, post: post) }
                             )
                             .id(post.id)
                         }

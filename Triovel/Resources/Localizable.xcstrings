@@ -5121,6 +5121,15 @@
         "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "編輯貼文" } }
       }
     },
+    "post.edit.media" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Photos" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "写真" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "照片" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "照片" } }
+      }
+    },
     "post.edit.placeholder" : {
       "extractionState" : "manual",
       "localizations" : {

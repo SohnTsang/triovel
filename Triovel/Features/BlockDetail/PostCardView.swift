@@ -11,10 +11,12 @@ struct PostCardView: View {
     let onRetry: (() -> Void)?
     var onMediaRetry: ((String) -> Void)?
     var onEdit: ((String) -> Void)?
+    var onRemoveMedia: ((String) -> Void)?
 
     @State private var showingDeleteConfirmation = false
     @State private var showingEditSheet = false
     @State private var editText = ""
+    @State private var mediaToRemove: Set<String> = []
     @State private var isSavingEdit = false
 
     var body: some View {
@@ -60,13 +62,12 @@ struct PostCardView: View {
                 // Own post actions — visible icon
                 if isOwn {
                     Menu {
-                        if post.body != nil && !post.body!.isEmpty {
-                            Button {
-                                editText = post.body ?? ""
-                                showingEditSheet = true
-                            } label: {
-                                Label(String(localized: "common.edit"), systemImage: "pencil")
-                            }
+                        Button {
+                            editText = post.body ?? ""
+                            mediaToRemove = []
+                            showingEditSheet = true
+                        } label: {
+                            Label(String(localized: "common.edit"), systemImage: "pencil")
                         }
 
                         Button(role: .destructive) {
@@ -140,9 +141,44 @@ struct PostCardView: View {
     private var editPostSheet: some View {
         NavigationStack {
             Form {
-                Section {
-                    TextField(String(localized: "post.edit.placeholder"), text: $editText, axis: .vertical)
-                        .lineLimit(2...10)
+                if post.body != nil {
+                    Section {
+                        TextField(String(localized: "post.edit.placeholder"), text: $editText, axis: .vertical)
+                            .lineLimit(2...10)
+                    }
+                }
+
+                // Media with remove buttons
+                let visibleMedia = media.filter { !mediaToRemove.contains($0.id) }
+                if !visibleMedia.isEmpty {
+                    Section(String(localized: "post.edit.media")) {
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 8) {
+                                ForEach(visibleMedia) { item in
+                                    ZStack(alignment: .topTrailing) {
+                                        CachedMediaView(
+                                            mediaId: item.id,
+                                            storagePath: item.storagePath,
+                                            mediaType: item.mediaType
+                                        )
+                                        .frame(width: 72, height: 72)
+                                        .clipShape(RoundedRectangle(cornerRadius: 8))
+
+                                        Button {
+                                            mediaToRemove.insert(item.id)
+                                        } label: {
+                                            Image(systemName: "xmark.circle.fill")
+                                                .font(.body)
+                                                .foregroundStyle(.white)
+                                                .shadow(radius: 2)
+                                        }
+                                        .offset(x: 4, y: -4)
+                                    }
+                                }
+                            }
+                            .padding(.vertical, 4)
+                        }
+                    }
                 }
 
                 if post.visibility == .private {
@@ -175,26 +211,42 @@ struct PostCardView: View {
                         Button(String(localized: "common.save")) {
                             saveEdit()
                         }
-                        .disabled(
-                            editText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-                            || editText.trimmingCharacters(in: .whitespacesAndNewlines) == post.body
-                        )
+                        .disabled(!hasEditChanges)
                     }
                 }
             }
             .interactiveDismissDisabled(isSavingEdit)
         }
-        .presentationDetents([.medium])
+        .presentationDetents([.medium, .large])
+    }
+
+    private var hasEditChanges: Bool {
+        let textChanged = editText.trimmingCharacters(in: .whitespacesAndNewlines) != (post.body ?? "")
+        let mediaRemoved = !mediaToRemove.isEmpty
+        return textChanged || mediaRemoved
     }
 
     private func saveEdit() {
-        let trimmed = editText.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty, trimmed != post.body else { return }
-
         isSavingEdit = true
         Task {
-            try? await Task.sleep(for: .milliseconds(500))
-            onEdit?(trimmed)
+            let start = ContinuousClock.now
+
+            // Update text if changed
+            let trimmed = editText.trimmingCharacters(in: .whitespacesAndNewlines)
+            if trimmed != (post.body ?? "") {
+                onEdit?(trimmed)
+            }
+
+            // Remove marked media
+            for mediaId in mediaToRemove {
+                onRemoveMedia?(mediaId)
+            }
+
+            let elapsed = ContinuousClock.now - start
+            if elapsed < .milliseconds(500) {
+                try? await Task.sleep(for: .milliseconds(500) - elapsed)
+            }
+
             isSavingEdit = false
             showingEditSheet = false
         }

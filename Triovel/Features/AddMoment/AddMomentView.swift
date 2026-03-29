@@ -8,6 +8,8 @@ struct AddMomentView: View {
 
     /// Called with the created block ID after successful creation.
     var onBlockCreated: ((String) -> Void)?
+    /// Timeline ViewModel — used to hide the new block until loading finishes.
+    var timelineViewModel: TripTimelineViewModel?
 
     @Environment(\.dismiss) private var dismiss
     @Environment(\.horizontalSizeClass) private var sizeClass
@@ -143,8 +145,12 @@ struct AddMomentView: View {
                 )
                 print("[AddMoment] Block created: \(block.id)")
 
-                // 500ms minimum spinner, then navigate
+                // Hide from timeline until loading finishes (write-immediately + hide)
+                await MainActor.run { timelineViewModel?.hideBlockUntilReady(block.id) }
+
+                // 500ms minimum spinner, then reveal + navigate
                 try? await Task.sleep(for: .milliseconds(500))
+                await MainActor.run { timelineViewModel?.revealBlock(block.id) }
                 dismiss()
                 try? await Task.sleep(for: .milliseconds(300))
                 onBlockCreated?(block.id)

@@ -204,9 +204,9 @@ struct TripTimelineView: View {
                 dayDate: dayDate,
                 displayTimezone: viewModel.trip?.displayTimezone ?? TimeZone.current.identifier,
                 onBlockCreated: { blockId in
-                    // Watch query auto-updates timeline; just navigate
                     router.push(.blockDetail(blockId: blockId))
-                }
+                },
+                timelineViewModel: viewModel
             )
         }
         .task(id: tripId) {

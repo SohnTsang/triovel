@@ -247,6 +247,41 @@ final class BlockDetailViewModel {
         }
     }
 
+    /// Delete a single media item from a post. Cleans up storage + local files.
+    func deleteMedia(mediaId: String, post: Post) {
+        Task { [weak self] in
+            guard let self else { return }
+            do {
+                let media = try await self.postMediaRepository.fetchMediaForPost(postId: post.id)
+                guard let item = media.first(where: { $0.id == mediaId }) else { return }
+
+                // Delete from local DB
+                let db = SyncManager.shared.db
+                try await db.execute(
+                    sql: "DELETE FROM post_media WHERE id = ?",
+                    parameters: [mediaId]
+                )
+
+                // Clean up Supabase Storage
+                let ext = item.mediaType == .photo ? "jpg" : "mp4"
+                let storagePath = "posts/\(post.id)/\(mediaId).\(ext)"
+                do {
+                    _ = try await SupabaseConfig.client.storage
+                        .from("trip-media")
+                        .remove(paths: [storagePath])
+                } catch {
+                    print("[BlockDetail] ⚠️ Media storage cleanup failed: \(error)")
+                }
+
+                // Clean up local files
+                MediaFileManager.deleteLocalFiles(for: mediaId, type: item.mediaType)
+                print("[BlockDetail] Deleted media: \(mediaId)")
+            } catch {
+                print("[BlockDetail] ❌ Delete media failed: \(error)")
+            }
+        }
+    }
+
     private(set) var deletingPostId: String?
 
     func deletePost(_ post: Post) {
