@@ -18,6 +18,8 @@ struct BlockDetailHeaderView: View {
     @Binding var editLocalTimezone: String?
     let onSave: () -> Void
 
+    @State private var hasEndTime = false
+    @State private var editEndTime = Date()
     @FocusState private var focusedField: EditField?
 
     private enum EditField {
@@ -37,6 +39,15 @@ struct BlockDetailHeaderView: View {
         .contentShape(Rectangle())
         .onTapGesture {
             focusedField = nil
+        }
+        .onChange(of: isEditing) { _, editing in
+            if editing {
+                hasEndTime = editEndAt != nil
+                editEndTime = editEndAt ?? (Calendar.current.date(byAdding: .hour, value: 1, to: editStartAt) ?? editStartAt)
+            }
+        }
+        .onChange(of: editEndTime) { _, newEnd in
+            if hasEndTime { editEndAt = newEnd }
         }
     }
 
@@ -224,12 +235,15 @@ struct BlockDetailHeaderView: View {
                     Text("–")
                         .foregroundStyle(.tertiary)
 
-                    if let endAt = Binding($editEndAt) {
-                        DatePicker("", selection: endAt, in: editStartAt..., displayedComponents: .hourAndMinute)
+                    if hasEndTime {
+                        DatePicker("", selection: $editEndTime, in: editStartAt..., displayedComponents: .hourAndMinute)
                             .labelsHidden()
 
                         Button {
-                            editEndAt = nil
+                            withAnimation(.easeInOut(duration: 0.2)) {
+                                hasEndTime = false
+                                editEndAt = nil
+                            }
                         } label: {
                             Image(systemName: "xmark.circle.fill")
                                 .font(.caption)
@@ -237,7 +251,12 @@ struct BlockDetailHeaderView: View {
                         }
                     } else {
                         Button {
-                            editEndAt = Calendar.current.date(byAdding: .hour, value: 1, to: editStartAt) ?? editStartAt
+                            let defaultEnd = Calendar.current.date(byAdding: .hour, value: 1, to: editStartAt) ?? editStartAt
+                            editEndTime = defaultEnd
+                            editEndAt = defaultEnd
+                            withAnimation(.easeInOut(duration: 0.2)) {
+                                hasEndTime = true
+                            }
                         } label: {
                             Text("block.edit.end.time.add")
                                 .font(.subheadline)
@@ -260,8 +279,9 @@ struct BlockDetailHeaderView: View {
                         .frame(width: 20)
 
                     if let tz = editLocalTimezone, !tz.isEmpty {
-                        Text(shortTimezoneLabel(tz))
-                            .font(.body)
+                        Text(fullTimezoneLabel(tz))
+                            .font(.subheadline)
+                            .lineLimit(1)
                         Spacer()
                         Button {
                             editLocalTimezone = nil
@@ -277,7 +297,7 @@ struct BlockDetailHeaderView: View {
                         )) {
                             Text("block.edit.local.timezone.none").tag("")
                             ForEach(commonTimezones, id: \.self) { tz in
-                                Text("\(shortTimezoneLabel(tz)) — \(tz)").tag(tz)
+                                Text(fullTimezoneLabel(tz)).tag(tz)
                             }
                         }
                         .labelsHidden()
@@ -333,6 +353,16 @@ struct BlockDetailHeaderView: View {
     private func shortTimezoneLabel(_ identifier: String) -> String {
         let tz = TimeZone(identifier: identifier) ?? .current
         return tz.abbreviation() ?? identifier
+    }
+
+    private func fullTimezoneLabel(_ identifier: String) -> String {
+        let tz = TimeZone(identifier: identifier) ?? .current
+        let abbr = tz.abbreviation() ?? ""
+        let offset = tz.secondsFromGMT()
+        let hours = offset / 3600
+        let sign = hours >= 0 ? "+" : ""
+        let city = identifier.components(separatedBy: "/").last?.replacingOccurrences(of: "_", with: " ") ?? identifier
+        return "\(abbr) (UTC\(sign)\(hours)) — \(city)"
     }
 
     private let commonTimezones = [

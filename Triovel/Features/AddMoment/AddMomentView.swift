@@ -18,6 +18,7 @@ struct AddMomentView: View {
 
     @State private var title: String = ""
     @State private var context: BlockContext = .group
+    @State private var isAllDay = false
     @State private var startTime = Date()
     @State private var hasEndTime = false
     @State private var endTime = Date()
@@ -48,43 +49,52 @@ struct AddMomentView: View {
                 .padding(.horizontal)
                 .disabled(isSaving)
 
-                // Start time
-                DatePicker(
-                    String(localized: "block.add.start.time"),
-                    selection: $startTime,
-                    displayedComponents: .hourAndMinute
-                )
-                .padding(.horizontal)
-                .disabled(isSaving)
+                // All day toggle
+                Toggle(String(localized: "block.add.all.day"), isOn: $isAllDay)
+                    .padding(.horizontal)
+                    .disabled(isSaving)
+                    .onChange(of: isAllDay) { _, allDay in
+                        if allDay { hasEndTime = false }
+                    }
 
-                // End time (optional)
-                VStack(spacing: 8) {
-                    if hasEndTime {
-                        DatePicker(
-                            String(localized: "block.add.end.time"),
-                            selection: $endTime,
-                            in: startTime...,
-                            displayedComponents: .hourAndMinute
-                        )
+                // Time pickers (hidden when All Day)
+                if !isAllDay {
+                    DatePicker(
+                        String(localized: "block.add.start.time"),
+                        selection: $startTime,
+                        displayedComponents: .hourAndMinute
+                    )
+                    .padding(.horizontal)
+                    .disabled(isSaving)
+
+                    // End time (optional)
+                    VStack(spacing: 8) {
+                        if hasEndTime {
+                            DatePicker(
+                                String(localized: "block.add.end.time"),
+                                selection: $endTime,
+                                in: startTime...,
+                                displayedComponents: .hourAndMinute
+                            )
+                            .padding(.horizontal)
+                            .disabled(isSaving)
+                        }
+
+                        Button {
+                            withAnimation(.easeInOut(duration: 0.2)) {
+                                hasEndTime.toggle()
+                                if hasEndTime {
+                                    endTime = Calendar.current.date(byAdding: .hour, value: 1, to: startTime) ?? startTime
+                                }
+                            }
+                        } label: {
+                            Text(hasEndTime ? "block.add.end.time.remove" : "block.add.end.time.add")
+                                .font(.subheadline)
+                                .foregroundStyle(Color.accentColor)
+                        }
                         .padding(.horizontal)
                         .disabled(isSaving)
                     }
-
-                    Button {
-                        withAnimation(.easeInOut(duration: 0.2)) {
-                            hasEndTime.toggle()
-                            if hasEndTime {
-                                // Default end time = start + 1 hour
-                                endTime = Calendar.current.date(byAdding: .hour, value: 1, to: startTime) ?? startTime
-                            }
-                        }
-                    } label: {
-                        Text(hasEndTime ? "block.add.end.time.remove" : "block.add.end.time.add")
-                            .font(.subheadline)
-                            .foregroundStyle(Color.accentColor)
-                    }
-                    .padding(.horizontal)
-                    .disabled(isSaving)
                 }
 
                 if let error = errorMessage {
@@ -167,8 +177,16 @@ struct AddMomentView: View {
         guard !trimmedTitle.isEmpty else { return }
         guard let userId = appState.currentUserId else { return }
 
-        let startAt = buildDateTime(from: startTime)
-        let endAt = hasEndTime ? buildDateTime(from: endTime) : nil
+        let startAt: Date
+        let endAt: Date?
+        if isAllDay {
+            // All-day: use start of the day
+            startAt = Calendar.current.startOfDay(for: dayDate ?? Date())
+            endAt = nil
+        } else {
+            startAt = buildDateTime(from: startTime)
+            endAt = hasEndTime ? buildDateTime(from: endTime) : nil
+        }
 
         isSaving = true
         errorMessage = nil

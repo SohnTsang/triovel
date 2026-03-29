@@ -66,38 +66,53 @@ struct BlockCardView: View {
 
     // MARK: - Time Column
 
+    /// True if block starts at midnight (all-day block)
+    private var isAllDay: Bool {
+        let cal = Calendar.current
+        let hour = cal.component(.hour, from: block.startAt)
+        let minute = cal.component(.minute, from: block.startAt)
+        return hour == 0 && minute == 0 && block.endAt == nil
+    }
+
     private var timeColumn: some View {
         VStack(spacing: 0) {
-            // Start time
-            Text(block.startAt, format: .dateTime.hour().minute())
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(.primary)
-                .padding(.top, 12)
-
-            // Local timezone label (e.g. "JST") — shown if different from trip
-            if let localTz = block.localTimezone,
-               !localTz.isEmpty,
-               localTz != tripDisplayTimezone {
-                Text(shortTimezoneLabel(localTz))
-                    .font(.system(size: 9, weight: .medium))
-                    .foregroundStyle(.tertiary)
-                    .padding(.top, 1)
-            }
-
-            // Vertical line
-            if hasEndTime {
-                RoundedRectangle(cornerRadius: 1)
-                    .fill(Color(.systemGray4))
-                    .frame(width: 2)
-                    .frame(minHeight: 16)
-                    .padding(.vertical, 4)
-            }
-
-            // End time
-            if let endAt = block.endAt {
-                Text(endAt, format: .dateTime.hour().minute())
-                    .font(.caption)
+            if isAllDay {
+                Text("block.card.all.day")
+                    .font(.caption2.weight(.medium))
                     .foregroundStyle(.secondary)
+                    .padding(.top, 12)
+            } else {
+                // Start time
+                Text(block.startAt, format: .dateTime.hour().minute())
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.primary)
+                    .padding(.top, 12)
+
+                // Local timezone label (e.g. "JST") — shown if different from trip
+                if let localTz = block.localTimezone,
+                   !localTz.isEmpty,
+                   localTz != tripDisplayTimezone {
+                    Text(shortTimezoneLabel(localTz))
+                        .font(.system(size: 9, weight: .medium))
+                        .foregroundStyle(.tertiary)
+                        .padding(.top, 1)
+                }
+
+                // Vertical line
+                if hasEndTime {
+                    RoundedRectangle(cornerRadius: 1)
+                        .fill(Color(.systemGray4))
+                        .frame(width: 2)
+                        .frame(minHeight: 16)
+                        .padding(.vertical, 4)
+                }
+
+                // End time
+                if let endAt = block.endAt {
+                    Text(endAt, format: .dateTime.hour().minute())
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
             }
 
             Spacer(minLength: 0)
