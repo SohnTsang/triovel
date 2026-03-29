@@ -5,299 +5,261 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Privacy Policy — Triovel</title>
     <style>
-        :root {
-            --teal: #4a9d9a;
-            --teal-light: #e8f4f3;
-            --teal-dark: #3a7d7a;
-            --text-primary: #1c1c1e;
-            --text-secondary: #636366;
-            --text-tertiary: #aeaeb2;
-            --bg: #ffffff;
-            --bg-secondary: #f9fafb;
-            --bg-card: #ffffff;
-            --border: #e5e7eb;
-            --shadow: rgba(0, 0, 0, 0.04);
-        }
-
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --teal-light: #1a3332;
-                --text-primary: #f2f2f7;
-                --text-secondary: #aeaeb2;
-                --text-tertiary: #636366;
-                --bg: #000000;
-                --bg-secondary: #1c1c1e;
-                --bg-card: #1c1c1e;
-                --border: #2c2c2e;
-                --shadow: rgba(0, 0, 0, 0.2);
-            }
-        }
-
         * { margin: 0; padding: 0; box-sizing: border-box; }
-
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            line-height: 1.7;
-            color: var(--text-primary);
-            background: var(--bg);
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+            color: #333;
+            background: #fff;
             -webkit-font-smoothing: antialiased;
         }
-
-        /* Header */
-        .header {
-            background: var(--teal);
-            padding: 48px 20px 40px;
-            text-align: center;
+        @media (prefers-color-scheme: dark) {
+            body { background: #111; color: #ccc; }
+            nav { border-color: #222; }
+            h2 { color: #e0e0e0; }
+            footer { border-color: #222; color: #555; }
+            a { color: #6dbfbb; }
         }
-        .header-inner {
-            max-width: 640px;
+        nav {
+            padding: 16px 24px;
+            border-bottom: 1px solid #eee;
+            font-size: 15px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+        main {
+            max-width: 600px;
             margin: 0 auto;
+            padding: 40px 24px 80px;
         }
-        .logo {
-            font-size: 1.1em;
+        h1 {
+            font-size: 28px;
             font-weight: 700;
-            color: rgba(255, 255, 255, 0.9);
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
+            margin-bottom: 6px;
+            letter-spacing: -0.3px;
+        }
+        .updated {
+            font-size: 13px;
+            color: #888;
+            margin-bottom: 36px;
+        }
+        h2 {
+            font-size: 17px;
+            font-weight: 600;
+            margin-top: 36px;
             margin-bottom: 12px;
+            color: #111;
         }
-        .header h1 {
-            font-size: 1.75em;
-            font-weight: 700;
-            color: #fff;
-            margin-bottom: 8px;
+        @media (prefers-color-scheme: dark) { h2 { color: #e0e0e0; } }
+        p {
+            font-size: 15px;
+            line-height: 1.7;
+            margin-bottom: 14px;
+            color: inherit;
         }
-        .header .date {
-            font-size: 0.85em;
-            color: rgba(255, 255, 255, 0.7);
+        ul {
+            padding-left: 18px;
+            margin-bottom: 14px;
         }
-
-        /* Content */
-        .content {
-            max-width: 640px;
+        li {
+            font-size: 15px;
+            line-height: 1.7;
+            margin-bottom: 6px;
+        }
+        strong { font-weight: 600; }
+        a { color: #4a9d9a; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        footer {
+            max-width: 600px;
             margin: 0 auto;
-            padding: 32px 20px 60px;
+            padding: 20px 24px;
+            font-size: 13px;
+            color: #999;
+            border-top: 1px solid #eee;
         }
-
-        .intro {
-            font-size: 1.05em;
-            color: var(--text-secondary);
-            margin-bottom: 32px;
-            padding-bottom: 24px;
-            border-bottom: 1px solid var(--border);
-        }
-
-        /* Sections */
-        .section {
-            margin-bottom: 32px;
-        }
-        .section-number {
-            display: inline-block;
-            width: 28px;
-            height: 28px;
-            background: var(--teal);
-            color: #fff;
-            font-size: 0.8em;
-            font-weight: 600;
-            border-radius: 8px;
-            text-align: center;
-            line-height: 28px;
-            margin-right: 10px;
-            flex-shrink: 0;
-        }
-        .section h2 {
-            display: flex;
-            align-items: center;
-            font-size: 1.15em;
-            font-weight: 600;
-            color: var(--text-primary);
-            margin-bottom: 12px;
-        }
-        .section p {
-            color: var(--text-secondary);
-            margin-bottom: 12px;
-            font-size: 0.95em;
-        }
-        .section ul {
-            padding-left: 0;
-            list-style: none;
-            margin-bottom: 12px;
-        }
-        .section li {
-            position: relative;
-            padding-left: 20px;
-            margin-bottom: 8px;
-            color: var(--text-secondary);
-            font-size: 0.95em;
-        }
-        .section li::before {
-            content: "";
-            position: absolute;
-            left: 0;
-            top: 10px;
-            width: 6px;
-            height: 6px;
-            background: var(--teal);
-            border-radius: 50%;
-        }
-        .section li strong {
-            color: var(--text-primary);
-            font-weight: 600;
-        }
-
-        /* Highlight card */
-        .highlight {
-            background: var(--teal-light);
-            border-radius: 12px;
-            padding: 16px 20px;
-            margin: 16px 0;
-            border-left: 3px solid var(--teal);
-        }
-        .highlight p {
-            color: var(--text-primary);
-            margin: 0;
-            font-size: 0.9em;
-        }
-
-        /* Contact card */
-        .contact {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 24px;
-            margin-top: 40px;
-            box-shadow: 0 1px 3px var(--shadow);
-        }
-        .contact h2 {
-            font-size: 1.1em;
-            margin-bottom: 8px;
-        }
-        .contact p {
-            font-size: 0.9em;
-            color: var(--text-secondary);
-            margin-bottom: 4px;
-        }
-        .contact a {
-            color: var(--teal);
-            text-decoration: none;
-            font-weight: 600;
-        }
-        .contact a:hover { text-decoration: underline; }
-
-        /* Footer */
-        .footer {
-            text-align: center;
-            padding: 24px 20px;
-            color: var(--text-tertiary);
-            font-size: 0.8em;
-            border-top: 1px solid var(--border);
-            max-width: 640px;
-            margin: 0 auto;
-        }
+        .lang { display: none; }
+        .lang.active { display: block; }
     </style>
 </head>
 <body>
 
-<div class="header">
-    <div class="header-inner">
-        <div class="logo">Triovel</div>
+<nav>Triovel</nav>
+
+<main>
+    <!-- English -->
+    <div class="lang" id="en">
         <h1>Privacy Policy</h1>
-        <div class="date">Last updated: March 30, 2026</div>
-    </div>
-</div>
+        <p class="updated">Last updated March 30, 2026</p>
 
-<div class="content">
-    <p class="intro">Your privacy matters. This policy explains what data Triovel collects, how we use it, and the choices you have. We keep it simple and honest.</p>
-
-    <div class="section">
-        <h2><span class="section-number">1</span> What We Collect</h2>
-        <p>When you use Triovel, we collect only what's needed to provide the trip collaboration experience:</p>
+        <h2>What we collect</h2>
+        <p>We collect what's necessary to run the app:</p>
         <ul>
-            <li><strong>Account information</strong> — Name, email address, and authentication credentials (via Apple Sign-In or email/password).</li>
-            <li><strong>Trip data</strong> — Trip titles, dates, timezone preferences, and currency settings you create.</li>
-            <li><strong>Content you share</strong> — Text posts, photos, and videos you upload to shared trips.</li>
-            <li><strong>Financial data</strong> — Bill amounts, currencies, payer information, and payment records you enter for expense splitting.</li>
-            <li><strong>Location text</strong> — Optional location descriptions you type for trip blocks. We do not access GPS or device location.</li>
+            <li><strong>Account info</strong> — name, email, and sign-in credentials (Apple or email/password).</li>
+            <li><strong>Trip data</strong> — titles, dates, timezone, and currency settings.</li>
+            <li><strong>Posts</strong> — text, photos, and videos you share in trips.</li>
+            <li><strong>Expenses</strong> — bill amounts, currencies, payer info, and payments.</li>
+            <li><strong>Location text</strong> — optional descriptions you type. We never access GPS.</li>
         </ul>
+
+        <h2>How we use it</h2>
+        <p>Your data powers the trip experience — displaying content, syncing across devices, and calculating balances. We don't use it for ads, profiling, or anything outside the app.</p>
+
+        <h2>Who sees your data</h2>
+        <p>Trip members see shared posts, bills, and payments. Private posts ("Just Me") are never visible to anyone else and never leave your device.</p>
+        <p>We use Supabase and PowerSync to run the service. They process data on our behalf. We don't sell or share your data with anyone else.</p>
+
+        <h2>Security</h2>
+        <p>All data is encrypted in transit (HTTPS/TLS). Server data is protected by row-level security policies. Photos and videos are stored with per-user access controls. Local data lives in an on-device database.</p>
+
+        <h2>Retention and deletion</h2>
+        <p>Data stays as long as your account is active. Delete your account in Settings and we'll remove your profile, trip memberships, and uploaded media. Posts and bills may be anonymized to keep shared trips intact for other members.</p>
+
+        <h2>Your rights</h2>
+        <p>You can view your data in the app, delete your account at any time, or contact us to request a data export.</p>
+
+        <h2>Children</h2>
+        <p>Triovel is not for users under 13. If you believe a child has created an account, let us know.</p>
+
+        <h2>Changes</h2>
+        <p>We'll notify you of significant changes through the app. Continued use after updates means you accept the new terms.</p>
+
+        <h2>Contact</h2>
+        <p>Questions? Reach us at <a href="mailto:privacy@triovel.app">privacy@triovel.app</a></p>
     </div>
 
-    <div class="section">
-        <h2><span class="section-number">2</span> How We Use Your Data</h2>
+    <!-- Japanese -->
+    <div class="lang" id="ja">
+        <h1>プライバシーポリシー</h1>
+        <p class="updated">最終更新日 2026年3月30日</p>
+
+        <h2>収集する情報</h2>
+        <p>アプリの運営に必要な情報のみ収集します。</p>
         <ul>
-            <li>Display your trips, posts, and expenses to you and your trip members.</li>
-            <li>Sync data across devices so your trip is always up to date.</li>
-            <li>Calculate expense balances between trip members.</li>
-            <li>Store and deliver photos and videos you share with your trip group.</li>
+            <li><strong>アカウント情報</strong> — 氏名、メールアドレス、サインイン資格情報（Apple またはメール/パスワード）。</li>
+            <li><strong>旅行データ</strong> — タイトル、日程、タイムゾーン、通貨設定。</li>
+            <li><strong>投稿</strong> — 旅行内で共有するテキスト、写真、動画。</li>
+            <li><strong>費用</strong> — 請求金額、通貨、支払者情報、支払い記録。</li>
+            <li><strong>場所テキスト</strong> — 任意で入力する場所の説明。GPSにはアクセスしません。</li>
         </ul>
-        <div class="highlight">
-            <p>We do not use your data for advertising, analytics profiling, or any purpose beyond trip collaboration.</p>
-        </div>
+
+        <h2>利用目的</h2>
+        <p>データは旅行体験の提供に使用します。コンテンツの表示、デバイス間の同期、残高の計算などです。広告やプロファイリングには使用しません。</p>
+
+        <h2>データの共有</h2>
+        <p>旅行メンバーは共有投稿、請求書、支払いを閲覧できます。プライベート投稿（「自分だけ」）は他のユーザーに表示されず、デバイスの外に出ることもありません。</p>
+        <p>サービス運営のためSupabaseとPowerSyncを利用しています。データの販売や第三者への共有は行いません。</p>
+
+        <h2>セキュリティ</h2>
+        <p>すべてのデータはHTTPS/TLSで暗号化して送信されます。サーバーデータは行レベルセキュリティポリシーで保護されています。ローカルデータはデバイス上のデータベースに保存されます。</p>
+
+        <h2>保持と削除</h2>
+        <p>アカウントが有効な間、データは保持されます。設定からアカウントを削除すると、プロフィール、旅行メンバーシップ、アップロードしたメディアが削除されます。共有旅行の整合性を保つため、投稿や請求書は匿名化される場合があります。</p>
+
+        <h2>お客様の権利</h2>
+        <p>アプリ内でデータを確認できます。いつでもアカウントを削除でき、データエクスポートのリクエストも可能です。</p>
+
+        <h2>お子様について</h2>
+        <p>Triovelは13歳未満のユーザーを対象としていません。お子様がアカウントを作成した場合はご連絡ください。</p>
+
+        <h2>変更</h2>
+        <p>重要な変更はアプリを通じてお知らせします。更新後の継続利用は新しい規約への同意を意味します。</p>
+
+        <h2>お問い合わせ</h2>
+        <p>ご質問は <a href="mailto:privacy@triovel.app">privacy@triovel.app</a> までお願いします。</p>
     </div>
 
-    <div class="section">
-        <h2><span class="section-number">3</span> Data Sharing</h2>
-        <p>We do not sell, rent, or share your personal data with third parties. Your data is shared only with:</p>
+    <!-- Chinese Traditional -->
+    <div class="lang" id="zh-Hant">
+        <h1>隱私權政策</h1>
+        <p class="updated">最後更新 2026年3月30日</p>
+
+        <h2>我們收集的資訊</h2>
+        <p>我們僅收集營運應用程式所需的資訊：</p>
         <ul>
-            <li><strong>Your trip members</strong> — Shared posts, bills, and payments are visible to members of the same trip.</li>
-            <li><strong>Infrastructure providers</strong> — We use Supabase (database, authentication, storage) and PowerSync (data synchronization) to operate the service. These providers process data on our behalf under strict data processing agreements.</li>
+            <li><strong>帳戶資訊</strong> — 姓名、電子郵件及登入憑證（Apple 或電子郵件/密碼）。</li>
+            <li><strong>旅行資料</strong> — 標題、日期、時區及貨幣設定。</li>
+            <li><strong>貼文</strong> — 您在旅行中分享的文字、照片和影片。</li>
+            <li><strong>費用</strong> — 帳單金額、貨幣、付款人資訊及付款紀錄。</li>
+            <li><strong>地點文字</strong> — 您輸入的選填地點描述。我們不會存取 GPS。</li>
         </ul>
-        <div class="highlight">
-            <p>Private posts (marked "Just Me") are never visible to other users and are not synced to other devices.</p>
-        </div>
+
+        <h2>使用方式</h2>
+        <p>您的資料用於提供旅行體驗——顯示內容、跨裝置同步及計算餘額。我們不會用於廣告、分析或應用程式以外的任何用途。</p>
+
+        <h2>誰能看到您的資料</h2>
+        <p>旅行成員可以看到共享貼文、帳單和付款。私人貼文（「只有自己」）不會顯示給其他人，也不會離開您的裝置。</p>
+        <p>我們使用 Supabase 和 PowerSync 營運服務。我們不會出售或與第三方分享您的資料。</p>
+
+        <h2>安全性</h2>
+        <p>所有資料透過 HTTPS/TLS 加密傳輸。伺服器資料受行級安全策略保護。本地資料儲存在裝置上的資料庫中。</p>
+
+        <h2>保留與刪除</h2>
+        <p>帳戶有效期間將保留資料。在設定中刪除帳戶後，我們會移除您的個人資料、旅行成員資格及上傳的媒體。為保持共享旅行的完整性，貼文和帳單可能會被匿名化。</p>
+
+        <h2>您的權利</h2>
+        <p>您可以在應用程式中查看資料、隨時刪除帳戶，或聯繫我們要求匯出資料。</p>
+
+        <h2>兒童</h2>
+        <p>Triovel 不適用於 13 歲以下的使用者。若您認為有兒童建立了帳戶，請通知我們。</p>
+
+        <h2>變更</h2>
+        <p>重大變更將透過應用程式通知。更新後繼續使用即表示接受新條款。</p>
+
+        <h2>聯繫我們</h2>
+        <p>如有疑問，請寄信至 <a href="mailto:privacy@triovel.app">privacy@triovel.app</a></p>
     </div>
 
-    <div class="section">
-        <h2><span class="section-number">4</span> Data Storage & Security</h2>
+    <!-- Chinese Simplified -->
+    <div class="lang" id="zh-Hans">
+        <h1>隐私政策</h1>
+        <p class="updated">最后更新 2026年3月30日</p>
+
+        <h2>我们收集的信息</h2>
+        <p>我们仅收集运营应用所需的信息：</p>
         <ul>
-            <li>All data is transmitted over HTTPS with TLS encryption.</li>
-            <li>Data is stored in Supabase-managed PostgreSQL databases with row-level security policies.</li>
-            <li>Photos and videos are stored in Supabase Storage with per-user access controls.</li>
-            <li>Local data is stored on your device using SQLite for offline access.</li>
-            <li>Authentication tokens are managed with automatic refresh and secure storage.</li>
+            <li><strong>账户信息</strong> — 姓名、邮箱及登录凭证（Apple 或邮箱/密码）。</li>
+            <li><strong>旅行数据</strong> — 标题、日期、时区及货币设置。</li>
+            <li><strong>帖子</strong> — 您在旅行中分享的文字、照片和视频。</li>
+            <li><strong>费用</strong> — 账单金额、货币、付款人信息及付款记录。</li>
+            <li><strong>地点文字</strong> — 您输入的可选地点描述。我们不会访问 GPS。</li>
         </ul>
+
+        <h2>使用方式</h2>
+        <p>您的数据用于提供旅行体验——显示内容、跨设备同步及计算余额。我们不会用于广告、分析或应用以外的任何用途。</p>
+
+        <h2>谁能看到您的数据</h2>
+        <p>旅行成员可以看到共享帖子、账单和付款。私人帖子（"只有自己"）不会显示给其他人，也不会离开您的设备。</p>
+        <p>我们使用 Supabase 和 PowerSync 运营服务。我们不会出售或与第三方共享您的数据。</p>
+
+        <h2>安全性</h2>
+        <p>所有数据通过 HTTPS/TLS 加密传输。服务器数据受行级安全策略保护。本地数据存储在设备上的数据库中。</p>
+
+        <h2>保留与删除</h2>
+        <p>账户有效期间将保留数据。在设置中删除账户后，我们会移除您的个人资料、旅行成员资格及上传的媒体。为保持共享旅行的完整性，帖子和账单可能会被匿名化。</p>
+
+        <h2>您的权利</h2>
+        <p>您可以在应用中查看数据、随时删除账户，或联系我们要求导出数据。</p>
+
+        <h2>儿童</h2>
+        <p>Triovel 不适用于 13 岁以下的用户。若您认为有儿童创建了账户，请通知我们。</p>
+
+        <h2>变更</h2>
+        <p>重大变更将通过应用通知。更新后继续使用即表示接受新条款。</p>
+
+        <h2>联系我们</h2>
+        <p>如有疑问，请发送邮件至 <a href="mailto:privacy@triovel.app">privacy@triovel.app</a></p>
     </div>
+</main>
 
-    <div class="section">
-        <h2><span class="section-number">5</span> Data Retention</h2>
-        <p>Your data is retained as long as your account is active. When you delete your account:</p>
-        <ul>
-            <li>Your profile and authentication records are permanently deleted.</li>
-            <li>Your membership in all trips is removed.</li>
-            <li>Posts and bills you created may be anonymized to preserve trip integrity for other members.</li>
-            <li>Photos and videos you uploaded are deleted from cloud storage.</li>
-            <li>Local data on your device is cleared immediately.</li>
-        </ul>
-    </div>
+<footer>Triovel</footer>
 
-    <div class="section">
-        <h2><span class="section-number">6</span> Your Rights</h2>
-        <ul>
-            <li><strong>Access your data</strong> — View all your trips, posts, and expenses within the app.</li>
-            <li><strong>Delete your account</strong> — Use the "Delete Account" option in Settings to permanently remove your account and associated data.</li>
-            <li><strong>Export your data</strong> — Contact us to request a copy of your data.</li>
-        </ul>
-    </div>
-
-    <div class="section">
-        <h2><span class="section-number">7</span> Children's Privacy</h2>
-        <p>Triovel is not intended for children under 13. We do not knowingly collect data from children under 13. If you believe a child has provided us with personal data, please contact us.</p>
-    </div>
-
-    <div class="section">
-        <h2><span class="section-number">8</span> Changes to This Policy</h2>
-        <p>We may update this privacy policy from time to time. We will notify you of significant changes through the app or via email. Continued use of Triovel after changes constitutes acceptance of the updated policy.</p>
-    </div>
-
-    <div class="contact">
-        <h2>Questions?</h2>
-        <p>If you have questions about this privacy policy or your data, reach out to us.</p>
-        <p><a href="mailto:privacy@triovel.app">privacy@triovel.app</a></p>
-    </div>
-</div>
-
-<div class="footer">
-    Triovel &middot; Plan the anchors. Capture the reality. Share the trip.
-</div>
-
+<script>
+    const lang = (navigator.language || 'en').toLowerCase();
+    let id = 'en';
+    if (lang.startsWith('ja')) id = 'ja';
+    else if (lang === 'zh-tw' || lang === 'zh-hk' || lang.startsWith('zh-hant')) id = 'zh-Hant';
+    else if (lang.startsWith('zh')) id = 'zh-Hans';
+    document.getElementById(id).classList.add('active');
+    document.documentElement.lang = id === 'zh-Hant' ? 'zh-Hant' : id === 'zh-Hans' ? 'zh-Hans' : id;
+</script>
 </body>
 </html>

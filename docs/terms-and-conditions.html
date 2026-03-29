@@ -5,305 +5,285 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Terms of Service — Triovel</title>
     <style>
-        :root {
-            --teal: #4a9d9a;
-            --teal-light: #e8f4f3;
-            --teal-dark: #3a7d7a;
-            --text-primary: #1c1c1e;
-            --text-secondary: #636366;
-            --text-tertiary: #aeaeb2;
-            --bg: #ffffff;
-            --bg-secondary: #f9fafb;
-            --bg-card: #ffffff;
-            --border: #e5e7eb;
-            --shadow: rgba(0, 0, 0, 0.04);
-        }
-
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --teal-light: #1a3332;
-                --text-primary: #f2f2f7;
-                --text-secondary: #aeaeb2;
-                --text-tertiary: #636366;
-                --bg: #000000;
-                --bg-secondary: #1c1c1e;
-                --bg-card: #1c1c1e;
-                --border: #2c2c2e;
-                --shadow: rgba(0, 0, 0, 0.2);
-            }
-        }
-
         * { margin: 0; padding: 0; box-sizing: border-box; }
-
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            line-height: 1.7;
-            color: var(--text-primary);
-            background: var(--bg);
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+            color: #333;
+            background: #fff;
             -webkit-font-smoothing: antialiased;
         }
-
-        /* Header */
-        .header {
-            background: var(--teal);
-            padding: 48px 20px 40px;
-            text-align: center;
+        @media (prefers-color-scheme: dark) {
+            body { background: #111; color: #ccc; }
+            nav { border-color: #222; }
+            h2 { color: #e0e0e0; }
+            footer { border-color: #222; color: #555; }
+            a { color: #6dbfbb; }
         }
-        .header-inner {
-            max-width: 640px;
+        nav {
+            padding: 16px 24px;
+            border-bottom: 1px solid #eee;
+            font-size: 15px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+        main {
+            max-width: 600px;
             margin: 0 auto;
+            padding: 40px 24px 80px;
         }
-        .logo {
-            font-size: 1.1em;
+        h1 {
+            font-size: 28px;
             font-weight: 700;
-            color: rgba(255, 255, 255, 0.9);
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
+            margin-bottom: 6px;
+            letter-spacing: -0.3px;
+        }
+        .updated {
+            font-size: 13px;
+            color: #888;
+            margin-bottom: 36px;
+        }
+        h2 {
+            font-size: 17px;
+            font-weight: 600;
+            margin-top: 36px;
             margin-bottom: 12px;
+            color: #111;
         }
-        .header h1 {
-            font-size: 1.75em;
-            font-weight: 700;
-            color: #fff;
-            margin-bottom: 8px;
+        @media (prefers-color-scheme: dark) { h2 { color: #e0e0e0; } }
+        p {
+            font-size: 15px;
+            line-height: 1.7;
+            margin-bottom: 14px;
+            color: inherit;
         }
-        .header .date {
-            font-size: 0.85em;
-            color: rgba(255, 255, 255, 0.7);
+        ul {
+            padding-left: 18px;
+            margin-bottom: 14px;
         }
-
-        /* Content */
-        .content {
-            max-width: 640px;
+        li {
+            font-size: 15px;
+            line-height: 1.7;
+            margin-bottom: 6px;
+        }
+        strong { font-weight: 600; }
+        a { color: #4a9d9a; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        footer {
+            max-width: 600px;
             margin: 0 auto;
-            padding: 32px 20px 60px;
+            padding: 20px 24px;
+            font-size: 13px;
+            color: #999;
+            border-top: 1px solid #eee;
         }
-
-        .intro {
-            font-size: 1.05em;
-            color: var(--text-secondary);
-            margin-bottom: 32px;
-            padding-bottom: 24px;
-            border-bottom: 1px solid var(--border);
-        }
-
-        /* Sections */
-        .section {
-            margin-bottom: 32px;
-        }
-        .section-number {
-            display: inline-block;
-            width: 28px;
-            height: 28px;
-            background: var(--teal);
-            color: #fff;
-            font-size: 0.8em;
-            font-weight: 600;
-            border-radius: 8px;
-            text-align: center;
-            line-height: 28px;
-            margin-right: 10px;
-            flex-shrink: 0;
-        }
-        .section h2 {
-            display: flex;
-            align-items: center;
-            font-size: 1.15em;
-            font-weight: 600;
-            color: var(--text-primary);
-            margin-bottom: 12px;
-        }
-        .section p {
-            color: var(--text-secondary);
-            margin-bottom: 12px;
-            font-size: 0.95em;
-        }
-        .section ul {
-            padding-left: 0;
-            list-style: none;
-            margin-bottom: 12px;
-        }
-        .section li {
-            position: relative;
-            padding-left: 20px;
-            margin-bottom: 8px;
-            color: var(--text-secondary);
-            font-size: 0.95em;
-        }
-        .section li::before {
-            content: "";
-            position: absolute;
-            left: 0;
-            top: 10px;
-            width: 6px;
-            height: 6px;
-            background: var(--teal);
-            border-radius: 50%;
-        }
-        .section li strong {
-            color: var(--text-primary);
-            font-weight: 600;
-        }
-
-        /* Highlight card */
-        .highlight {
-            background: var(--teal-light);
-            border-radius: 12px;
-            padding: 16px 20px;
-            margin: 16px 0;
-            border-left: 3px solid var(--teal);
-        }
-        .highlight p {
-            color: var(--text-primary);
-            margin: 0;
-            font-size: 0.9em;
-        }
-
-        /* Contact card */
-        .contact {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 24px;
-            margin-top: 40px;
-            box-shadow: 0 1px 3px var(--shadow);
-        }
-        .contact h2 {
-            font-size: 1.1em;
-            margin-bottom: 8px;
-        }
-        .contact p {
-            font-size: 0.9em;
-            color: var(--text-secondary);
-            margin-bottom: 4px;
-        }
-        .contact a {
-            color: var(--teal);
-            text-decoration: none;
-            font-weight: 600;
-        }
-        .contact a:hover { text-decoration: underline; }
-
-        /* Footer */
-        .footer {
-            text-align: center;
-            padding: 24px 20px;
-            color: var(--text-tertiary);
-            font-size: 0.8em;
-            border-top: 1px solid var(--border);
-            max-width: 640px;
-            margin: 0 auto;
-        }
+        .lang { display: none; }
+        .lang.active { display: block; }
     </style>
 </head>
 <body>
 
-<div class="header">
-    <div class="header-inner">
-        <div class="logo">Triovel</div>
+<nav>Triovel</nav>
+
+<main>
+    <!-- English -->
+    <div class="lang" id="en">
         <h1>Terms of Service</h1>
-        <div class="date">Last updated: March 30, 2026</div>
-    </div>
-</div>
+        <p class="updated">Last updated March 30, 2026</p>
 
-<div class="content">
-    <p class="intro">By creating an account or using Triovel, you agree to these terms. Please read them carefully.</p>
+        <h2>The service</h2>
+        <p>Triovel is a group trip collaboration app for shared timelines, memories, and expense splitting. By using it, you agree to these terms.</p>
 
-    <div class="section">
-        <h2><span class="section-number">1</span> Description of Service</h2>
-        <p>Triovel is a group trip collaboration app that allows users to create shared trip timelines, post memories, and split expenses. The service is provided on an "as-is" basis during the beta period.</p>
-    </div>
+        <h2>Your account</h2>
+        <p>You need an account to use Triovel. Keep your credentials secure. You must be at least 13 years old. One account per person.</p>
 
-    <div class="section">
-        <h2><span class="section-number">2</span> Account Registration</h2>
+        <h2>Your content</h2>
+        <p>You own everything you post — text, photos, videos. By sharing content in a trip, you give us permission to store, display, and deliver it to your trip members. That's it. We don't claim ownership of your content.</p>
+        <p>Don't post anything illegal or harmful. We may remove content that violates these terms.</p>
+
+        <h2>Acceptable use</h2>
+        <p>Use Triovel for its intended purpose. Don't:</p>
         <ul>
-            <li>You must provide accurate information when creating an account.</li>
-            <li>You are responsible for maintaining the security of your account credentials.</li>
-            <li>You must be at least 13 years old to use Triovel.</li>
-            <li>One person may maintain only one account.</li>
+            <li>Break any laws.</li>
+            <li>Upload malicious files or try to compromise the service.</li>
+            <li>Harass other users.</li>
+            <li>Try to access other people's private data.</li>
+            <li>Scrape data or reverse-engineer the service.</li>
         </ul>
+
+        <h2>Expenses</h2>
+        <p>Triovel helps you record and split expenses. It's a calculator, not a bank. We don't process payments, transfer money, or guarantee the accuracy of what users enter. Settle up between yourselves.</p>
+
+        <h2>Your account, your choice</h2>
+        <p>Delete your account anytime in Settings. We may suspend accounts that violate these terms. Deletion is handled per our <a href="privacy-policy.html">Privacy Policy</a>.</p>
+
+        <h2>Beta</h2>
+        <p>Triovel is in beta. Things may break, change, or disappear. We do our best to prevent data loss but can't guarantee it. The service is free during beta.</p>
+
+        <h2>Liability</h2>
+        <p>Triovel is provided as-is, without warranties. We're not liable for indirect damages, data loss, or business interruption to the maximum extent the law allows.</p>
+
+        <h2>Changes</h2>
+        <p>We may update these terms. We'll let you know through the app. If you keep using Triovel after a change, you accept the updated terms.</p>
+
+        <h2>Governing law</h2>
+        <p>These terms are governed by applicable law. Disputes should be resolved through good-faith discussion first.</p>
+
+        <h2>Contact</h2>
+        <p>Questions? <a href="mailto:support@triovel.app">support@triovel.app</a></p>
     </div>
 
-    <div class="section">
-        <h2><span class="section-number">3</span> User Content</h2>
-        <p>You retain ownership of all content you create in Triovel, including text, photos, and videos. By posting content to a shared trip, you grant Triovel a limited license to store, display, and transmit that content to other trip members for the purpose of providing the service.</p>
+    <!-- Japanese -->
+    <div class="lang" id="ja">
+        <h1>利用規約</h1>
+        <p class="updated">最終更新日 2026年3月30日</p>
+
+        <h2>サービスについて</h2>
+        <p>Triovelは、共有タイムライン、思い出、費用分割のためのグループ旅行コラボレーションアプリです。利用することで、この規約に同意したものとみなします。</p>
+
+        <h2>アカウント</h2>
+        <p>Triovelの利用にはアカウントが必要です。認証情報は安全に管理してください。13歳以上であること、お一人様1アカウントとします。</p>
+
+        <h2>コンテンツ</h2>
+        <p>投稿したテキスト、写真、動画の所有権はお客様にあります。旅行でコンテンツを共有すると、旅行メンバーへの保存・表示・配信の許可を当社に付与します。コンテンツの所有権を主張することはありません。</p>
+        <p>違法または有害なコンテンツの投稿はおやめください。規約に違反するコンテンツは削除する場合があります。</p>
+
+        <h2>利用上の注意</h2>
+        <p>Triovelは本来の目的でご利用ください。以下の行為は禁止です：</p>
         <ul>
-            <li>You are responsible for the content you post.</li>
-            <li>Do not post content that is illegal, harmful, or infringes on others' rights.</li>
-            <li>We may remove content that violates these terms.</li>
+            <li>法律に違反する行為。</li>
+            <li>悪意のあるファイルのアップロードやサービスへの攻撃。</li>
+            <li>他のユーザーへの嫌がらせ。</li>
+            <li>他のユーザーのプライベートデータへのアクセスの試み。</li>
+            <li>データのスクレイピングやリバースエンジニアリング。</li>
         </ul>
+
+        <h2>費用機能</h2>
+        <p>Triovelは費用の記録と分割を支援します。計算ツールであり、銀行ではありません。支払い処理、送金、ユーザー入力データの正確性の保証は行いません。精算はユーザー同士で行ってください。</p>
+
+        <h2>アカウントの管理</h2>
+        <p>設定からいつでもアカウントを削除できます。規約に違反するアカウントは停止する場合があります。削除は<a href="privacy-policy.html">プライバシーポリシー</a>に従って処理されます。</p>
+
+        <h2>ベータ版</h2>
+        <p>Triovelはベータ版です。不具合、変更、機能の削除が発生する可能性があります。データ損失の防止に努めますが、保証はできません。ベータ期間中は無料です。</p>
+
+        <h2>責任の制限</h2>
+        <p>Triovelは現状のまま提供され、いかなる保証もありません。法律が許す最大限の範囲で、間接的損害、データ損失、事業中断について責任を負いません。</p>
+
+        <h2>変更</h2>
+        <p>規約を更新する場合があります。アプリを通じてお知らせします。変更後の継続利用は更新された規約への同意を意味します。</p>
+
+        <h2>準拠法</h2>
+        <p>本規約は適用される法律に準拠します。紛争はまず誠意ある協議で解決するものとします。</p>
+
+        <h2>お問い合わせ</h2>
+        <p>ご質問は <a href="mailto:support@triovel.app">support@triovel.app</a> まで。</p>
     </div>
 
-    <div class="section">
-        <h2><span class="section-number">4</span> Acceptable Use</h2>
-        <p>You agree not to:</p>
+    <!-- Chinese Traditional -->
+    <div class="lang" id="zh-Hant">
+        <h1>服務條款</h1>
+        <p class="updated">最後更新 2026年3月30日</p>
+
+        <h2>服務說明</h2>
+        <p>Triovel 是一款群組旅行協作應用程式，提供共享時間軸、回憶記錄及費用分攤功能。使用即表示您同意本條款。</p>
+
+        <h2>帳戶</h2>
+        <p>使用 Triovel 需要帳戶。請妥善保管您的登入憑證。您必須年滿 13 歲，每人限一個帳戶。</p>
+
+        <h2>您的內容</h2>
+        <p>您發布的文字、照片、影片歸您所有。在旅行中分享內容即授權我們儲存、顯示並傳送給旅行成員。我們不會主張您內容的所有權。</p>
+        <p>請勿發布違法或有害的內容。違反條款的內容可能會被移除。</p>
+
+        <h2>使用規範</h2>
+        <p>請以正當目的使用 Triovel。禁止以下行為：</p>
         <ul>
-            <li>Use the service for any illegal purpose.</li>
-            <li>Upload malicious files or attempt to compromise the service.</li>
-            <li>Harass, abuse, or harm other users.</li>
-            <li>Attempt to access other users' private data.</li>
-            <li>Use automated systems to scrape or extract data from the service.</li>
-            <li>Circumvent any security measures or access controls.</li>
+            <li>違反法律。</li>
+            <li>上傳惡意檔案或嘗試破壞服務。</li>
+            <li>騷擾其他使用者。</li>
+            <li>嘗試存取他人的私人資料。</li>
+            <li>爬取資料或逆向工程。</li>
         </ul>
+
+        <h2>費用功能</h2>
+        <p>Triovel 協助記錄和分攤費用，是計算工具而非銀行。我們不處理付款、轉帳，也不保證使用者輸入資料的準確性。請自行結算。</p>
+
+        <h2>帳戶管理</h2>
+        <p>您可隨時在設定中刪除帳戶。違反條款的帳戶可能被停用。刪除依照<a href="privacy-policy.html">隱私權政策</a>處理。</p>
+
+        <h2>測試版</h2>
+        <p>Triovel 目前為測試版。可能出現錯誤、變更或功能移除。我們盡力防止資料遺失但無法保證。測試期間免費使用。</p>
+
+        <h2>責任限制</h2>
+        <p>Triovel 以現狀提供，不含任何保證。在法律允許的最大範圍內，我們不對間接損害、資料遺失或業務中斷負責。</p>
+
+        <h2>變更</h2>
+        <p>我們可能更新本條款，並透過應用程式通知。更新後繼續使用即表示接受新條款。</p>
+
+        <h2>準據法</h2>
+        <p>本條款受適用法律管轄。爭議應先透過善意協商解決。</p>
+
+        <h2>聯繫我們</h2>
+        <p>如有疑問，請寄信至 <a href="mailto:support@triovel.app">support@triovel.app</a></p>
     </div>
 
-    <div class="section">
-        <h2><span class="section-number">5</span> Expense Splitting</h2>
-        <div class="highlight">
-            <p>Triovel provides tools to record and calculate shared expenses for informational purposes only. Triovel does not process payments, transfer money, or guarantee the accuracy of user-entered financial data. All financial settlements between users are conducted outside the app.</p>
-        </div>
-    </div>
+    <!-- Chinese Simplified -->
+    <div class="lang" id="zh-Hans">
+        <h1>服务条款</h1>
+        <p class="updated">最后更新 2026年3月30日</p>
 
-    <div class="section">
-        <h2><span class="section-number">6</span> Account Termination</h2>
+        <h2>服务说明</h2>
+        <p>Triovel 是一款群组旅行协作应用，提供共享时间轴、回忆记录及费用分摊功能。使用即表示您同意本条款。</p>
+
+        <h2>账户</h2>
+        <p>使用 Triovel 需要账户。请妥善保管您的登录凭证。您必须年满 13 岁，每人限一个账户。</p>
+
+        <h2>您的内容</h2>
+        <p>您发布的文字、照片、视频归您所有。在旅行中分享内容即授权我们存储、显示并传送给旅行成员。我们不会主张您内容的所有权。</p>
+        <p>请勿发布违法或有害的内容。违反条款的内容可能会被移除。</p>
+
+        <h2>使用规范</h2>
+        <p>请以正当目的使用 Triovel。禁止以下行为：</p>
         <ul>
-            <li>You may delete your account at any time through the app's Settings.</li>
-            <li>We may suspend or terminate accounts that violate these terms.</li>
-            <li>Upon deletion, your data will be handled as described in our <a href="privacy-policy.html" style="color: var(--teal); text-decoration: none; font-weight: 600;">Privacy Policy</a>.</li>
+            <li>违反法律。</li>
+            <li>上传恶意文件或尝试破坏服务。</li>
+            <li>骚扰其他用户。</li>
+            <li>尝试访问他人的私人数据。</li>
+            <li>爬取数据或逆向工程。</li>
         </ul>
+
+        <h2>费用功能</h2>
+        <p>Triovel 协助记录和分摊费用，是计算工具而非银行。我们不处理付款、转账，也不保证用户输入数据的准确性。请自行结算。</p>
+
+        <h2>账户管理</h2>
+        <p>您可随时在设置中删除账户。违反条款的账户可能被停用。删除依照<a href="privacy-policy.html">隐私政策</a>处理。</p>
+
+        <h2>测试版</h2>
+        <p>Triovel 目前为测试版。可能出现错误、变更或功能移除。我们尽力防止数据丢失但无法保证。测试期间免费使用。</p>
+
+        <h2>责任限制</h2>
+        <p>Triovel 以现状提供，不含任何保证。在法律允许的最大范围内，我们不对间接损害、数据丢失或业务中断负责。</p>
+
+        <h2>变更</h2>
+        <p>我们可能更新本条款，并通过应用通知。更新后继续使用即表示接受新条款。</p>
+
+        <h2>准据法</h2>
+        <p>本条款受适用法律管辖。争议应先通过善意协商解决。</p>
+
+        <h2>联系我们</h2>
+        <p>如有疑问，请发送邮件至 <a href="mailto:support@triovel.app">support@triovel.app</a></p>
     </div>
+</main>
 
-    <div class="section">
-        <h2><span class="section-number">7</span> Beta Disclaimer</h2>
-        <p>Triovel is currently in beta. During the beta period:</p>
-        <ul>
-            <li>The service may contain bugs or experience downtime.</li>
-            <li>Features may change or be removed without notice.</li>
-            <li>Data loss may occur, though we take reasonable precautions to prevent it.</li>
-            <li>The service is provided free of charge.</li>
-        </ul>
-    </div>
+<footer>Triovel</footer>
 
-    <div class="section">
-        <h2><span class="section-number">8</span> Limitation of Liability</h2>
-        <p>To the maximum extent permitted by law, Triovel and its operators shall not be liable for any indirect, incidental, special, or consequential damages arising from your use of the service, including but not limited to loss of data, loss of profits, or business interruption.</p>
-    </div>
-
-    <div class="section">
-        <h2><span class="section-number">9</span> No Warranty</h2>
-        <p>The service is provided "as is" and "as available" without warranties of any kind, either express or implied, including but not limited to merchantability, fitness for a particular purpose, or non-infringement.</p>
-    </div>
-
-    <div class="section">
-        <h2><span class="section-number">10</span> Changes to Terms</h2>
-        <p>We may modify these terms at any time. We will provide notice of significant changes through the app. Continued use after changes constitutes acceptance.</p>
-    </div>
-
-    <div class="section">
-        <h2><span class="section-number">11</span> Governing Law</h2>
-        <p>These terms shall be governed by and construed in accordance with applicable laws. Any disputes shall be resolved through good-faith negotiation before pursuing formal legal proceedings.</p>
-    </div>
-
-    <div class="contact">
-        <h2>Questions?</h2>
-        <p>If you have questions about these terms, reach out to us.</p>
-        <p><a href="mailto:support@triovel.app">support@triovel.app</a></p>
-    </div>
-</div>
-
-<div class="footer">
-    Triovel &middot; Plan the anchors. Capture the reality. Share the trip.
-</div>
-
+<script>
+    const lang = (navigator.language || 'en').toLowerCase();
+    let id = 'en';
+    if (lang.startsWith('ja')) id = 'ja';
+    else if (lang === 'zh-tw' || lang === 'zh-hk' || lang.startsWith('zh-hant')) id = 'zh-Hant';
+    else if (lang.startsWith('zh')) id = 'zh-Hans';
+    document.getElementById(id).classList.add('active');
+    document.documentElement.lang = id === 'zh-Hant' ? 'zh-Hant' : id === 'zh-Hans' ? 'zh-Hans' : id;
+</script>
 </body>
 </html>
