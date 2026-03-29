@@ -740,6 +740,24 @@
         }
       }
     },
+    "bill.per.person": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "per person" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "1人あたり" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "每人" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "每人" } }
+      }
+    },
+    "bill.paid.by.name %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Paid by %@" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "%@ が支払い" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "%@ 已付" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "%@ 已付" } }
+      }
+    },
     "bill.add.button" : {
       "extractionState" : "manual",
       "localizations" : {
