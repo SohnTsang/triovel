@@ -109,9 +109,8 @@ final class TripTimelineViewModel {
             self.trip = fetchedTrip
             print("[Timeline] Trip loaded: \(fetchedTrip.title)")
 
-            if !allBlocks.isEmpty {
-                days = generateDays(for: fetchedTrip)
-            }
+            // Always generate days (even with 0 blocks) so day ribbon + FAB work immediately
+            days = generateDays(for: fetchedTrip)
 
             let memberMap = try await tripRepository.fetchMembers(tripIds: [tripId])
             members = memberMap[tripId] ?? []
