@@ -51,6 +51,8 @@ final class BlockDetailViewModel {
     private(set) var bills: [Bill] = []
     private(set) var billShareCounts: [String: Int] = [:]
     private(set) var billSharesMap: [String: [BillShare]] = [:]
+    private(set) var tripPayments: [Payment] = []
+    private let paymentRepository = PaymentRepository()
 
     nonisolated(unsafe) private var loadTask: Task<Void, Never>?
     nonisolated(unsafe) private var sendTask: Task<Void, Never>?
@@ -95,6 +97,7 @@ final class BlockDetailViewModel {
             let trip = try await blockRepository.fetchTrip(tripId: fetchedBlock.tripId)
             self.tripOwnerId = trip.createdBy
             self.tripBaseCurrency = trip.baseCurrency
+            self.tripPayments = (try? await self.paymentRepository.fetchPaymentsForTrip(tripId: fetchedBlock.tripId)) ?? []
 
             await loadMemberNames(tripId: fetchedBlock.tripId)
         } catch {

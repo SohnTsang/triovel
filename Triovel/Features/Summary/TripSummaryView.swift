@@ -145,18 +145,32 @@ struct TripSummaryView: View {
                     .foregroundStyle(.secondary)
 
                 ForEach(balance.debts) { debt in
-                    HStack(spacing: 8) {
-                        Text(viewModel.memberName(for: debt.fromUserId))
-                            .font(.subheadline)
-                        Image(systemName: "arrow.right")
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
-                        Text(viewModel.memberName(for: debt.toUserId))
-                            .font(.subheadline)
+                    HStack(spacing: 10) {
+                        Image(systemName: "arrow.right.circle.fill")
+                            .font(.title3)
+                            .foregroundStyle(.orange)
+
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(viewModel.memberName(for: debt.fromUserId))
+                                .font(.subheadline.weight(.medium))
+                            HStack(spacing: 4) {
+                                Text("summary.pays")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                Text(viewModel.memberName(for: debt.toUserId))
+                                    .font(.caption.weight(.medium))
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+
                         Spacer()
+
                         Text(debt.amount.formattedCurrency(debt.currency))
-                            .font(.subheadline.weight(.semibold))
+                            .font(.body.weight(.bold))
+                            .foregroundStyle(.orange)
                     }
+                    .padding(12)
+                    .background(Color.orange.opacity(0.05), in: RoundedRectangle(cornerRadius: 10))
                 }
             }
         }
@@ -304,7 +318,8 @@ final class TripSummaryViewModel {
                 self.members = memberMap[tripId] ?? []
                 for m in self.members { self.memberNames[m.userId] = m.displayName }
 
-                let billStream = try self.billRepository.watchBillsForTrip(tripId: tripId)
+                // Only group block bills — personal block bills excluded from summary
+                let billStream = try self.billRepository.watchGroupBillsForTrip(tripId: tripId)
 
                 let elapsed = ContinuousClock.now - start
                 if elapsed < .milliseconds(500) {

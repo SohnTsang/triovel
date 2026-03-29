@@ -84,6 +84,20 @@ final class BillRepository {
         )
     }
 
+    /// Watch only group block bills (personal block bills excluded from summary).
+    func watchGroupBillsForTrip(tripId: String) throws -> AsyncThrowingStream<[Bill], Error> {
+        try db.watch(
+            sql: """
+                SELECT b.* FROM bills b
+                JOIN blocks bl ON b.block_id = bl.id
+                WHERE b.trip_id = ? AND bl.context = 'group'
+                ORDER BY b.created_at ASC
+                """,
+            parameters: [tripId],
+            mapper: Self.billMapper
+        )
+    }
+
     func watchBillsForTrip(tripId: String) throws -> AsyncThrowingStream<[Bill], Error> {
         try db.watch(
             sql: "SELECT * FROM bills WHERE trip_id = ? ORDER BY created_at ASC",

@@ -1040,6 +1040,15 @@
         "zh-Hant": { "stringUnit": { "state": "translated", "value": "將刪除此帳單及所有分攤記錄。" } }
       }
     },
+    "summary.pays": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "pays" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "→" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "付给" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "付給" } }
+      }
+    },
     "summary.payment.history": {
       "extractionState": "manual",
       "localizations": {

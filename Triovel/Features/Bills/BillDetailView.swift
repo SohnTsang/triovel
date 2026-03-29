@@ -1,12 +1,16 @@
 import SwiftUI
 
-/// Bill detail sheet — shows full breakdown of who owes what.
+/// Bill detail sheet — shows full breakdown of who owes what + payment records.
 struct BillDetailView: View {
     let bill: Bill
     let payerName: String
     let shares: [BillShareDisplay]
+    var payments: [Payment] = []
+    var members: [TripMemberDisplay] = []
+    var currentUserId: String = ""
     var onDelete: (() -> Void)?
     var canDelete: Bool = false
+    var onRecordPayment: (() -> Void)?
 
     @Environment(\.dismiss) private var dismiss
     @State private var showingDeleteConfirmation = false
@@ -15,16 +19,29 @@ struct BillDetailView: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 20) {
-                    // Amount hero
                     amountHeader
-
-                    // Payer
                     payerSection
-
-                    // Split breakdown
                     splitSection
 
-                    // Delete (payer only)
+                    // Payment records for this bill's currency
+                    if !relatedPayments.isEmpty {
+                        paymentSection
+                    }
+
+                    // Record Payment button
+                    if shares.contains(where: { $0.userId != bill.payerId }) {
+                        Button {
+                            onRecordPayment?()
+                        } label: {
+                            Label(String(localized: "summary.record.payment"), systemImage: "plus.circle")
+                                .font(.body.weight(.medium))
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 12)
+                                .background(Color.accentColor.opacity(0.1), in: RoundedRectangle(cornerRadius: 12))
+                        }
+                        .padding(.horizontal)
+                    }
+
                     if canDelete {
                         deleteSection
                     }
@@ -59,6 +76,11 @@ struct BillDetailView: View {
                 Text("bill.delete.confirm.message")
             }
         }
+    }
+
+    /// Payments in the same currency as this bill.
+    private var relatedPayments: [Payment] {
+        payments.filter { $0.currency == bill.currency }
     }
 
     // MARK: - Amount Header
@@ -142,7 +164,6 @@ struct BillDetailView: View {
                             Text(share.shareAmount.formattedCurrency(bill.currency))
                                 .font(.subheadline.weight(.medium))
 
-                            // Show status: paid or owes
                             if share.userId == bill.payerId {
                                 Text("bill.detail.paid")
                                     .font(.caption2)
@@ -159,6 +180,61 @@ struct BillDetailView: View {
 
                     if index < shares.count - 1 {
                         Divider().padding(.leading, 58)
+                    }
+                }
+            }
+            .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 12))
+            .padding(.horizontal)
+        }
+    }
+
+    // MARK: - Payment Records
+
+    private var paymentSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("summary.payment.history")
+                .font(.caption.weight(.medium))
+                .foregroundStyle(.secondary)
+                .padding(.horizontal)
+
+            VStack(spacing: 0) {
+                ForEach(Array(relatedPayments.enumerated()), id: \.element.id) { index, payment in
+                    HStack(spacing: 10) {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.body)
+                            .foregroundStyle(.blue)
+
+                        VStack(alignment: .leading, spacing: 2) {
+                            HStack(spacing: 4) {
+                                Text(memberName(payment.payerId))
+                                    .font(.subheadline.weight(.medium))
+                                Image(systemName: "arrow.right")
+                                    .font(.caption2)
+                                    .foregroundStyle(.tertiary)
+                                Text(memberName(payment.receiverId))
+                                    .font(.subheadline.weight(.medium))
+                            }
+                            if let note = payment.note, !note.isEmpty {
+                                Text(note)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                            Text(payment.createdAt, format: .dateTime.month(.abbreviated).day().hour().minute())
+                                .font(.caption2)
+                                .foregroundStyle(.tertiary)
+                        }
+
+                        Spacer()
+
+                        Text(payment.amount.formattedCurrency(payment.currency))
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(.blue)
+                    }
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 10)
+
+                    if index < relatedPayments.count - 1 {
+                        Divider().padding(.leading, 44)
                     }
                 }
             }
@@ -185,6 +261,10 @@ struct BillDetailView: View {
 
     private var formattedDate: String {
         bill.createdAt.formatted(.dateTime.year().month(.abbreviated).day().hour().minute())
+    }
+
+    private func memberName(_ userId: String) -> String {
+        members.first(where: { $0.userId == userId })?.displayName ?? userId.prefix(8).description
     }
 
     private func initials(_ name: String) -> String {

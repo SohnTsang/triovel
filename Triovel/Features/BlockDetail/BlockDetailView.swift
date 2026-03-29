@@ -7,6 +7,7 @@ struct BlockDetailView: View {
     @State private var viewModel = BlockDetailViewModel()
     @State private var showingBillEntry = false
     @State private var selectedBill: Bill?
+    @State private var showingPaymentEntry = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -64,9 +65,28 @@ struct BlockDetailView: View {
                 bill: bill,
                 payerName: viewModel.payerName(for: bill),
                 shares: viewModel.billShareDisplays(for: bill.id),
+                payments: viewModel.tripPayments,
+                members: viewModel.allMembers,
+                currentUserId: appState.currentUserId ?? "",
                 onDelete: { viewModel.deleteBill(bill) },
-                canDelete: bill.payerId == appState.currentUserId
+                canDelete: bill.payerId == appState.currentUserId,
+                onRecordPayment: {
+                    selectedBill = nil
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        showingPaymentEntry = true
+                    }
+                }
             )
+        }
+        .sheet(isPresented: $showingPaymentEntry) {
+            if let block = viewModel.block {
+                PaymentEntrySheet(
+                    tripId: block.tripId,
+                    members: viewModel.allMembers,
+                    baseCurrency: viewModel.tripBaseCurrency,
+                    currentUserId: appState.currentUserId ?? ""
+                )
+            }
         }
         .task {
             if let userId = appState.currentUserId {
