@@ -162,6 +162,8 @@ final class BlockDetailViewModel {
         sendTask?.cancel()
         sendTask = Task { [weak self] in
             guard let self else { return }
+            let start = ContinuousClock.now
+
             do {
                 let post = try await self.postRepository.createPost(
                     blockId: block.id,
@@ -191,6 +193,11 @@ final class BlockDetailViewModel {
                 ))
             }
 
+            // 500ms minimum loading — UI changes only after this completes
+            let elapsed = ContinuousClock.now - start
+            if elapsed < .milliseconds(500) {
+                try? await Task.sleep(for: .milliseconds(500) - elapsed)
+            }
             self.isSendingPost = false
         }
     }

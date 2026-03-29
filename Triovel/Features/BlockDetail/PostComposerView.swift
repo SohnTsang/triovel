@@ -121,6 +121,15 @@ struct PostComposerView: View {
             processSelectedPhotos(newItems)
             selectedPhotos = []
         }
+        .onChange(of: isSending) { old, new in
+            // Clear composer after sending completes (500ms min loading done)
+            if old == true && new == false {
+                text = ""
+                visibility = .shared
+                mediaItems = []
+                isFocused = false
+            }
+        }
     }
 
     // MARK: - Send
@@ -133,11 +142,8 @@ struct PostComposerView: View {
         let currentMedia = mediaItems
         onSend(trimmed, currentVisibility, currentMedia)
 
-        // Reset per examples.md
-        text = ""
-        visibility = .shared
-        mediaItems = []
-        isFocused = false
+        // Don't clear here — wait for isSendingPost to finish (500ms min)
+        // Composer clears via onChange(of: isSending) below
     }
 
     // MARK: - Photo Processing
