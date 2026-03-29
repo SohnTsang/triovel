@@ -13,7 +13,7 @@ struct TripSetupView: View {
 
     @State private var title = ""
     @State private var startDate = Date()
-    @State private var endDate = Calendar.current.date(byAdding: .day, value: 3, to: Date())!
+    @State private var endDate = Calendar.current.date(byAdding: .day, value: 3, to: Date()) ?? Date()
     @State private var isCreating = false
     @State private var errorMessage: String?
     @FocusState private var titleFocused: Bool

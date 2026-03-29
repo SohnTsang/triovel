@@ -147,6 +147,37 @@ final class AuthService {
         }
     }
 
+    // MARK: - Delete Account
+
+    /// Permanently delete the current user's account.
+    /// 1. Delete user from Supabase Auth (cascades to public.users via FK)
+    /// 2. Supabase cascade handles: trip_members, posts, bills, payments
+    /// 3. Caller is responsible for clearing local DB + cache after this returns
+    func deleteAccount() async throws {
+        guard let user = currentUser else { throw AuthError.networkError }
+
+        // Supabase Admin API: delete the authenticated user
+        // Uses the user's own JWT — requires Supabase to have
+        // "Users can delete their own account" enabled in Auth settings
+        do {
+            // Try the Supabase auth admin delete endpoint
+            try await client.auth.admin.deleteUser(id: user.id.uuidString)
+        } catch {
+            // Fallback: sign out + let server-side cleanup handle it
+            // Some Supabase configs require an Edge Function for self-deletion
+            print("[Auth] Admin delete failed, attempting RPC fallback: \(error)")
+            do {
+                try await client.rpc("delete_own_account").execute()
+            } catch {
+                print("[Auth] RPC fallback also failed: \(error)")
+                throw AuthError.networkError
+            }
+        }
+
+        clearLocalState()
+        print("[Auth] Account deleted successfully")
+    }
+
     // MARK: - Sign Out
 
     /// Returns true on success, false if remote sign-out failed (local state still cleared).

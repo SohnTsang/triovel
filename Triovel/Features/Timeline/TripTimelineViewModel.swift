@@ -176,12 +176,12 @@ final class TripTimelineViewModel {
         shortFormatter.timeZone = timeZone
 
         return (0..<dayCount).map { offset in
-            let date = cal.date(byAdding: .day, value: offset, to: startDay)!
+            let date = cal.date(byAdding: .day, value: offset, to: startDay) ?? startDay
             let dayNumber = offset + 1
             let shortDate = shortFormatter.string(from: date)
 
             let dayStart = cal.startOfDay(for: date)
-            let dayEnd = cal.date(byAdding: .day, value: 1, to: dayStart)!
+            let dayEnd = cal.date(byAdding: .day, value: 1, to: dayStart) ?? dayStart
             let dayBlocks = allBlocks.filter { block in
                 block.startAt >= dayStart && block.startAt < dayEnd
                 && !pendingBlockIds.contains(block.id)
@@ -220,14 +220,15 @@ struct TimelineDay: Identifiable {
             slots[key, default: []].append(block)
         }
 
-        return slots.map { key, blocks in
+        return slots.compactMap { key, blocks in
             let sorted = blocks.sorted { a, b in
                 if a.context != b.context {
                     return a.context == .group
                 }
                 return a.createdAt < b.createdAt
             }
-            return TimeSlot(timeKey: key, time: sorted.first!.startAt, blocks: sorted)
+            guard let firstBlock = sorted.first else { return nil }
+            return TimeSlot(timeKey: key, time: firstBlock.startAt, blocks: sorted)
         }
         .sorted { $0.time < $1.time }
     }

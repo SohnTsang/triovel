@@ -18,6 +18,6 @@ struct Trip: Identifiable, Codable, Hashable, Sendable {
         let calendar = Calendar.current
         let start = calendar.startOfDay(for: startDate)
         let end = calendar.startOfDay(for: endDate)
-        return max(1, calendar.dateComponents([.day], from: start, to: end).day! + 1)
+        return max(1, (calendar.dateComponents([.day], from: start, to: end).day ?? 0) + 1)
     }
 }

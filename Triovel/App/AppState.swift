@@ -92,6 +92,15 @@ final class AppState {
         authStatus = .signedOut
     }
 
+    /// Permanently delete the current user's account.
+    /// Clears all local data and navigates to auth screen.
+    func deleteAccount() async throws {
+        try await authService.deleteAccount()
+        await disconnectSync()
+        currentUserId = nil
+        authStatus = .signedOut
+    }
+
     // MARK: - Sync Lifecycle
 
     private func connectSync() async {
