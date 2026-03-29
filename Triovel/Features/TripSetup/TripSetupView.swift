@@ -108,6 +108,7 @@ struct TripSetupView: View {
 
         Task {
             do {
+                // Write to DB immediately (offline-safe)
                 print("[TripSetup] Creating trip: \(trimmedTitle), userId=\(userId)")
                 let tripId = try await tripRepository.createTrip(
                     title: trimmedTitle,
@@ -119,8 +120,9 @@ struct TripSetupView: View {
                 )
                 print("[TripSetup] Trip created: \(tripId)")
 
+                // 500ms minimum spinner, then navigate
+                try? await Task.sleep(for: .milliseconds(500))
                 dismiss()
-                // Small delay to let sheet dismiss animate before navigation
                 try? await Task.sleep(for: .milliseconds(300))
                 onTripCreated?(tripId)
             } catch {

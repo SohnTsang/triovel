@@ -131,6 +131,7 @@ struct AddMomentView: View {
 
         Task {
             do {
+                // Write to DB immediately (offline-safe)
                 print("[AddMoment] Creating block: tripId=\(tripId), title=\(trimmedTitle), context=\(context.rawValue), startAt=\(startAt), tz=\(displayTimezone), userId=\(userId)")
                 let block = try await blockRepository.createBlock(
                     tripId: tripId,
@@ -142,8 +143,9 @@ struct AddMomentView: View {
                 )
                 print("[AddMoment] Block created: \(block.id)")
 
+                // 500ms minimum spinner, then navigate
+                try? await Task.sleep(for: .milliseconds(500))
                 dismiss()
-                // Small delay for sheet dismiss animation
                 try? await Task.sleep(for: .milliseconds(300))
                 onBlockCreated?(block.id)
             } catch {

@@ -100,12 +100,18 @@ struct JoinTripView: View {
         errorMessage = nil
 
         Task {
+            let start = ContinuousClock.now
             do {
                 let tripId = try await tripRepository.joinTrip(
                     inviteCode: code,
                     userId: userId
                 )
 
+                // 500ms minimum spinner, then navigate
+                let elapsed = ContinuousClock.now - start
+                if elapsed < .milliseconds(500) {
+                    try? await Task.sleep(for: .milliseconds(500) - elapsed)
+                }
                 dismiss()
                 try? await Task.sleep(for: .milliseconds(300))
                 onTripJoined?(tripId)
