@@ -7,74 +7,95 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
-            color: #333;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", system-ui, sans-serif;
+            font-size: 16px;
+            line-height: 1.65;
+            color: #4a4a4a;
             background: #fff;
             -webkit-font-smoothing: antialiased;
+            letter-spacing: 0.1px;
         }
         @media (prefers-color-scheme: dark) {
-            body { background: #111; color: #ccc; }
-            nav { border-color: #222; }
-            h2 { color: #e0e0e0; }
-            footer { border-color: #222; color: #555; }
+            body { background: #0e0e0e; color: #a0a0a0; }
+            .nav { background: #0e0e0e; border-color: #1e1e1e; }
+            .nav span { color: #d0d0d0; }
+            h1 { color: #ececec; }
+            h2 { color: #d8d8d8; }
+            h3 { color: #c8c8c8; }
+            strong { color: #c8c8c8; }
+            .footer { border-color: #1e1e1e; }
             a { color: #6dbfbb; }
         }
-        nav {
-            padding: 16px 24px;
-            border-bottom: 1px solid #eee;
+        .nav {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            padding: 18px 32px;
+            border-bottom: 1px solid #f0f0f0;
+            background: rgba(255,255,255,0.92);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        @media (prefers-color-scheme: dark) {
+            .nav { background: rgba(14,14,14,0.92); }
+        }
+        .nav span {
             font-size: 15px;
             font-weight: 600;
-            letter-spacing: 0.3px;
+            color: #1a1a2e;
+            letter-spacing: 0.4px;
         }
-        main {
-            max-width: 600px;
+        .wrap {
+            max-width: 780px;
             margin: 0 auto;
-            padding: 40px 24px 80px;
+            padding: 48px 32px 96px;
+        }
+        @media (max-width: 600px) {
+            .wrap { padding: 32px 20px 64px; }
         }
         h1 {
-            font-size: 28px;
+            font-size: 36px;
             font-weight: 700;
-            margin-bottom: 6px;
-            letter-spacing: -0.3px;
+            color: #1a1a2e;
+            letter-spacing: -0.4px;
+            margin-bottom: 8px;
         }
-        .updated {
-            font-size: 13px;
-            color: #888;
-            margin-bottom: 36px;
+        .meta {
+            font-size: 14px;
+            color: #999;
+            margin-bottom: 48px;
         }
         h2 {
+            font-size: 22px;
+            font-weight: 600;
+            color: #1a1a2e;
+            margin-top: 52px;
+            margin-bottom: 16px;
+            letter-spacing: -0.1px;
+        }
+        h3 {
             font-size: 17px;
             font-weight: 600;
-            margin-top: 36px;
-            margin-bottom: 12px;
-            color: #111;
+            color: #2a2a3e;
+            margin-top: 28px;
+            margin-bottom: 10px;
         }
-        @media (prefers-color-scheme: dark) { h2 { color: #e0e0e0; } }
-        p {
-            font-size: 15px;
-            line-height: 1.7;
-            margin-bottom: 14px;
-            color: inherit;
+        p { margin-bottom: 16px; }
+        ul, ol {
+            padding-left: 22px;
+            margin-bottom: 16px;
         }
-        ul {
-            padding-left: 18px;
-            margin-bottom: 14px;
-        }
-        li {
-            font-size: 15px;
-            line-height: 1.7;
-            margin-bottom: 6px;
-        }
-        strong { font-weight: 600; }
+        li { margin-bottom: 8px; }
+        strong { color: #2a2a3e; font-weight: 600; }
         a { color: #4a9d9a; text-decoration: none; }
         a:hover { text-decoration: underline; }
-        footer {
-            max-width: 600px;
+        .footer {
+            max-width: 780px;
             margin: 0 auto;
-            padding: 20px 24px;
+            padding: 24px 32px;
             font-size: 13px;
-            color: #999;
-            border-top: 1px solid #eee;
+            color: #b0b0b0;
+            border-top: 1px solid #f0f0f0;
         }
         .lang { display: none; }
         .lang.active { display: block; }
@@ -82,184 +103,409 @@
 </head>
 <body>
 
-<nav>Triovel</nav>
+<div class="nav"><span>Triovel</span></div>
 
-<main>
-    <!-- English -->
-    <div class="lang" id="en">
-        <h1>Privacy Policy</h1>
-        <p class="updated">Last updated March 30, 2026</p>
+<div class="wrap">
+<div class="lang" id="en">
+<h1>Privacy Policy</h1>
+<p class="meta">Effective March 30, 2026</p>
 
-        <h2>What we collect</h2>
-        <p>We collect what's necessary to run the app:</p>
-        <ul>
-            <li><strong>Account info</strong> — name, email, and sign-in credentials (Apple or email/password).</li>
-            <li><strong>Trip data</strong> — titles, dates, timezone, and currency settings.</li>
-            <li><strong>Posts</strong> — text, photos, and videos you share in trips.</li>
-            <li><strong>Expenses</strong> — bill amounts, currencies, payer info, and payments.</li>
-            <li><strong>Location text</strong> — optional descriptions you type. We never access GPS.</li>
-        </ul>
+<p>This Privacy Policy describes how Triovel ("we", "us", or "our") collects, uses, stores, and shares information when you use the Triovel mobile application and related services (collectively, the "Service"). By accessing or using the Service, you acknowledge that you have read and understood this Privacy Policy.</p>
 
-        <h2>How we use it</h2>
-        <p>Your data powers the trip experience — displaying content, syncing across devices, and calculating balances. We don't use it for ads, profiling, or anything outside the app.</p>
+<h2>Information We Collect</h2>
 
-        <h2>Who sees your data</h2>
-        <p>Trip members see shared posts, bills, and payments. Private posts ("Just Me") are never visible to anyone else and never leave your device.</p>
-        <p>We use Supabase and PowerSync to run the service. They process data on our behalf. We don't sell or share your data with anyone else.</p>
+<h3>Information you provide directly</h3>
+<p>When you create an account and use Triovel, you voluntarily provide us with certain personal information, including:</p>
+<ul>
+    <li><strong>Account information:</strong> Your name, email address, and authentication credentials. If you sign in with Apple, we receive the information you authorize Apple to share, which may include your name and a relay email address.</li>
+    <li><strong>Trip content:</strong> Trip titles, dates, display timezone preferences, currency settings, block titles, location descriptions, and any text, photographs, or videos you create or upload within the Service.</li>
+    <li><strong>Financial information:</strong> Bill amounts, currencies, designated payers, expense split configurations, and payment records you enter for the purpose of group expense tracking. Triovel does not process actual monetary transactions.</li>
+</ul>
 
-        <h2>Security</h2>
-        <p>All data is encrypted in transit (HTTPS/TLS). Server data is protected by row-level security policies. Photos and videos are stored with per-user access controls. Local data lives in an on-device database.</p>
+<h3>Information collected automatically</h3>
+<p>We collect limited technical information necessary for the operation and security of the Service:</p>
+<ul>
+    <li><strong>Device information:</strong> Device type, operating system version, app version, and language settings for the purpose of providing a localized and compatible experience.</li>
+    <li><strong>Usage data:</strong> Aggregate, non-identifying metrics such as the number of trips created, blocks and posts created, and media upload success rates. These metrics are stored locally on your device and are used solely for beta quality assessment. We do not track individual user behavior, browsing patterns, or create behavioral profiles.</li>
+</ul>
 
-        <h2>Retention and deletion</h2>
-        <p>Data stays as long as your account is active. Delete your account in Settings and we'll remove your profile, trip memberships, and uploaded media. Posts and bills may be anonymized to keep shared trips intact for other members.</p>
+<h3>Information we do not collect</h3>
+<p>Triovel does not collect precise geolocation data, does not access your device's GPS, does not read your contacts or calendar, and does not use any advertising identifiers or tracking technologies.</p>
 
-        <h2>Your rights</h2>
-        <p>You can view your data in the app, delete your account at any time, or contact us to request a data export.</p>
+<h2>How We Use Your Information</h2>
+<p>We use the information we collect for the following purposes and no others:</p>
+<ul>
+    <li><strong>Providing the Service:</strong> To display your trips, posts, and expenses; to synchronize data across your devices; and to enable collaboration with your trip members.</li>
+    <li><strong>Calculating balances:</strong> To compute and display shared expense balances between trip members based on the bills and payments you enter.</li>
+    <li><strong>Authentication and security:</strong> To verify your identity, maintain your session, and protect against unauthorized access to your account.</li>
+    <li><strong>Service improvement:</strong> To analyze aggregate usage patterns during the beta period in order to identify bugs, improve performance, and prioritize feature development. This analysis uses aggregate metrics only and does not involve profiling individual users.</li>
+</ul>
+<p>We do not use your personal information for advertising, marketing to third parties, automated decision-making, or profiling.</p>
 
-        <h2>Children</h2>
-        <p>Triovel is not for users under 13. If you believe a child has created an account, let us know.</p>
+<h2>How We Share Your Information</h2>
 
-        <h2>Changes</h2>
-        <p>We'll notify you of significant changes through the app. Continued use after updates means you accept the new terms.</p>
+<h3>With your trip members</h3>
+<p>When you create or contribute to a shared trip, other members of that trip can see your shared posts, photographs, videos, bills, and payments. Content you designate as private ("Just Me") is never transmitted to other users' devices, never stored in a manner accessible to other users, and never displayed to anyone other than you.</p>
 
-        <h2>Contact</h2>
-        <p>Questions? Reach us at <a href="mailto:privacy@triovel.app">privacy@triovel.app</a></p>
-    </div>
+<h3>With service providers</h3>
+<p>We use the following third-party services to operate Triovel. Each processes data on our behalf pursuant to data processing agreements:</p>
+<ul>
+    <li><strong>Supabase:</strong> Provides database hosting, user authentication, and file storage infrastructure. Data is stored in managed PostgreSQL databases with row-level security policies. Supabase's infrastructure is hosted on Amazon Web Services.</li>
+    <li><strong>PowerSync:</strong> Provides real-time data synchronization between our server database and the local SQLite database on your device, enabling offline functionality.</li>
+    <li><strong>Apple (Sign in with Apple):</strong> If you choose to authenticate via Apple Sign-In, Apple processes your authentication according to Apple's own privacy policy.</li>
+</ul>
 
-    <!-- Japanese -->
-    <div class="lang" id="ja">
-        <h1>プライバシーポリシー</h1>
-        <p class="updated">最終更新日 2026年3月30日</p>
+<h3>We do not sell your data</h3>
+<p>We do not sell, rent, lease, or trade your personal information to any third party for any purpose, including advertising or data brokerage.</p>
 
-        <h2>収集する情報</h2>
-        <p>アプリの運営に必要な情報のみ収集します。</p>
-        <ul>
-            <li><strong>アカウント情報</strong> — 氏名、メールアドレス、サインイン資格情報（Apple またはメール/パスワード）。</li>
-            <li><strong>旅行データ</strong> — タイトル、日程、タイムゾーン、通貨設定。</li>
-            <li><strong>投稿</strong> — 旅行内で共有するテキスト、写真、動画。</li>
-            <li><strong>費用</strong> — 請求金額、通貨、支払者情報、支払い記録。</li>
-            <li><strong>場所テキスト</strong> — 任意で入力する場所の説明。GPSにはアクセスしません。</li>
-        </ul>
+<h2>Data Storage and Security</h2>
+<p>We implement reasonable technical and organizational measures to protect your personal information:</p>
+<ul>
+    <li>All data transmitted between your device and our servers is encrypted using HTTPS with TLS.</li>
+    <li>Server-side data is protected by PostgreSQL row-level security policies that enforce access control at the database level, ensuring users can only access data associated with trips they are members of.</li>
+    <li>Photographs and videos are stored in access-controlled storage buckets with per-user authorization.</li>
+    <li>Local data on your device is stored in a SQLite database managed by the PowerSync SDK. This data remains on your device and is accessible only through the application.</li>
+    <li>Authentication tokens are managed by the Supabase SDK with automatic token refresh and are stored securely on your device.</li>
+</ul>
+<p>While we strive to protect your information, no method of electronic transmission or storage is completely secure. We cannot guarantee absolute security.</p>
 
-        <h2>利用目的</h2>
-        <p>データは旅行体験の提供に使用します。コンテンツの表示、デバイス間の同期、残高の計算などです。広告やプロファイリングには使用しません。</p>
+<h2>Data Retention</h2>
+<p>We retain your personal information for as long as your account remains active and as necessary to provide the Service. When you delete your account:</p>
+<ul>
+    <li>Your user profile and authentication records are permanently and irreversibly deleted from our authentication system.</li>
+    <li>Your membership records in all trips are deleted.</li>
+    <li>Photographs and videos you uploaded are permanently deleted from cloud storage.</li>
+    <li>Posts and bills you created within shared trips may be anonymized (your name replaced with a generic identifier) rather than deleted, in order to preserve the integrity of shared trip records for other members. This ensures that expense calculations and trip history remain consistent for your fellow travelers.</li>
+    <li>All locally cached data on your device, including downloaded images and synchronization data, is cleared immediately upon account deletion.</li>
+</ul>
 
-        <h2>データの共有</h2>
-        <p>旅行メンバーは共有投稿、請求書、支払いを閲覧できます。プライベート投稿（「自分だけ」）は他のユーザーに表示されず、デバイスの外に出ることもありません。</p>
-        <p>サービス運営のためSupabaseとPowerSyncを利用しています。データの販売や第三者への共有は行いません。</p>
+<h2>Your Rights and Choices</h2>
+<p>Depending on your jurisdiction, you may have certain rights regarding your personal information:</p>
+<ul>
+    <li><strong>Access:</strong> You can view all of your trip data, posts, bills, and payments directly within the application at any time.</li>
+    <li><strong>Deletion:</strong> You can permanently delete your account and associated data through the "Delete Account" option in the application's Settings screen. Account deletion is processed immediately.</li>
+    <li><strong>Data portability:</strong> You may contact us to request an export of your personal data in a commonly used, machine-readable format.</li>
+    <li><strong>Correction:</strong> You can update your display name and profile information within the application.</li>
+    <li><strong>Withdrawal of consent:</strong> If you signed in with Apple, you can revoke Triovel's access through your Apple ID settings at any time.</li>
+</ul>
 
-        <h2>セキュリティ</h2>
-        <p>すべてのデータはHTTPS/TLSで暗号化して送信されます。サーバーデータは行レベルセキュリティポリシーで保護されています。ローカルデータはデバイス上のデータベースに保存されます。</p>
+<h2>International Data Transfers</h2>
+<p>Your information may be transferred to and processed in countries other than your country of residence, including the United States, where our infrastructure providers maintain their servers. We rely on our service providers' compliance frameworks and data processing agreements to ensure adequate protection of your data during such transfers.</p>
 
-        <h2>保持と削除</h2>
-        <p>アカウントが有効な間、データは保持されます。設定からアカウントを削除すると、プロフィール、旅行メンバーシップ、アップロードしたメディアが削除されます。共有旅行の整合性を保つため、投稿や請求書は匿名化される場合があります。</p>
+<h2>Children's Privacy</h2>
+<p>Triovel is not intended for use by individuals under the age of 13 (or the minimum age required in your jurisdiction). We do not knowingly collect personal information from children. If we become aware that we have inadvertently collected personal information from a child under the applicable minimum age, we will take prompt steps to delete that information. If you believe a child has provided us with personal information, please contact us immediately.</p>
 
-        <h2>お客様の権利</h2>
-        <p>アプリ内でデータを確認できます。いつでもアカウントを削除でき、データエクスポートのリクエストも可能です。</p>
+<h2>Changes to This Policy</h2>
+<p>We may update this Privacy Policy from time to time to reflect changes in our practices, technologies, or legal requirements. When we make material changes, we will notify you through the application or via the email address associated with your account prior to the changes taking effect. Your continued use of the Service following notification of changes constitutes your acceptance of the updated Privacy Policy.</p>
 
-        <h2>お子様について</h2>
-        <p>Triovelは13歳未満のユーザーを対象としていません。お子様がアカウントを作成した場合はご連絡ください。</p>
+<h2>Contact Us</h2>
+<p>If you have any questions, concerns, or requests regarding this Privacy Policy or our data practices, please contact us at:</p>
+<p><a href="mailto:privacy@triovel.app">privacy@triovel.app</a></p>
+</div>
 
-        <h2>変更</h2>
-        <p>重要な変更はアプリを通じてお知らせします。更新後の継続利用は新しい規約への同意を意味します。</p>
+<div class="lang" id="ja">
+<h1>プライバシーポリシー</h1>
+<p class="meta">施行日 2026年3月30日</p>
 
-        <h2>お問い合わせ</h2>
-        <p>ご質問は <a href="mailto:privacy@triovel.app">privacy@triovel.app</a> までお願いします。</p>
-    </div>
+<p>本プライバシーポリシーは、Triovel（以下「当社」）がTriovelモバイルアプリケーションおよび関連サービス（以下総称して「本サービス」）の利用に際して、情報をどのように収集、使用、保存、共有するかを説明するものです。本サービスにアクセスまたは利用することにより、お客様は本プライバシーポリシーを読み、理解したことを承認するものとします。</p>
 
-    <!-- Chinese Traditional -->
-    <div class="lang" id="zh-Hant">
-        <h1>隱私權政策</h1>
-        <p class="updated">最後更新 2026年3月30日</p>
+<h2>収集する情報</h2>
 
-        <h2>我們收集的資訊</h2>
-        <p>我們僅收集營運應用程式所需的資訊：</p>
-        <ul>
-            <li><strong>帳戶資訊</strong> — 姓名、電子郵件及登入憑證（Apple 或電子郵件/密碼）。</li>
-            <li><strong>旅行資料</strong> — 標題、日期、時區及貨幣設定。</li>
-            <li><strong>貼文</strong> — 您在旅行中分享的文字、照片和影片。</li>
-            <li><strong>費用</strong> — 帳單金額、貨幣、付款人資訊及付款紀錄。</li>
-            <li><strong>地點文字</strong> — 您輸入的選填地點描述。我們不會存取 GPS。</li>
-        </ul>
+<h3>お客様が直接提供する情報</h3>
+<p>アカウントの作成およびTriovelの利用に際し、お客様は以下の個人情報を自発的に提供します：</p>
+<ul>
+    <li><strong>アカウント情報：</strong>氏名、メールアドレス、認証情報。Appleでサインインする場合、お客様がAppleに共有を許可した情報（氏名やリレーメールアドレスを含む場合があります）を受け取ります。</li>
+    <li><strong>旅行コンテンツ：</strong>旅行タイトル、日程、表示タイムゾーン設定、通貨設定、ブロックタイトル、場所の説明、および本サービス内で作成またはアップロードするテキスト、写真、動画。</li>
+    <li><strong>金融情報：</strong>グループ費用追跡を目的として入力する請求金額、通貨、指定支払者、費用分割設定、および支払い記録。Triovelは実際の金銭取引を処理しません。</li>
+</ul>
 
-        <h2>使用方式</h2>
-        <p>您的資料用於提供旅行體驗——顯示內容、跨裝置同步及計算餘額。我們不會用於廣告、分析或應用程式以外的任何用途。</p>
+<h3>自動的に収集される情報</h3>
+<p>本サービスの運営およびセキュリティに必要な限定的な技術情報を収集します：</p>
+<ul>
+    <li><strong>デバイス情報：</strong>ローカライズされた互換性のある体験を提供するための、デバイスタイプ、OSバージョン、アプリバージョン、言語設定。</li>
+    <li><strong>利用データ：</strong>作成された旅行数、ブロック・投稿数、メディアアップロード成功率などの集約された非識別メトリクス。これらのメトリクスはお客様のデバイスにローカルに保存され、ベータ品質評価の目的にのみ使用されます。個人のユーザー行動の追跡、閲覧パターンの追跡、行動プロファイルの作成は行いません。</li>
+</ul>
 
-        <h2>誰能看到您的資料</h2>
-        <p>旅行成員可以看到共享貼文、帳單和付款。私人貼文（「只有自己」）不會顯示給其他人，也不會離開您的裝置。</p>
-        <p>我們使用 Supabase 和 PowerSync 營運服務。我們不會出售或與第三方分享您的資料。</p>
+<h3>収集しない情報</h3>
+<p>Triovelは正確な位置情報を収集せず、デバイスのGPSにアクセスせず、連絡先やカレンダーを読み取らず、広告識別子やトラッキング技術を使用しません。</p>
 
-        <h2>安全性</h2>
-        <p>所有資料透過 HTTPS/TLS 加密傳輸。伺服器資料受行級安全策略保護。本地資料儲存在裝置上的資料庫中。</p>
+<h2>情報の利用方法</h2>
+<p>収集した情報は以下の目的にのみ使用し、それ以外の目的には使用しません：</p>
+<ul>
+    <li><strong>サービスの提供：</strong>旅行、投稿、費用の表示、デバイス間のデータ同期、旅行メンバーとのコラボレーションの有効化。</li>
+    <li><strong>残高計算：</strong>お客様が入力した請求書と支払いに基づく旅行メンバー間の共有費用残高の計算と表示。</li>
+    <li><strong>認証とセキュリティ：</strong>本人確認、セッション維持、アカウントへの不正アクセスからの保護。</li>
+    <li><strong>サービス改善：</strong>ベータ期間中のバグ特定、パフォーマンス改善、機能開発の優先順位付けのための集約利用パターンの分析。この分析は集約メトリクスのみを使用し、個人ユーザーのプロファイリングは含みません。</li>
+</ul>
+<p>個人情報を広告、第三者へのマーケティング、自動意思決定、またはプロファイリングに使用することはありません。</p>
 
-        <h2>保留與刪除</h2>
-        <p>帳戶有效期間將保留資料。在設定中刪除帳戶後，我們會移除您的個人資料、旅行成員資格及上傳的媒體。為保持共享旅行的完整性，貼文和帳單可能會被匿名化。</p>
+<h2>情報の共有方法</h2>
 
-        <h2>您的權利</h2>
-        <p>您可以在應用程式中查看資料、隨時刪除帳戶，或聯繫我們要求匯出資料。</p>
+<h3>旅行メンバーとの共有</h3>
+<p>共有旅行を作成または参加すると、その旅行の他のメンバーはお客様の共有投稿、写真、動画、請求書、支払いを閲覧できます。プライベートに指定したコンテンツ（「自分だけ」）は、他のユーザーのデバイスに送信されることはなく、他のユーザーがアクセスできる方法で保存されることもなく、お客様以外には表示されません。</p>
 
-        <h2>兒童</h2>
-        <p>Triovel 不適用於 13 歲以下的使用者。若您認為有兒童建立了帳戶，請通知我們。</p>
+<h3>サービスプロバイダーとの共有</h3>
+<p>Triovelの運営には以下のサードパーティサービスを使用しています。各サービスはデータ処理契約に基づき、当社に代わってデータを処理します：</p>
+<ul>
+    <li><strong>Supabase：</strong>データベースホスティング、ユーザー認証、ファイルストレージインフラストラクチャを提供。データは行レベルセキュリティポリシーを備えたマネージドPostgreSQLデータベースに保存されます。</li>
+    <li><strong>PowerSync：</strong>サーバーデータベースとデバイス上のローカルSQLiteデータベース間のリアルタイムデータ同期を提供し、オフライン機能を実現します。</li>
+    <li><strong>Apple（Appleでサインイン）：</strong>Appleサインインによる認証を選択した場合、AppleはApple独自のプライバシーポリシーに従って認証を処理します。</li>
+</ul>
 
-        <h2>變更</h2>
-        <p>重大變更將透過應用程式通知。更新後繼續使用即表示接受新條款。</p>
+<h3>データの販売はしません</h3>
+<p>広告やデータブローカーを含む、いかなる目的においても、お客様の個人情報を第三者に販売、賃貸、リース、または取引することはありません。</p>
 
-        <h2>聯繫我們</h2>
-        <p>如有疑問，請寄信至 <a href="mailto:privacy@triovel.app">privacy@triovel.app</a></p>
-    </div>
+<h2>データの保存とセキュリティ</h2>
+<p>お客様の個人情報を保護するため、合理的な技術的・組織的対策を実施しています：</p>
+<ul>
+    <li>デバイスとサーバー間で送信されるすべてのデータは、TLSを使用したHTTPSで暗号化されます。</li>
+    <li>サーバー側のデータは、データベースレベルでアクセス制御を強制するPostgreSQLの行レベルセキュリティポリシーで保護されています。</li>
+    <li>写真と動画は、ユーザーごとの認可を持つアクセス制御されたストレージバケットに保存されます。</li>
+    <li>デバイス上のローカルデータは、PowerSync SDKが管理するSQLiteデータベースに保存されます。</li>
+    <li>認証トークンはSupabase SDKにより自動トークン更新で管理され、デバイスに安全に保存されます。</li>
+</ul>
+<p>情報の保護に努めていますが、電子的な送信や保存の方法で完全に安全なものはありません。絶対的なセキュリティを保証することはできません。</p>
 
-    <!-- Chinese Simplified -->
-    <div class="lang" id="zh-Hans">
-        <h1>隐私政策</h1>
-        <p class="updated">最后更新 2026年3月30日</p>
+<h2>データの保持</h2>
+<p>お客様のアカウントが有効である限り、また本サービスの提供に必要な限り、個人情報を保持します。アカウントを削除した場合：</p>
+<ul>
+    <li>ユーザープロフィールおよび認証記録は、認証システムから永久かつ不可逆的に削除されます。</li>
+    <li>すべての旅行のメンバーシップ記録は削除されます。</li>
+    <li>アップロードした写真と動画はクラウドストレージから永久に削除されます。</li>
+    <li>共有旅行内で作成した投稿や請求書は、他のメンバーのための共有旅行記録の整合性を保つため、削除ではなく匿名化される場合があります。</li>
+    <li>ダウンロードした画像や同期データを含む、デバイス上のすべてのローカルキャッシュデータは、アカウント削除時に直ちにクリアされます。</li>
+</ul>
 
-        <h2>我们收集的信息</h2>
-        <p>我们仅收集运营应用所需的信息：</p>
-        <ul>
-            <li><strong>账户信息</strong> — 姓名、邮箱及登录凭证（Apple 或邮箱/密码）。</li>
-            <li><strong>旅行数据</strong> — 标题、日期、时区及货币设置。</li>
-            <li><strong>帖子</strong> — 您在旅行中分享的文字、照片和视频。</li>
-            <li><strong>费用</strong> — 账单金额、货币、付款人信息及付款记录。</li>
-            <li><strong>地点文字</strong> — 您输入的可选地点描述。我们不会访问 GPS。</li>
-        </ul>
+<h2>お客様の権利と選択</h2>
+<p>お客様の管轄区域に応じて、個人情報に関する一定の権利を有する場合があります：</p>
+<ul>
+    <li><strong>アクセス：</strong>アプリケーション内で旅行データ、投稿、請求書、支払いをいつでも直接閲覧できます。</li>
+    <li><strong>削除：</strong>アプリケーションの設定画面の「アカウントを削除」オプションを通じて、アカウントと関連データを永久に削除できます。</li>
+    <li><strong>データポータビリティ：</strong>一般的に使用される機械可読形式での個人データのエクスポートをリクエストするには、当社までご連絡ください。</li>
+    <li><strong>訂正：</strong>アプリケーション内で表示名およびプロフィール情報を更新できます。</li>
+    <li><strong>同意の撤回：</strong>Appleでサインインした場合、Apple ID設定からTriovelのアクセスをいつでも取り消すことができます。</li>
+</ul>
 
-        <h2>使用方式</h2>
-        <p>您的数据用于提供旅行体验——显示内容、跨设备同步及计算余额。我们不会用于广告、分析或应用以外的任何用途。</p>
+<h2>国際データ転送</h2>
+<p>お客様の情報は、インフラストラクチャプロバイダーがサーバーを維持する米国を含む、お客様の居住国以外の国に転送され処理される場合があります。そのような転送中のデータの適切な保護を確保するため、サービスプロバイダーのコンプライアンスフレームワークおよびデータ処理契約に依拠しています。</p>
 
-        <h2>谁能看到您的数据</h2>
-        <p>旅行成员可以看到共享帖子、账单和付款。私人帖子（"只有自己"）不会显示给其他人，也不会离开您的设备。</p>
-        <p>我们使用 Supabase 和 PowerSync 运营服务。我们不会出售或与第三方共享您的数据。</p>
+<h2>お子様のプライバシー</h2>
+<p>Triovelは13歳未満（またはお客様の管轄区域で要求される最低年齢未満）の個人による使用を意図していません。お子様から個人情報を故意に収集することはありません。適用される最低年齢未満のお子様から不注意に個人情報を収集したことが判明した場合、その情報を削除するための迅速な措置を講じます。</p>
 
-        <h2>安全性</h2>
-        <p>所有数据通过 HTTPS/TLS 加密传输。服务器数据受行级安全策略保护。本地数据存储在设备上的数据库中。</p>
+<h2>本ポリシーの変更</h2>
+<p>当社の慣行、技術、または法的要件の変更を反映するため、本プライバシーポリシーを随時更新する場合があります。重要な変更を行う場合、変更が有効になる前に、アプリケーションまたはアカウントに関連付けられたメールアドレスを通じてお客様に通知します。変更の通知後も本サービスを継続して利用することは、更新されたプライバシーポリシーへの同意を構成します。</p>
 
-        <h2>保留与删除</h2>
-        <p>账户有效期间将保留数据。在设置中删除账户后，我们会移除您的个人资料、旅行成员资格及上传的媒体。为保持共享旅行的完整性，帖子和账单可能会被匿名化。</p>
+<h2>お問い合わせ</h2>
+<p>本プライバシーポリシーまたは当社のデータ慣行に関するご質問、ご懸念、またはリクエストがございましたら、以下までお問い合わせください：</p>
+<p><a href="mailto:privacy@triovel.app">privacy@triovel.app</a></p>
+</div>
 
-        <h2>您的权利</h2>
-        <p>您可以在应用中查看数据、随时删除账户，或联系我们要求导出数据。</p>
+<div class="lang" id="zh-Hant">
+<h1>隱私權政策</h1>
+<p class="meta">生效日期 2026年3月30日</p>
 
-        <h2>儿童</h2>
-        <p>Triovel 不适用于 13 岁以下的用户。若您认为有儿童创建了账户，请通知我们。</p>
+<p>本隱私權政策說明 Triovel（以下稱「我們」）在您使用 Triovel 行動應用程式及相關服務（以下統稱「本服務」）時，如何收集、使用、儲存及分享資訊。存取或使用本服務即表示您已閱讀並理解本隱私權政策。</p>
 
-        <h2>变更</h2>
-        <p>重大变更将通过应用通知。更新后继续使用即表示接受新条款。</p>
+<h2>我們收集的資訊</h2>
 
-        <h2>联系我们</h2>
-        <p>如有疑问，请发送邮件至 <a href="mailto:privacy@triovel.app">privacy@triovel.app</a></p>
-    </div>
-</main>
+<h3>您直接提供的資訊</h3>
+<p>當您建立帳戶並使用 Triovel 時，您自願提供以下個人資訊：</p>
+<ul>
+    <li><strong>帳戶資訊：</strong>您的姓名、電子郵件地址及認證憑證。若您使用 Apple 登入，我們會收到您授權 Apple 分享的資訊，可能包括您的姓名及轉發電子郵件地址。</li>
+    <li><strong>旅行內容：</strong>旅行標題、日期、顯示時區偏好設定、貨幣設定、區塊標題、地點描述，以及您在本服務內建立或上傳的文字、照片或影片。</li>
+    <li><strong>財務資訊：</strong>您為群組費用追蹤目的而輸入的帳單金額、貨幣、指定付款人、費用分攤設定及付款紀錄。Triovel 不處理實際的金錢交易。</li>
+</ul>
 
-<footer>Triovel</footer>
+<h3>自動收集的資訊</h3>
+<p>我們收集本服務運營及安全所需的有限技術資訊：</p>
+<ul>
+    <li><strong>裝置資訊：</strong>裝置類型、作業系統版本、應用程式版本及語言設定，用於提供在地化且相容的體驗。</li>
+    <li><strong>使用資料：</strong>彙總的非識別指標，如建立的旅行數量、區塊和貼文數量、媒體上傳成功率。這些指標儲存在您的裝置上，僅用於測試版品質評估。我們不追蹤個人使用者行為、瀏覽模式，也不建立行為檔案。</li>
+</ul>
+
+<h3>我們不收集的資訊</h3>
+<p>Triovel 不收集精確位置資料、不存取您裝置的 GPS、不讀取您的聯絡人或行事曆、不使用任何廣告識別碼或追蹤技術。</p>
+
+<h2>我們如何使用您的資訊</h2>
+<p>我們僅將收集的資訊用於以下目的：</p>
+<ul>
+    <li><strong>提供服務：</strong>顯示您的旅行、貼文和費用；跨裝置同步資料；以及與旅行成員進行協作。</li>
+    <li><strong>計算餘額：</strong>根據您輸入的帳單和付款計算並顯示旅行成員間的共享費用餘額。</li>
+    <li><strong>認證與安全：</strong>驗證您的身份、維持您的工作階段、保護您的帳戶免受未經授權的存取。</li>
+    <li><strong>服務改善：</strong>在測試版期間分析彙總使用模式以識別錯誤、改善效能及排定功能開發優先順序。此分析僅使用彙總指標，不涉及個人使用者分析。</li>
+</ul>
+<p>我們不會將您的個人資訊用於廣告、向第三方行銷、自動化決策或分析。</p>
+
+<h2>我們如何分享您的資訊</h2>
+
+<h3>與旅行成員分享</h3>
+<p>當您建立或參與共享旅行時，該旅行的其他成員可以看到您的共享貼文、照片、影片、帳單和付款。您指定為私人的內容（「只有自己」）永遠不會傳輸到其他使用者的裝置，也不會以其他使用者可存取的方式儲存，更不會向您以外的任何人顯示。</p>
+
+<h3>與服務提供商分享</h3>
+<p>我們使用以下第三方服務來營運 Triovel。每個服務商均根據資料處理協議代表我們處理資料：</p>
+<ul>
+    <li><strong>Supabase：</strong>提供資料庫託管、使用者認證及檔案儲存基礎設施。資料儲存在具有行級安全策略的受管 PostgreSQL 資料庫中。</li>
+    <li><strong>PowerSync：</strong>在伺服器資料庫與裝置上的本地 SQLite 資料庫之間提供即時資料同步，實現離線功能。</li>
+    <li><strong>Apple（使用 Apple 登入）：</strong>若您選擇透過 Apple 登入進行認證，Apple 會依照 Apple 自身的隱私權政策處理您的認證。</li>
+</ul>
+
+<h3>我們不出售您的資料</h3>
+<p>我們不會出於任何目的（包括廣告或資料仲介）向任何第三方出售、出租、租賃或交易您的個人資訊。</p>
+
+<h2>資料儲存與安全</h2>
+<p>我們實施合理的技術和組織措施來保護您的個人資訊：</p>
+<ul>
+    <li>裝置與伺服器之間傳輸的所有資料均使用 HTTPS 搭配 TLS 進行加密。</li>
+    <li>伺服器端資料受 PostgreSQL 行級安全策略保護，在資料庫層級強制執行存取控制。</li>
+    <li>照片和影片儲存在具有使用者級授權的存取控制儲存桶中。</li>
+    <li>裝置上的本地資料儲存在 PowerSync SDK 管理的 SQLite 資料庫中。</li>
+    <li>認證令牌由 Supabase SDK 以自動令牌更新方式管理，並安全地儲存在您的裝置上。</li>
+</ul>
+<p>雖然我們努力保護您的資訊，但沒有任何電子傳輸或儲存方法是完全安全的。我們無法保證絕對安全。</p>
+
+<h2>資料保留</h2>
+<p>只要您的帳戶保持有效且提供服務所需，我們即保留您的個人資訊。當您刪除帳戶時：</p>
+<ul>
+    <li>您的使用者個人資料和認證紀錄將從我們的認證系統中永久且不可逆地刪除。</li>
+    <li>您在所有旅行中的成員紀錄將被刪除。</li>
+    <li>您上傳的照片和影片將從雲端儲存中永久刪除。</li>
+    <li>您在共享旅行中建立的貼文和帳單可能會被匿名化而非刪除，以保持其他成員共享旅行紀錄的完整性。</li>
+    <li>包括下載的圖片和同步資料在內的所有本地快取資料，將在帳戶刪除時立即清除。</li>
+</ul>
+
+<h2>您的權利與選擇</h2>
+<p>根據您的管轄區域，您可能對個人資訊享有某些權利：</p>
+<ul>
+    <li><strong>存取：</strong>您可以隨時在應用程式內直接查看所有旅行資料、貼文、帳單和付款。</li>
+    <li><strong>刪除：</strong>您可以透過應用程式設定畫面中的「刪除帳戶」選項永久刪除您的帳戶和相關資料。</li>
+    <li><strong>資料可攜性：</strong>您可以聯繫我們要求以常用的機器可讀格式匯出您的個人資料。</li>
+    <li><strong>更正：</strong>您可以在應用程式內更新您的顯示名稱和個人資料。</li>
+    <li><strong>撤回同意：</strong>如果您使用 Apple 登入，可以隨時透過 Apple ID 設定撤銷 Triovel 的存取權限。</li>
+</ul>
+
+<h2>國際資料傳輸</h2>
+<p>您的資訊可能會被傳輸並在您的居住國以外的國家（包括美國）處理，我們的基礎設施提供商在那裡維護其伺服器。我們依賴服務提供商的合規框架和資料處理協議來確保在此類傳輸期間對您的資料提供充分保護。</p>
+
+<h2>兒童隱私</h2>
+<p>Triovel 不適用於 13 歲以下（或您所在管轄區域要求的最低年齡以下）的個人。我們不會故意收集兒童的個人資訊。如果我們得知已無意中收集了適用最低年齡以下兒童的個人資訊，我們將採取迅速措施刪除該資訊。</p>
+
+<h2>本政策的變更</h2>
+<p>我們可能會不時更新本隱私權政策，以反映我們的做法、技術或法律要求的變化。當我們進行重大變更時，將在變更生效前透過應用程式或您帳戶相關的電子郵件地址通知您。在收到變更通知後繼續使用本服務即構成您對更新後隱私權政策的接受。</p>
+
+<h2>聯繫我們</h2>
+<p>如對本隱私權政策或我們的資料做法有任何疑問、擔憂或要求，請透過以下方式聯繫我們：</p>
+<p><a href="mailto:privacy@triovel.app">privacy@triovel.app</a></p>
+</div>
+
+<div class="lang" id="zh-Hans">
+<h1>隐私政策</h1>
+<p class="meta">生效日期 2026年3月30日</p>
+
+<p>本隐私政策说明 Triovel（以下称"我们"）在您使用 Triovel 移动应用程序及相关服务（以下统称"本服务"）时，如何收集、使用、存储及共享信息。访问或使用本服务即表示您已阅读并理解本隐私政策。</p>
+
+<h2>我们收集的信息</h2>
+
+<h3>您直接提供的信息</h3>
+<p>当您创建账户并使用 Triovel 时，您自愿提供以下个人信息：</p>
+<ul>
+    <li><strong>账户信息：</strong>您的姓名、电子邮件地址及认证凭证。若您使用 Apple 登录，我们会收到您授权 Apple 共享的信息，可能包括您的姓名及转发电子邮件地址。</li>
+    <li><strong>旅行内容：</strong>旅行标题、日期、显示时区偏好设置、货币设置、区块标题、地点描述，以及您在本服务内创建或上传的文字、照片或视频。</li>
+    <li><strong>财务信息：</strong>您为群组费用追踪目的而输入的账单金额、货币、指定付款人、费用分摊设置及付款记录。Triovel 不处理实际的金钱交易。</li>
+</ul>
+
+<h3>自动收集的信息</h3>
+<p>我们收集本服务运营及安全所需的有限技术信息：</p>
+<ul>
+    <li><strong>设备信息：</strong>设备类型、操作系统版本、应用版本及语言设置，用于提供本地化且兼容的体验。</li>
+    <li><strong>使用数据：</strong>汇总的非识别指标，如创建的旅行数量、区块和帖子数量、媒体上传成功率。这些指标存储在您的设备上，仅用于测试版质量评估。我们不追踪个人用户行为、浏览模式，也不创建行为档案。</li>
+</ul>
+
+<h3>我们不收集的信息</h3>
+<p>Triovel 不收集精确位置数据、不访问您设备的 GPS、不读取您的联系人或日历、不使用任何广告标识符或跟踪技术。</p>
+
+<h2>我们如何使用您的信息</h2>
+<p>我们仅将收集的信息用于以下目的：</p>
+<ul>
+    <li><strong>提供服务：</strong>显示您的旅行、帖子和费用；跨设备同步数据；以及与旅行成员进行协作。</li>
+    <li><strong>计算余额：</strong>根据您输入的账单和付款计算并显示旅行成员间的共享费用余额。</li>
+    <li><strong>认证与安全：</strong>验证您的身份、维持您的会话、保护您的账户免受未经授权的访问。</li>
+    <li><strong>服务改善：</strong>在测试版期间分析汇总使用模式以识别错误、改善性能及排定功能开发优先级。此分析仅使用汇总指标，不涉及个人用户分析。</li>
+</ul>
+<p>我们不会将您的个人信息用于广告、向第三方营销、自动化决策或分析。</p>
+
+<h2>我们如何共享您的信息</h2>
+
+<h3>与旅行成员共享</h3>
+<p>当您创建或参与共享旅行时，该旅行的其他成员可以看到您的共享帖子、照片、视频、账单和付款。您指定为私人的内容（"只有自己"）永远不会传输到其他用户的设备，也不会以其他用户可访问的方式存储，更不会向您以外的任何人显示。</p>
+
+<h3>与服务提供商共享</h3>
+<p>我们使用以下第三方服务来运营 Triovel。每个服务商均根据数据处理协议代表我们处理数据：</p>
+<ul>
+    <li><strong>Supabase：</strong>提供数据库托管、用户认证及文件存储基础设施。数据存储在具有行级安全策略的受管 PostgreSQL 数据库中。</li>
+    <li><strong>PowerSync：</strong>在服务器数据库与设备上的本地 SQLite 数据库之间提供实时数据同步，实现离线功能。</li>
+    <li><strong>Apple（使用 Apple 登录）：</strong>若您选择通过 Apple 登录进行认证，Apple 会依照 Apple 自身的隐私政策处理您的认证。</li>
+</ul>
+
+<h3>我们不出售您的数据</h3>
+<p>我们不会出于任何目的（包括广告或数据经纪）向任何第三方出售、出租、租赁或交易您的个人信息。</p>
+
+<h2>数据存储与安全</h2>
+<p>我们实施合理的技术和组织措施来保护您的个人信息：</p>
+<ul>
+    <li>设备与服务器之间传输的所有数据均使用 HTTPS 搭配 TLS 进行加密。</li>
+    <li>服务器端数据受 PostgreSQL 行级安全策略保护，在数据库层级强制执行访问控制。</li>
+    <li>照片和视频存储在具有用户级授权的访问控制存储桶中。</li>
+    <li>设备上的本地数据存储在 PowerSync SDK 管理的 SQLite 数据库中。</li>
+    <li>认证令牌由 Supabase SDK 以自动令牌刷新方式管理，并安全地存储在您的设备上。</li>
+</ul>
+<p>虽然我们努力保护您的信息，但没有任何电子传输或存储方法是完全安全的。我们无法保证绝对安全。</p>
+
+<h2>数据保留</h2>
+<p>只要您的账户保持有效且提供服务所需，我们即保留您的个人信息。当您删除账户时：</p>
+<ul>
+    <li>您的用户个人资料和认证记录将从我们的认证系统中永久且不可逆地删除。</li>
+    <li>您在所有旅行中的成员记录将被删除。</li>
+    <li>您上传的照片和视频将从云存储中永久删除。</li>
+    <li>您在共享旅行中创建的帖子和账单可能会被匿名化而非删除，以保持其他成员共享旅行记录的完整性。</li>
+    <li>包括下载的图片和同步数据在内的所有本地缓存数据，将在账户删除时立即清除。</li>
+</ul>
+
+<h2>您的权利与选择</h2>
+<p>根据您的管辖区域，您可能对个人信息享有某些权利：</p>
+<ul>
+    <li><strong>访问：</strong>您可以随时在应用内直接查看所有旅行数据、帖子、账单和付款。</li>
+    <li><strong>删除：</strong>您可以通过应用设置页面中的"删除账户"选项永久删除您的账户和相关数据。</li>
+    <li><strong>数据可携性：</strong>您可以联系我们要求以常用的机器可读格式导出您的个人数据。</li>
+    <li><strong>更正：</strong>您可以在应用内更新您的显示名称和个人资料。</li>
+    <li><strong>撤回同意：</strong>如果您使用 Apple 登录，可以随时通过 Apple ID 设置撤销 Triovel 的访问权限。</li>
+</ul>
+
+<h2>国际数据传输</h2>
+<p>您的信息可能会被传输并在您的居住国以外的国家（包括美国）处理，我们的基础设施提供商在那里维护其服务器。我们依赖服务提供商的合规框架和数据处理协议来确保在此类传输期间对您的数据提供充分保护。</p>
+
+<h2>儿童隐私</h2>
+<p>Triovel 不适用于 13 岁以下（或您所在管辖区域要求的最低年龄以下）的个人。我们不会故意收集儿童的个人信息。如果我们得知已无意中收集了适用最低年龄以下儿童的个人信息，我们将采取迅速措施删除该信息。</p>
+
+<h2>本政策的变更</h2>
+<p>我们可能会不时更新本隐私政策，以反映我们的做法、技术或法律要求的变化。当我们进行重大变更时，将在变更生效前通过应用或您账户相关的电子邮件地址通知您。在收到变更通知后继续使用本服务即构成您对更新后隐私政策的接受。</p>
+
+<h2>联系我们</h2>
+<p>如对本隐私政策或我们的数据做法有任何疑问、担忧或要求，请通过以下方式联系我们：</p>
+<p><a href="mailto:privacy@triovel.app">privacy@triovel.app</a></p>
+</div>
+</div>
+
+<div class="footer">Triovel</div>
 
 <script>
-    const lang = (navigator.language || 'en').toLowerCase();
-    let id = 'en';
-    if (lang.startsWith('ja')) id = 'ja';
-    else if (lang === 'zh-tw' || lang === 'zh-hk' || lang.startsWith('zh-hant')) id = 'zh-Hant';
-    else if (lang.startsWith('zh')) id = 'zh-Hans';
+(function(){
+    var l=(navigator.language||'en').toLowerCase(),id='en';
+    if(l.startsWith('ja'))id='ja';
+    else if(l==='zh-tw'||l==='zh-hk'||l.startsWith('zh-hant'))id='zh-Hant';
+    else if(l.startsWith('zh'))id='zh-Hans';
     document.getElementById(id).classList.add('active');
-    document.documentElement.lang = id === 'zh-Hant' ? 'zh-Hant' : id === 'zh-Hans' ? 'zh-Hans' : id;
+    document.documentElement.lang=id;
+})();
 </script>
 </body>
 </html>
