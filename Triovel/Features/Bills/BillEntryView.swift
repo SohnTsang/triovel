@@ -187,8 +187,13 @@ struct BillEntryView: View {
     // MARK: - Helpers
 
     private var currencySymbol: String {
-        let locale = Locale(identifier: "en_US")
-        return locale.localizedString(forCurrencyCode: currency) ?? currency
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        formatter.currencyCode = currency
+        formatter.maximumFractionDigits = 0
+        // Extract just the symbol from a formatted "¥0" → "¥"
+        let formatted = formatter.string(from: 0) ?? currency
+        return formatted.replacingOccurrences(of: "0", with: "").trimmingCharacters(in: .whitespaces)
     }
 
     private let commonCurrencies = [

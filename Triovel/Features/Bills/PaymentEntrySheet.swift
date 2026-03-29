@@ -174,7 +174,12 @@ struct PaymentEntrySheet: View {
     }
 
     private var currencySymbol: String {
-        Locale(identifier: "en_US").localizedString(forCurrencyCode: currency) ?? currency
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        formatter.currencyCode = currency
+        formatter.maximumFractionDigits = 0
+        let formatted = formatter.string(from: 0) ?? currency
+        return formatted.replacingOccurrences(of: "0", with: "").trimmingCharacters(in: .whitespaces)
     }
 
     private let commonCurrencies = [
