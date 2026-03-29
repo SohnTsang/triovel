@@ -393,15 +393,15 @@ docs/
 |---|---|---|
 | Supabase credentials hardcoded | `SupabaseConfig.swift` | Should use xcconfig per environment (Dev/Staging/Prod) |
 | PowerSync URL hardcoded | `PowerSyncConfig.swift` | Same — should be xcconfig |
-| No PaymentEntrySheet | `Features/Bills/` | Referenced in blueprint but not created (Phase 4) |
-| BillEntryView is placeholder | `BillEntryView.swift` | Shows placeholder text only (Phase 4) |
-| TripSummaryView is placeholder | `TripSummaryView.swift` | Shows empty state only (Phase 4) |
 | Delete account is placeholder | `SettingsView.swift` | Confirmation dialog exists but no backend implementation (Phase 5) |
-| No media upload queue | — | PostMedia model exists but no upload pipeline (Phase 3) |
 | No real-time member updates | ViewModels | Members fetched once on load, not watched reactively |
-| post_media not in sync rules | `powersync-sync-rules.yaml` | Removed due to subquery limitation; will need trip_id denormalization (Phase 3) |
-| trip_id added to posts/bill_shares | Supabase migration | Denormalized for PowerSync sync rules; needs corresponding app code update for post creation |
 | Ghost blocks not persisted | `DaySectionView.swift` | Pure UI scaffolding — intentional per blueprint, not a bug |
+| Synchronous thumbnail loading | `PostMediaGridView` | `loadThumbnail()` reads disk synchronously in view body. Will cause scroll jank with many photos. Need async loading. |
+| No remote image loading | `PostMediaGridView` | Other users see gray placeholder — no `AsyncImage` for Supabase Storage URLs. Single-user only for now. |
+| No image caching layer | — | Remote images (when implemented) need disk + memory cache to avoid re-downloading on scroll. |
+| No data caching strategy | Repositories / ViewModels | All reads go through PowerSync local SQLite (fast), but no in-memory caching for computed data (member names, trip metadata). Acceptable for beta, review at scale. |
+| PowerSync sync reconciliation overwrites local fields | SupabaseConnector / PostMediaGridView | upload_status and storage_path get overwritten by server state before CRUD uploads. Workaround: use storagePath != nil + local file check instead of upload_status for UI. |
+| PowerSync auth.user_id() broken in sync streams | powersync-sync-rules.yaml | Using unfiltered queries (all data to all users). Acceptable for beta, must fix before multi-user production. |
 
 ---
 
@@ -411,7 +411,7 @@ docs/
 |---|---|---|---|
 | Phase 1 | Complete | `v0.1.0-phase1` | Auth, Home, Trip Setup, Trip Members, Timeline shell, Blocks, Group/Personal, Ghost blocks, Add Moment |
 | Phase 2 | Complete | `v0.2.0-phase2` | Posts, Shared/Just Me composer, PowerSync local-first sync, Filters with person chips, Same-time clusters |
-| Phase 3 | Not started | — | Media metadata, media upload queue, upload states, placeholders, retry handling |
+| Phase 3 | Complete | `v0.3.0-phase3` | Media picker, compression, upload queue, upload states, retry, storage cleanup on delete, 500ms loading on all actions |
 | Phase 4 | Not started | — | Bills, bill shares, payments, summary screen, multi-currency balances |
 | Phase 5 | Not started | — | Archive, empty states polish, pending indicators, cost controls, instrumentation, beta testing |
 
