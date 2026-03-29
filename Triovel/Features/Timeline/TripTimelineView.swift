@@ -179,10 +179,24 @@ struct TripTimelineView: View {
 
             Divider()
 
-            Button(role: .destructive) {
-                showingArchiveAlert = true
-            } label: {
-                Label(String(localized: "trip.archive.button"), systemImage: "archivebox")
+            if viewModel.trip?.archived == true {
+                Button {
+                    Task {
+                        try? await TripRepository().unarchiveTrip(tripId: tripId)
+                        try? await Task.sleep(for: .milliseconds(500))
+                        if let userId = appState.currentUserId {
+                            viewModel.load(tripId: tripId, userId: userId)
+                        }
+                    }
+                } label: {
+                    Label(String(localized: "trip.unarchive.button"), systemImage: "arrow.uturn.backward")
+                }
+            } else {
+                Button(role: .destructive) {
+                    showingArchiveAlert = true
+                } label: {
+                    Label(String(localized: "trip.archive.button"), systemImage: "archivebox")
+                }
             }
         } label: {
             Image(systemName: "ellipsis.circle")

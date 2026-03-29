@@ -2,6 +2,7 @@ import SwiftUI
 
 /// Displays media attachments in a post card, handling all upload states.
 /// 1 image = full width, 2+ = 2-column grid.
+/// Uses CachedMediaView for async off-main-thread image loading.
 struct PostMediaGridView: View {
     let media: [PostMedia]
     var onRetry: ((String) -> Void)?
@@ -45,14 +46,11 @@ struct PostMediaGridView: View {
 
     // MARK: - Media View (handles upload states)
 
-    /// True if the media has finished uploading.
+    /// True if the media has finished uploading (local or remote).
     /// Uses storage_path as primary indicator because upload_status gets overwritten
     /// by PowerSync sync reconciliation (local 'uploaded' → server 'queued' → loop).
-    /// Also checks local file existence as fallback — if we have the file, show it.
     private func isUploaded(_ item: PostMedia) -> Bool {
-        item.storagePath != nil
-            || item.uploadStatus == .uploaded
-            || MediaFileManager.loadThumbnail(for: item.id) != nil
+        item.storagePath != nil || item.uploadStatus == .uploaded
     }
 
     @ViewBuilder
@@ -60,15 +58,23 @@ struct PostMediaGridView: View {
         if item.uploadStatus == .failed {
             failedView(item)
         } else if isUploaded(item) {
-            // Uploaded — show image
-            thumbnailImage(for: item)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
+            // Uploaded — show image via async cache
+            CachedMediaView(
+                mediaId: item.id,
+                storagePath: item.storagePath,
+                mediaType: item.mediaType
+            )
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
         } else {
-            // Queued / uploading — syncing overlay
+            // Queued / uploading — syncing overlay with async thumbnail
             ZStack {
-                thumbnailImage(for: item)
-                    .opacity(0.5)
+                CachedMediaView(
+                    mediaId: item.id,
+                    storagePath: nil,
+                    mediaType: item.mediaType
+                )
+                .opacity(0.5)
 
                 VStack(spacing: 4) {
                     ProgressView()
@@ -89,8 +95,12 @@ struct PostMediaGridView: View {
     @ViewBuilder
     private func failedView(_ item: PostMedia) -> some View {
         ZStack {
-            thumbnailImage(for: item)
-                .opacity(0.3)
+            CachedMediaView(
+                mediaId: item.id,
+                storagePath: nil,
+                mediaType: item.mediaType
+            )
+            .opacity(0.3)
 
             VStack(spacing: 4) {
                 Image(systemName: "exclamationmark.triangle")
@@ -114,24 +124,6 @@ struct PostMediaGridView: View {
         .contentShape(Rectangle())
         .onTapGesture {
             onRetry?(item.id)
-        }
-    }
-
-    // MARK: - Thumbnail
-
-    @ViewBuilder
-    private func thumbnailImage(for item: PostMedia) -> some View {
-        if let thumb = MediaFileManager.loadThumbnail(for: item.id) {
-            Image(uiImage: thumb)
-                .resizable()
-                .scaledToFill()
-        } else {
-            // Fallback: gray placeholder
-            Color(.systemGray5)
-                .overlay {
-                    Image(systemName: item.mediaType == .photo ? "photo" : "video")
-                        .foregroundStyle(.tertiary)
-                }
         }
     }
 }

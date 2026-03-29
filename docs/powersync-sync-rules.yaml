@@ -3,9 +3,11 @@
 # Deploy in the PowerSync Dashboard under "Sync Streams".
 # Uses edition 3 (Sync Streams format, not legacy Sync Rules).
 #
-# IMPORTANT: auth.user_id() in JOIN queries causes data to disappear
-# after sync reconciliation. Use unfiltered queries for now.
-# Private post filtering handled client-side (SQL WHERE clause).
+# CRITICAL: Private posts must NEVER sync to other users' devices (locked rule #3).
+# PowerSync replication bypasses Supabase RLS, so we MUST filter here.
+#
+# token_parameters.user_id is extracted from the Supabase JWT 'sub' claim.
+# It is resolved per-client, so each user only receives their own private data.
 
 streams:
   global_users:
@@ -24,9 +26,14 @@ streams:
     auto_subscribe: true
     query: SELECT * FROM blocks
 
+  # Private posts sync ONLY to the owning user.
+  # Shared posts sync to all trip members.
   posts:
     auto_subscribe: true
-    query: SELECT * FROM posts
+    query: >
+      SELECT * FROM posts
+      WHERE visibility = 'shared'
+      OR user_id = token_parameters.user_id
 
   bills:
     auto_subscribe: true
@@ -40,9 +47,15 @@ streams:
     auto_subscribe: true
     query: SELECT * FROM payments
 
+  # Post media follows parent post visibility.
+  # Only sync media for shared posts + current user's private posts.
   post_media:
     auto_subscribe: true
-    query: SELECT * FROM post_media
+    query: >
+      SELECT pm.* FROM post_media pm
+      JOIN posts p ON pm.post_id = p.id
+      WHERE p.visibility = 'shared'
+      OR p.user_id = token_parameters.user_id
 
 config:
   edition: 3
