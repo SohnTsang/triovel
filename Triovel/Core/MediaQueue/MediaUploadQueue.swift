@@ -138,6 +138,13 @@ final class MediaUploadQueue {
             return false
         }
 
+        // Check storage ceiling before uploading
+        let fileSize = (try? FileManager.default.attributesOfItem(atPath: fileURL.path)[.size] as? Int64) ?? 0
+        if MediaCostController.shouldPauseUploads(tripStorageBytes: fileSize) {
+            print("[MediaQueue] ⚠️ Storage ceiling reached, pausing upload for \(item.id)")
+            return false
+        }
+
         // Mark as uploading
         try? await repository.updateUploadStatus(mediaId: item.id, status: .uploading)
 
@@ -166,10 +173,12 @@ final class MediaUploadQueue {
             )
 
             print("[MediaQueue] ✓ Uploaded \(item.id) → \(remotePath)")
+            BetaAnalytics.trackMediaUploadSuccess()
             return true
 
         } catch {
             print("[MediaQueue] ❌ Upload failed for \(item.id): \(error)")
+            BetaAnalytics.trackMediaUploadFailure()
             try? await repository.updateUploadStatus(mediaId: item.id, status: .failed)
             return false
         }

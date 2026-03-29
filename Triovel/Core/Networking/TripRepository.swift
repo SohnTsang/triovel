@@ -48,6 +48,7 @@ final class TripRepository {
         }
 
         print("[TripRepo] Created trip locally: \(tripId)")
+        BetaAnalytics.trackTripCreated()
         return tripId
     }
 

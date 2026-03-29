@@ -31,6 +31,7 @@ final class BlockRepository {
         )
 
         print("[BlockRepo] Created block locally: \(blockId)")
+        BetaAnalytics.trackBlockCreated(context: context.rawValue)
 
         return Block(
             id: blockId,

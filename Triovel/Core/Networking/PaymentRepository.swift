@@ -28,6 +28,7 @@ final class PaymentRepository {
         )
 
         print("[PaymentRepo] Created payment \(paymentId): \(amount) \(currency)")
+        BetaAnalytics.trackPaymentRecorded()
 
         return Payment(
             id: paymentId,

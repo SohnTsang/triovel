@@ -27,6 +27,7 @@ final class PostRepository {
         )
 
         print("[PostRepo] Created post locally: \(postId)")
+        BetaAnalytics.trackPostCreated(visibility: visibility.rawValue)
 
         return Post(
             id: postId,

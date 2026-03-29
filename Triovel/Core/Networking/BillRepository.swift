@@ -43,6 +43,7 @@ final class BillRepository {
         }
 
         print("[BillRepo] Created bill \(billId): \(amount) \(currency), split \(memberIds.count) ways")
+        BetaAnalytics.trackBillCreated()
 
         return Bill(
             id: billId,

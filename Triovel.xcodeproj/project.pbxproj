@@ -63,6 +63,7 @@
 		EBA05C9595465B1448441DAC /* TripMembersView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C459CDEFF6D60634C288E360 /* TripMembersView.swift */; };
 		EE72C626B58EC3566BFEB125 /* BlockDetailHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72EC929A2DF4723A3383AC0D /* BlockDetailHeaderView.swift */; };
 		EF216AB5A51B71483A566E21 /* ProfileHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D37FA5E2AF68AA27D92708E /* ProfileHeaderView.swift */; };
+		P5BF0001 /* BetaAnalytics.swift in Sources */ = {isa = PBXBuildFile; fileRef = P5FR0001 /* BetaAnalytics.swift */; };
 		P4BF0001 /* BillRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = P4FR0001 /* BillRepository.swift */; };
 		P4BF0002 /* PaymentRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = P4FR0002 /* PaymentRepository.swift */; };
 		P4BF0003 /* BalanceCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = P4FR0003 /* BalanceCalculator.swift */; };
@@ -152,6 +153,7 @@
 		ECB3DD3D521270A1A28CBFAB /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
 		F0F18C424A110CFFFCA1254D /* ArchivedTripsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArchivedTripsView.swift; sourceTree = "<group>"; };
 		FF32096E140C4392D2BA1DC2 /* BlockDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockDetailView.swift; sourceTree = "<group>"; };
+		P5FR0001 /* BetaAnalytics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BetaAnalytics.swift; sourceTree = "<group>"; };
 		P4FR0001 /* BillRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BillRepository.swift; sourceTree = "<group>"; };
 		P4FR0002 /* PaymentRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentRepository.swift; sourceTree = "<group>"; };
 		P4FR0003 /* BalanceCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BalanceCalculator.swift; sourceTree = "<group>"; };
@@ -311,6 +313,7 @@
 			isa = PBXGroup;
 			children = (
 				P4FR0003 /* BalanceCalculator.swift */,
+				P5FR0001 /* BetaAnalytics.swift */,
 				P4FR0001 /* BillRepository.swift */,
 				B2DB1DF20856703F1CF41D12 /* BlockRepository.swift */,
 				P4FR0002 /* PaymentRepository.swift */,
@@ -602,6 +605,7 @@
 				61A04E314EC4ED5771DCE984 /* PostSkeletonView.swift in Sources */,
 				A452848C10679300EB0FD3D0 /* FailedPostCardView.swift in Sources */,
 				EF216AB5A51B71483A566E21 /* ProfileHeaderView.swift in Sources */,
+				P5BF0001 /* BetaAnalytics.swift in Sources */,
 				P4BF0001 /* BillRepository.swift in Sources */,
 				P4BF0002 /* PaymentRepository.swift in Sources */,
 				P4BF0003 /* BalanceCalculator.swift in Sources */,
