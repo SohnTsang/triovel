@@ -5,6 +5,7 @@ struct SettingsView: View {
     @Environment(\.horizontalSizeClass) private var sizeClass
     @State private var showingDeleteConfirmation = false
     @State private var showingSignOutConfirmation = false
+    @AppStorage("appearanceMode") private var appearanceMode: AppearanceMode = .system
 
     private var authService: AuthService { appState.authService }
 
@@ -18,6 +19,15 @@ struct SettingsView: View {
             // Account info
             Section(String(localized: "settings.account")) {
                 SignInMethodRow(user: authService.currentUser)
+            }
+
+            // Appearance
+            Section(String(localized: "settings.appearance")) {
+                Picker(String(localized: "settings.appearance.theme"), selection: $appearanceMode) {
+                    Text("settings.appearance.light").tag(AppearanceMode.light)
+                    Text("settings.appearance.dark").tag(AppearanceMode.dark)
+                    Text("settings.appearance.system").tag(AppearanceMode.system)
+                }
             }
 
             // Legal — placeholder slots per compliance.md
@@ -73,6 +83,22 @@ struct SettingsView: View {
             }
         } message: {
             Text("settings.delete.message")
+        }
+    }
+}
+
+// MARK: - Appearance Mode
+
+enum AppearanceMode: String, CaseIterable {
+    case light
+    case dark
+    case system
+
+    var colorScheme: ColorScheme? {
+        switch self {
+        case .light: return .light
+        case .dark: return .dark
+        case .system: return nil
         }
     }
 }

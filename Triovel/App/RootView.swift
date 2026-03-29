@@ -2,6 +2,7 @@ import SwiftUI
 
 struct RootView: View {
     @Environment(AppState.self) private var appState
+    @AppStorage("appearanceMode") private var appearanceMode: AppearanceMode = .system
 
     var body: some View {
         Group {
@@ -22,6 +23,7 @@ struct RootView: View {
             }
         }
         .animation(.easeInOut(duration: 0.3), value: appState.authStatus)
+        .preferredColorScheme(appearanceMode.colorScheme)
         .task {
             await appState.restoreSession()
         }

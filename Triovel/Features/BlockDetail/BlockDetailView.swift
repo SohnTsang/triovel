@@ -8,6 +8,9 @@ struct BlockDetailView: View {
     @State private var showingBillEntry = false
     @State private var selectedBill: Bill?
     @State private var showingPaymentEntry = false
+    @State private var showingDeleteBlock = false
+    @State private var isDeletingBlock = false
+    @Environment(Router.self) private var router
 
     var body: some View {
         VStack(spacing: 0) {
@@ -88,9 +91,44 @@ struct BlockDetailView: View {
                 )
             }
         }
+        .alert(
+            String(localized: "block.delete.title"),
+            isPresented: $showingDeleteBlock
+        ) {
+            Button(String(localized: "common.cancel"), role: .cancel) {}
+            Button(String(localized: "common.delete"), role: .destructive) {
+                deleteBlock()
+            }
+        } message: {
+            Text("block.delete.description")
+        }
+        .overlay {
+            if isDeletingBlock {
+                Color.black.opacity(0.3).ignoresSafeArea()
+                    .overlay { ProgressView().controlSize(.large).tint(.white) }
+            }
+        }
         .task {
             if let userId = appState.currentUserId {
                 await viewModel.load(blockId: blockId, userId: userId)
+            }
+        }
+    }
+
+    private func deleteBlock() {
+        isDeletingBlock = true
+        Task {
+            let start = ContinuousClock.now
+            do {
+                try await BlockRepository().deleteBlock(blockId: blockId)
+                let elapsed = ContinuousClock.now - start
+                if elapsed < .milliseconds(500) {
+                    try? await Task.sleep(for: .milliseconds(500) - elapsed)
+                }
+                router.pop()
+            } catch {
+                print("[BlockDetail] ❌ Delete block failed: \(error)")
+                isDeletingBlock = false
             }
         }
     }
@@ -134,7 +172,9 @@ struct BlockDetailView: View {
                                 isDeleting: viewModel.deletingPostId == post.id,
                                 onDelete: { viewModel.deletePost(post) },
                                 onRetry: nil,
-                                onMediaRetry: { mediaId in viewModel.retryMediaUpload(mediaId: mediaId) }
+                                onMediaRetry: { mediaId in viewModel.retryMediaUpload(mediaId: mediaId) },
+                                onEdit: { newBody in viewModel.editPost(post, newBody: newBody) },
+                                onRemoveMedia: { mediaId in viewModel.deleteMedia(mediaId: mediaId, post: post) }
                             )
                             .id(post.id)
                         }
@@ -203,6 +243,14 @@ struct BlockDetailView: View {
                     }
                 } label: {
                     Label(String(localized: "block.edit.title"), systemImage: "pencil")
+                }
+
+                Divider()
+
+                Button(role: .destructive) {
+                    showingDeleteBlock = true
+                } label: {
+                    Label(String(localized: "block.delete.button"), systemImage: "trash")
                 }
             }
         } label: {

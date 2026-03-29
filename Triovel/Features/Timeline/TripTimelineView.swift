@@ -10,8 +10,15 @@ struct TripTimelineView: View {
 
     @State private var showingAddMoment = false
     @State private var showingArchiveAlert = false
+    @State private var showingDeleteAlert = false
+    @State private var showingEditTrip = false
+    @State private var isDeletingTrip = false
     @State private var showToast = false
     @State private var toastMessage = ""
+
+    private var isOwner: Bool {
+        viewModel.trip?.createdBy == appState.currentUserId
+    }
 
     var body: some View {
         @Bindable var vm = viewModel
@@ -155,6 +162,37 @@ struct TripTimelineView: View {
         } message: {
             Text("trip.archive.description")
         }
+        .alert(
+            String(localized: "trip.delete.title"),
+            isPresented: $showingDeleteAlert
+        ) {
+            Button(String(localized: "common.cancel"), role: .cancel) {}
+            Button(String(localized: "common.delete"), role: .destructive) {
+                deleteTrip()
+            }
+        } message: {
+            Text("trip.delete.description")
+        }
+        .overlay {
+            if isDeletingTrip {
+                Color.black.opacity(0.3)
+                    .ignoresSafeArea()
+                    .overlay {
+                        ProgressView()
+                            .controlSize(.large)
+                            .tint(.white)
+                    }
+            }
+        }
+        .sheet(isPresented: $showingEditTrip) {
+            if let trip = viewModel.trip {
+                EditTripView(trip: trip) {
+                    if let userId = appState.currentUserId {
+                        viewModel.load(tripId: tripId, userId: userId)
+                    }
+                }
+            }
+        }
         .sheet(isPresented: $showingAddMoment) {
             let days = viewModel.filteredDays
             let dayIndex = viewModel.selectedDayIndex
@@ -166,9 +204,9 @@ struct TripTimelineView: View {
                 dayDate: dayDate,
                 displayTimezone: viewModel.trip?.displayTimezone ?? TimeZone.current.identifier,
                 onBlockCreated: { blockId in
-                    // Watch query auto-updates timeline; just navigate
                     router.push(.blockDetail(blockId: blockId))
-                }
+                },
+                timelineViewModel: viewModel
             )
         }
         .task(id: tripId) {
@@ -197,6 +235,14 @@ struct TripTimelineView: View {
                 Label(String(localized: "trip.members.title"), systemImage: "person.2")
             }
 
+            if isOwner {
+                Button {
+                    showingEditTrip = true
+                } label: {
+                    Label(String(localized: "trip.edit.title"), systemImage: "pencil")
+                }
+            }
+
             Divider()
 
             if viewModel.trip?.archived == true {
@@ -222,10 +268,38 @@ struct TripTimelineView: View {
                     Label(String(localized: "trip.archive.button"), systemImage: "archivebox")
                 }
             }
+
+            if isOwner {
+                Button(role: .destructive) {
+                    showingDeleteAlert = true
+                } label: {
+                    Label(String(localized: "trip.delete.button"), systemImage: "trash")
+                }
+            }
         } label: {
             Image(systemName: "ellipsis.circle")
                 .font(.body.weight(.semibold))
                 .foregroundStyle(Color(.label))
+        }
+    }
+
+    // MARK: - Delete Trip
+
+    private func deleteTrip() {
+        isDeletingTrip = true
+        Task {
+            let start = ContinuousClock.now
+            do {
+                try await TripRepository().deleteTrip(tripId: tripId)
+                let elapsed = ContinuousClock.now - start
+                if elapsed < .milliseconds(500) {
+                    try? await Task.sleep(for: .milliseconds(500) - elapsed)
+                }
+                router.popToRoot()
+            } catch {
+                print("[Timeline] ❌ Delete trip failed: \(error)")
+                isDeletingTrip = false
+            }
         }
     }
 }

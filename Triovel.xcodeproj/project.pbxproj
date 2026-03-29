@@ -19,6 +19,7 @@
 		196252E38E1C17111E683C29 /* CachedMediaView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9578D6AD9E1FB9D4BB8EFDE4 /* CachedMediaView.swift */; };
 		1971879261248A7A61904A4F /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = D989E8D899B44A723BCE0072 /* Supabase */; };
 		22EEB4706AB07F00406FFEB8 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D041FDB8AE49805E56BF8F72 /* LaunchScreen.storyboard */; };
+		2B08B4D58D0D98A39FBCB536 /* EditTripView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4D9BF81260A890F98551F37 /* EditTripView.swift */; };
 		2E06EF45109FE830A1A95FF7 /* ColorTokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44D47CF8E79B0BCDAFAA1088 /* ColorTokens.swift */; };
 		2F3CCB17876C5D4828C866E4 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A01F56928DFCE630027E76A /* RootView.swift */; };
 		3729B9067651BED7964327DB /* TripCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 888929831584B7959BD31917 /* TripCardView.swift */; };
@@ -145,6 +146,7 @@
 		BF0AB4F9147A31F6C31E9197 /* HomeEmptyStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeEmptyStateView.swift; sourceTree = "<group>"; };
 		BFD5CEB34A1587FDEF0F98EA /* Bill.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Bill.swift; sourceTree = "<group>"; };
 		C459CDEFF6D60634C288E360 /* TripMembersView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TripMembersView.swift; sourceTree = "<group>"; };
+		C4D9BF81260A890F98551F37 /* EditTripView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EditTripView.swift; sourceTree = "<group>"; };
 		C6A827B2C1B904D67FAB604D /* BillShare.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BillShare.swift; sourceTree = "<group>"; };
 		CA6D67E9A2F09AFBF1DADBE7 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
 		CBDB80DFD28A136D219A517F /* ImageCache.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ImageCache.swift; sourceTree = "<group>"; };
@@ -270,6 +272,7 @@
 			children = (
 				46C2D656E7DD3FFFDE9E09BF /* JoinTripView.swift */,
 				4DB17EE1B5470619A4A394AE /* TripSetupView.swift */,
+				C4D9BF81260A890F98551F37 /* EditTripView.swift */,
 			);
 			path = TripSetup;
 			sourceTree = "<group>";
@@ -646,6 +649,7 @@
 				196252E38E1C17111E683C29 /* CachedMediaView.swift in Sources */,
 				72C354386B30614FE8AAC353 /* ImageCache.swift in Sources */,
 				578F6D56FEBA9C8CF05C5714 /* FullScreenMediaViewer.swift in Sources */,
+				2B08B4D58D0D98A39FBCB536 /* EditTripView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

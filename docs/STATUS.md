@@ -417,6 +417,17 @@ docs/
 | No media loading state in composer | Skeleton placeholders with spinners appear immediately when selecting photos from library. `processingCount` tracks per-item progress. Send disabled until all processing complete. | `PostComposerView.swift`, `MediaAttachmentPreview.swift` |
 | Multi-media layout overflow + no viewer | Replaced unbounded 2-column grid with horizontal scrollable strip (160pt cells) for 2+ images. Author row and body text always visible. Tap any image opens `FullScreenMediaViewer` with swipe gallery, page counter, close button. | `PostMediaGridView.swift`, `FullScreenMediaViewer.swift` |
 
+### Pre-Beta CRUD (feature/pre-beta-crud)
+
+| Feature | Details | Files |
+|---|---|---|
+| Delete Trip | Owner-only. Cascade deletes all trip_members, blocks, posts, post_media, bills, bill_shares, payments. Cleans Supabase Storage + local files. Available in Timeline 3-dot menu + Summary admin section. Alert confirmation, 500ms spinner. | `TripRepository.swift`, `TripTimelineView.swift`, `TripSummaryView.swift` |
+| Edit Trip | Owner-only. Sheet pre-filled with current title, dates, currency. Same form layout as TripSetupView. Saves locally via PowerSync. Available in Timeline 3-dot menu. | `TripRepository.swift`, `EditTripView.swift`, `TripTimelineView.swift` |
+| Delete Block | Creator/owner-only. Cascade deletes posts, post_media, bills, bill_shares. Cleans storage + local files. Available in Block Detail 3-dot menu. Alert confirmation, navigates back. | `BlockRepository.swift`, `BlockDetailView.swift` |
+| Edit Post | Owner-only. Edit sheet for post body text. Visibility (Shared/Just Me) locked after creation per rules. Available in post card context menu alongside Delete. | `PostCardView.swift`, `BlockDetailViewModel.swift` |
+| CRUD Audit | All models verified: Trip, Block, Post have full CRUD. Bill/Payment deliberately exclude update (delete+recreate per blueprint). PostMedia managed via parent post cascade. | — |
+| Dark Mode Toggle | Settings > Appearance section. Light/Dark/System picker. Persisted to @AppStorage (UserDefaults) — survives sign-out/sign-in. Applied via .preferredColorScheme() on RootView. | `SettingsView.swift`, `RootView.swift` |
+
 ---
 
 ## Phase Status
