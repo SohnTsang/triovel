@@ -63,6 +63,11 @@
 		EBA05C9595465B1448441DAC /* TripMembersView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C459CDEFF6D60634C288E360 /* TripMembersView.swift */; };
 		EE72C626B58EC3566BFEB125 /* BlockDetailHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72EC929A2DF4723A3383AC0D /* BlockDetailHeaderView.swift */; };
 		EF216AB5A51B71483A566E21 /* ProfileHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D37FA5E2AF68AA27D92708E /* ProfileHeaderView.swift */; };
+		P4BF0001 /* BillRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = P4FR0001 /* BillRepository.swift */; };
+		P4BF0002 /* PaymentRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = P4FR0002 /* PaymentRepository.swift */; };
+		P4BF0003 /* BalanceCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = P4FR0003 /* BalanceCalculator.swift */; };
+		P4BF0004 /* BillCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = P4FR0004 /* BillCardView.swift */; };
+		P4BF0005 /* PaymentEntrySheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = P4FR0005 /* PaymentEntrySheet.swift */; };
 		P3BF0001 /* MediaFileManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = P3FR0001 /* MediaFileManager.swift */; };
 		P3BF0002 /* MediaCompressor.swift in Sources */ = {isa = PBXBuildFile; fileRef = P3FR0002 /* MediaCompressor.swift */; };
 		P3BF0003 /* MediaCostController.swift in Sources */ = {isa = PBXBuildFile; fileRef = P3FR0003 /* MediaCostController.swift */; };
@@ -146,6 +151,11 @@
 		ECB3DD3D521270A1A28CBFAB /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
 		F0F18C424A110CFFFCA1254D /* ArchivedTripsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArchivedTripsView.swift; sourceTree = "<group>"; };
 		FF32096E140C4392D2BA1DC2 /* BlockDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockDetailView.swift; sourceTree = "<group>"; };
+		P4FR0001 /* BillRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BillRepository.swift; sourceTree = "<group>"; };
+		P4FR0002 /* PaymentRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentRepository.swift; sourceTree = "<group>"; };
+		P4FR0003 /* BalanceCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BalanceCalculator.swift; sourceTree = "<group>"; };
+		P4FR0004 /* BillCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BillCardView.swift; sourceTree = "<group>"; };
+		P4FR0005 /* PaymentEntrySheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentEntrySheet.swift; sourceTree = "<group>"; };
 		P3FR0001 /* MediaFileManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaFileManager.swift; sourceTree = "<group>"; };
 		P3FR0002 /* MediaCompressor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaCompressor.swift; sourceTree = "<group>"; };
 		P3FR0003 /* MediaCostController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaCostController.swift; sourceTree = "<group>"; };
@@ -298,7 +308,10 @@
 		C713FD5D7EA45D079BEF0378 /* Networking */ = {
 			isa = PBXGroup;
 			children = (
+				P4FR0003 /* BalanceCalculator.swift */,
+				P4FR0001 /* BillRepository.swift */,
 				B2DB1DF20856703F1CF41D12 /* BlockRepository.swift */,
+				P4FR0002 /* PaymentRepository.swift */,
 				P3FR0005 /* PostMediaRepository.swift */,
 				343BFF66F3F14B08708ED3E0 /* PostRepository.swift */,
 				00634D136B045793FBB55847 /* TripRepository.swift */,
@@ -353,7 +366,9 @@
 		52731721E0DDCF2539054F5A /* Bills */ = {
 			isa = PBXGroup;
 			children = (
+				P4FR0004 /* BillCardView.swift */,
 				046B24F1977F74C981837C7E /* BillEntryView.swift */,
+				P4FR0005 /* PaymentEntrySheet.swift */,
 			);
 			path = Bills;
 			sourceTree = "<group>";
@@ -584,6 +599,11 @@
 				61A04E314EC4ED5771DCE984 /* PostSkeletonView.swift in Sources */,
 				A452848C10679300EB0FD3D0 /* FailedPostCardView.swift in Sources */,
 				EF216AB5A51B71483A566E21 /* ProfileHeaderView.swift in Sources */,
+				P4BF0001 /* BillRepository.swift in Sources */,
+				P4BF0002 /* PaymentRepository.swift in Sources */,
+				P4BF0003 /* BalanceCalculator.swift in Sources */,
+				P4BF0004 /* BillCardView.swift in Sources */,
+				P4BF0005 /* PaymentEntrySheet.swift in Sources */,
 				P3BF0001 /* MediaFileManager.swift in Sources */,
 				P3BF0002 /* MediaCompressor.swift in Sources */,
 				P3BF0003 /* MediaCostController.swift in Sources */,

@@ -45,16 +45,24 @@ final class BlockDetailViewModel {
     private let blockRepository = BlockRepository()
     private let postRepository = PostRepository()
     private let postMediaRepository = PostMediaRepository()
+    private let billRepository = BillRepository()
+
+    // Bills in this block
+    private(set) var bills: [Bill] = []
+    private(set) var billShareCounts: [String: Int] = [:]
+
     nonisolated(unsafe) private var loadTask: Task<Void, Never>?
     nonisolated(unsafe) private var sendTask: Task<Void, Never>?
     nonisolated(unsafe) private var postWatchTask: Task<Void, Never>?
     nonisolated(unsafe) private var mediaWatchTask: Task<Void, Never>?
+    nonisolated(unsafe) private var billWatchTask: Task<Void, Never>?
 
     deinit {
         loadTask?.cancel()
         sendTask?.cancel()
         postWatchTask?.cancel()
         mediaWatchTask?.cancel()
+        billWatchTask?.cancel()
     }
 
     /// Only block creator or trip owner can edit header.
@@ -85,6 +93,7 @@ final class BlockDetailViewModel {
 
             let trip = try await blockRepository.fetchTrip(tripId: fetchedBlock.tripId)
             self.tripOwnerId = trip.createdBy
+            self.tripBaseCurrency = trip.baseCurrency
 
             await loadMemberNames(tripId: fetchedBlock.tripId)
         } catch {
@@ -124,6 +133,7 @@ final class BlockDetailViewModel {
     private func startWatchingPosts(blockId: String, userId: String) {
         // Start media watch alongside posts
         startWatchingMedia(blockId: blockId)
+        startWatchingBills(blockId: blockId)
 
         postWatchTask?.cancel()
         postWatchTask = Task { [weak self] in
@@ -309,6 +319,48 @@ final class BlockDetailViewModel {
             }
         }
     }
+
+    // MARK: - Bill Watch
+
+    private func startWatchingBills(blockId: String) {
+        billWatchTask?.cancel()
+        billWatchTask = Task { [weak self] in
+            guard let self else { return }
+            do {
+                let stream = try self.billRepository.watchBillsForBlock(blockId: blockId)
+                for try await bills in stream {
+                    guard !Task.isCancelled else { break }
+                    self.bills = bills
+
+                    // Fetch share counts for display
+                    var counts: [String: Int] = [:]
+                    for bill in bills {
+                        let shares = try await self.billRepository.fetchSharesForBill(billId: bill.id)
+                        counts[bill.id] = shares.count
+                    }
+                    self.billShareCounts = counts
+                }
+            } catch {
+                if !(error is CancellationError) {
+                    print("[BlockDetail] ❌ Bill watch error: \(error)")
+                }
+            }
+        }
+    }
+
+    func payerName(for bill: Bill) -> String {
+        memberNames[bill.payerId] ?? String(localized: "post.author.unknown")
+    }
+
+    /// All trip members — used by BillEntryView for the member checklist.
+    var allMembers: [TripMemberDisplay] {
+        memberNames.map { userId, name in
+            TripMemberDisplay(userId: userId, displayName: name, avatarPath: nil)
+        }
+    }
+
+    /// Trip base currency — set during load from the trip record.
+    private(set) var tripBaseCurrency: String = "USD"
 
     // MARK: - Member Names (local read)
 

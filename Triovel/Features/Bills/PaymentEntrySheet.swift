@@ -1,28 +1,26 @@
 import SwiftUI
 
-/// Bill Entry Sheet — amount, currency, payer, member checklist.
-/// Equal split across checked members. Amounts in smallest currency unit.
-struct BillEntryView: View {
-    let blockId: String
+/// Payment Entry Sheet — record a real-world repayment between two people.
+/// Tied to trip, not to a specific block.
+struct PaymentEntrySheet: View {
     let tripId: String
     let members: [TripMemberDisplay]
     let baseCurrency: String
     let currentUserId: String
-    var onBillCreated: (() -> Void)?
+    var onPaymentCreated: (() -> Void)?
 
     @Environment(\.dismiss) private var dismiss
-    @Environment(\.horizontalSizeClass) private var sizeClass
 
+    @State private var payerId: String = ""
+    @State private var receiverId: String = ""
     @State private var amountText = ""
     @State private var currency: String = ""
-    @State private var payerId: String = ""
-    @State private var includedMemberIds: Set<String> = []
+    @State private var note: String = ""
     @State private var isSaving = false
     @State private var errorMessage: String?
 
-    private let billRepository = BillRepository()
+    private let paymentRepository = PaymentRepository()
 
-    /// Amount in smallest currency unit (cents or yen etc.)
     private var amountInSmallestUnit: Int? {
         guard let value = Double(amountText.replacingOccurrences(of: ",", with: "")) else { return nil }
         let noDecimal: Set<String> = ["JPY", "KRW", "VND", "IDR", "CLP"]
@@ -33,7 +31,8 @@ struct BillEntryView: View {
     }
 
     private var canSave: Bool {
-        amountInSmallestUnit != nil && (amountInSmallestUnit ?? 0) > 0 && !includedMemberIds.isEmpty
+        let amount = amountInSmallestUnit ?? 0
+        return amount > 0 && payerId != receiverId && !payerId.isEmpty && !receiverId.isEmpty
     }
 
     var body: some View {
@@ -50,7 +49,7 @@ struct BillEntryView: View {
                             .keyboardType(.decimalPad)
                     }
                 } header: {
-                    Text("bill.amount")
+                    Text("payment.amount")
                 }
 
                 // Currency
@@ -62,43 +61,32 @@ struct BillEntryView: View {
                     }
                 }
 
-                // Payer
+                // Payer → Receiver
                 Section {
-                    Picker(String(localized: "bill.payer"), selection: $payerId) {
+                    Picker(String(localized: "payment.from"), selection: $payerId) {
                         ForEach(members) { member in
                             Text(member.displayName).tag(member.userId)
                         }
                     }
-                } header: {
-                    Text("bill.paid.by")
-                }
-
-                // Included members
-                Section {
-                    ForEach(members) { member in
-                        HStack {
-                            Text(member.displayName)
-                            Spacer()
-                            if includedMemberIds.contains(member.userId) {
-                                Image(systemName: "checkmark")
-                                    .foregroundStyle(Color.accentColor)
-                            }
-                        }
-                        .contentShape(Rectangle())
-                        .onTapGesture {
-                            if includedMemberIds.contains(member.userId) {
-                                includedMemberIds.remove(member.userId)
-                            } else {
-                                includedMemberIds.insert(member.userId)
-                            }
+                    Picker(String(localized: "payment.to"), selection: $receiverId) {
+                        ForEach(members) { member in
+                            Text(member.displayName).tag(member.userId)
                         }
                     }
+                }
+
+                // Note (optional)
+                Section {
+                    TextField(String(localized: "payment.note.placeholder"), text: $note)
                 } header: {
-                    Text("bill.split.between")
-                } footer: {
-                    if let amount = amountInSmallestUnit, !includedMemberIds.isEmpty {
-                        let share = amount / includedMemberIds.count
-                        Text("bill.split.each \(share.formattedCurrency(currency))")
+                    Text("payment.note")
+                }
+
+                if payerId == receiverId && !payerId.isEmpty {
+                    Section {
+                        Text("payment.error.self")
+                            .font(.caption)
+                            .foregroundStyle(.red)
                     }
                 }
 
@@ -110,7 +98,7 @@ struct BillEntryView: View {
                     }
                 }
             }
-            .navigationTitle(String(localized: "bill.add.title"))
+            .navigationTitle(String(localized: "payment.add.title"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 if #available(iOS 26, *) {
@@ -123,7 +111,7 @@ struct BillEntryView: View {
                         if isSaving {
                             ProgressView()
                         } else {
-                            Button(String(localized: "common.save")) { saveBill() }
+                            Button(String(localized: "common.save")) { savePayment() }
                                 .disabled(!canSave)
                         }
                     }
@@ -137,7 +125,7 @@ struct BillEntryView: View {
                         if isSaving {
                             ProgressView()
                         } else {
-                            Button(String(localized: "common.save")) { saveBill() }
+                            Button(String(localized: "common.save")) { savePayment() }
                                 .disabled(!canSave)
                         }
                     }
@@ -147,48 +135,46 @@ struct BillEntryView: View {
             .onAppear {
                 currency = baseCurrency
                 payerId = currentUserId
-                includedMemberIds = Set(members.map(\.userId))
+                if let first = members.first(where: { $0.userId != currentUserId }) {
+                    receiverId = first.userId
+                }
             }
         }
-        .presentationDetents(sizeClass == .regular ? [.large] : [.large])
     }
 
     // MARK: - Save
 
-    private func saveBill() {
+    private func savePayment() {
         guard let amount = amountInSmallestUnit, amount > 0 else { return }
-        guard !includedMemberIds.isEmpty else { return }
+        guard payerId != receiverId else { return }
 
         isSaving = true
         errorMessage = nil
 
         Task {
             do {
-                _ = try await billRepository.createBill(
-                    blockId: blockId,
+                _ = try await paymentRepository.createPayment(
                     tripId: tripId,
+                    payerId: payerId,
+                    receiverId: receiverId,
                     amount: amount,
                     currency: currency,
-                    payerId: payerId,
-                    memberIds: Array(includedMemberIds)
+                    note: note.isEmpty ? nil : note
                 )
 
                 try? await Task.sleep(for: .milliseconds(500))
                 dismiss()
-                onBillCreated?()
+                onPaymentCreated?()
             } catch {
-                print("[BillEntry] ❌ Create failed: \(error)")
-                errorMessage = String(localized: "bill.error.create")
+                print("[Payment] ❌ Create failed: \(error)")
+                errorMessage = String(localized: "payment.error.create")
                 isSaving = false
             }
         }
     }
 
-    // MARK: - Helpers
-
     private var currencySymbol: String {
-        let locale = Locale(identifier: "en_US")
-        return locale.localizedString(forCurrencyCode: currency) ?? currency
+        Locale(identifier: "en_US").localizedString(forCurrencyCode: currency) ?? currency
     }
 
     private let commonCurrencies = [

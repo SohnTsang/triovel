@@ -5,6 +5,7 @@ struct BlockDetailView: View {
     @Environment(AppState.self) private var appState
     @Environment(\.horizontalSizeClass) private var sizeClass
     @State private var viewModel = BlockDetailViewModel()
+    @State private var showingBillEntry = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -34,6 +35,17 @@ struct BlockDetailView: View {
                     ProgressView()
                         .controlSize(.small)
                 }
+            }
+        }
+        .sheet(isPresented: $showingBillEntry) {
+            if let block = viewModel.block {
+                BillEntryView(
+                    blockId: block.id,
+                    tripId: block.tripId,
+                    members: viewModel.allMembers,
+                    baseCurrency: viewModel.tripBaseCurrency,
+                    currentUserId: appState.currentUserId ?? ""
+                )
             }
         }
         .task {
@@ -86,6 +98,16 @@ struct BlockDetailView: View {
                             .id(post.id)
                         }
 
+                        // Bills
+                        ForEach(viewModel.bills) { bill in
+                            BillCardView(
+                                bill: bill,
+                                payerName: viewModel.payerName(for: bill),
+                                shareCount: viewModel.billShareCounts[bill.id] ?? 0
+                            )
+                            .id("bill-\(bill.id)")
+                        }
+
                         // Failed drafts
                         ForEach(viewModel.failedDrafts) { draft in
                             FailedPostCardView(
@@ -108,13 +130,29 @@ struct BlockDetailView: View {
             }
         }
 
-        // Composer
-        PostComposerView(
-            onSend: { body, visibility, mediaItems in
-                viewModel.sendPost(body: body, visibility: visibility, mediaItems: mediaItems)
-            },
-            isSending: viewModel.isSendingPost
-        )
+        // Composer + Bill button
+        VStack(spacing: 0) {
+            PostComposerView(
+                onSend: { body, visibility, mediaItems in
+                    viewModel.sendPost(body: body, visibility: visibility, mediaItems: mediaItems)
+                },
+                isSending: viewModel.isSendingPost
+            )
+
+            // Add bill button
+            Button {
+                showingBillEntry = true
+            } label: {
+                Label(String(localized: "bill.add.button"), systemImage: "banknote")
+                    .font(.caption.weight(.medium))
+                    .foregroundStyle(.green)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(Color.green.opacity(0.08), in: Capsule())
+            }
+            .buttonStyle(.plain)
+            .padding(.bottom, 8)
+        }
     }
 
     // MARK: - Empty State

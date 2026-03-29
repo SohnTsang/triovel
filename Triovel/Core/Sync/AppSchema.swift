@@ -119,6 +119,7 @@ enum AppSchema {
                 .text("bill_id"),
                 .text("user_id"),
                 .integer("share_amount"),
+                .text("trip_id"),
             ],
             indexes: [
                 Index.ascending(name: "idx_bs_bill", column: "bill_id"),
