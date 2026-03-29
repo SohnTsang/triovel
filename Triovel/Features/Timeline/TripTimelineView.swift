@@ -10,6 +10,8 @@ struct TripTimelineView: View {
 
     @State private var showingAddMoment = false
     @State private var showingArchiveAlert = false
+    @State private var showToast = false
+    @State private var toastMessage = ""
 
     var body: some View {
         @Bindable var vm = viewModel
@@ -88,6 +90,24 @@ struct TripTimelineView: View {
                     .shadow(color: .black.opacity(0.15), radius: 8, y: 4)
             }
             .padding(24)
+
+            // Toast overlay
+            if showToast {
+                VStack {
+                    Text(toastMessage)
+                        .font(.subheadline.weight(.medium))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 10)
+                        .background(.black.opacity(0.75), in: Capsule())
+                        .shadow(color: .black.opacity(0.1), radius: 4, y: 2)
+                        .transition(.move(edge: .top).combined(with: .opacity))
+                    Spacer()
+                }
+                .padding(.top, 8)
+                .frame(maxWidth: .infinity)
+                .allowsHitTesting(false)
+            }
         }
         .navigationBarTitleDisplayMode(.inline)
         .plainBackButton()
@@ -179,10 +199,28 @@ struct TripTimelineView: View {
 
             Divider()
 
-            Button(role: .destructive) {
-                showingArchiveAlert = true
-            } label: {
-                Label(String(localized: "trip.archive.button"), systemImage: "archivebox")
+            if viewModel.trip?.archived == true {
+                Button {
+                    Task {
+                        try? await TripRepository().unarchiveTrip(tripId: tripId)
+                        try? await Task.sleep(for: .milliseconds(500))
+                        if let userId = appState.currentUserId {
+                            viewModel.load(tripId: tripId, userId: userId)
+                        }
+                        toastMessage = String(localized: "trip.unarchived.toast")
+                        withAnimation(.easeInOut(duration: 0.2)) { showToast = true }
+                        try? await Task.sleep(for: .seconds(2))
+                        withAnimation(.easeInOut(duration: 0.2)) { showToast = false }
+                    }
+                } label: {
+                    Label(String(localized: "trip.unarchive.button"), systemImage: "arrow.uturn.backward")
+                }
+            } else {
+                Button(role: .destructive) {
+                    showingArchiveAlert = true
+                } label: {
+                    Label(String(localized: "trip.archive.button"), systemImage: "archivebox")
+                }
             }
         } label: {
             Image(systemName: "ellipsis.circle")

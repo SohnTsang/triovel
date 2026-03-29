@@ -96,7 +96,7 @@ final class AppState {
 
     private func connectSync() async {
         do {
-            try await SyncManager.shared.connect()
+            try await SyncManager.shared.connect(currentUserId: currentUserId)
             startWatchingSyncStatus()
             // Step 4 of auth refresh flow: resume media upload queue
             MediaUploadQueue.shared.resumePendingUploads()
@@ -108,6 +108,7 @@ final class AppState {
     private func disconnectSync() async {
         syncStatusTask?.cancel()
         await SyncManager.shared.disconnectAndClear()
+        await ImageCache.shared.clearAll()
         isSyncConnected = false
         hasSynced = false
         lastSyncedAt = nil

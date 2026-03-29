@@ -3,9 +3,18 @@
 # Deploy in the PowerSync Dashboard under "Sync Streams".
 # Uses edition 3 (Sync Streams format, not legacy Sync Rules).
 #
-# IMPORTANT: auth.user_id() in JOIN queries causes data to disappear
-# after sync reconciliation. Use unfiltered queries for now.
-# Private post filtering handled client-side (SQL WHERE clause).
+# LIMITATION: Edition 3 auto_subscribe streams do NOT support per-user
+# filtering. Functions like auth.user_id(), request.user_id(), and
+# token_parameters.user_id all fail in this context.
+#
+# Private post isolation is enforced CLIENT-SIDE (defense-in-depth):
+#   - PostRepository: WHERE visibility = 'shared' OR user_id = ?
+#   - PostMediaRepository: same JOIN filter on watchMediaForBlock
+#   - SyncManager: privacy audit logs any leaked private posts on connect
+#   - ImageCache: cleared on sign-out to prevent data leaks between accounts
+#
+# For full server-side filtering, would need to migrate to Edition 1
+# bucket-based sync rules or PowerSync parameterized streams.
 
 streams:
   global_users:

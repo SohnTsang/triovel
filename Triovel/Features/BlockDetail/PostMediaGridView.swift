@@ -1,74 +1,89 @@
 import SwiftUI
 
 /// Displays media attachments in a post card, handling all upload states.
-/// 1 image = full width, 2+ = 2-column grid.
+/// - 1 image: full width, 200pt height
+/// - 2+ images: horizontal scrollable strip (bounded height, swipe to see more)
+/// Tap any image → full-screen gallery viewer.
 struct PostMediaGridView: View {
     let media: [PostMedia]
     var onRetry: ((String) -> Void)?
 
-    private let spacing: CGFloat = 4
     private let cornerRadius: CGFloat = 8
+    @State private var fullScreenIndex: Int?
 
     var body: some View {
         if media.count == 1 {
             singleMediaView(media[0])
-        } else if media.count == 2 {
-            HStack(spacing: spacing) {
-                mediaView(media[0])
-                mediaView(media[1])
-            }
-            .frame(height: 160)
         } else if !media.isEmpty {
-            let rows = stride(from: 0, to: media.count, by: 2).map { i in
-                Array(media[i..<min(i + 2, media.count)])
-            }
-            VStack(spacing: spacing) {
-                ForEach(Array(rows.enumerated()), id: \.offset) { _, row in
-                    HStack(spacing: spacing) {
-                        ForEach(row) { item in
-                            mediaView(item)
-                        }
-                    }
-                    .frame(height: 120)
-                }
-            }
+            multiMediaStrip
         }
     }
 
-    // MARK: - Single Media (full width)
+    // MARK: - Single Media (full width, tappable)
 
     @ViewBuilder
     private func singleMediaView(_ item: PostMedia) -> some View {
-        mediaView(item)
+        mediaCell(item, index: 0)
             .frame(height: 200)
+            .frame(maxWidth: .infinity)
+            .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
+            .fullScreenCover(item: $fullScreenIndex) { index in
+                FullScreenMediaViewer(media: media, initialIndex: index)
+            }
     }
 
-    // MARK: - Media View (handles upload states)
+    // MARK: - Multi Media (horizontal strip)
 
-    /// True if the media has finished uploading.
-    /// Uses storage_path as primary indicator because upload_status gets overwritten
-    /// by PowerSync sync reconciliation (local 'uploaded' → server 'queued' → loop).
-    /// Also checks local file existence as fallback — if we have the file, show it.
-    private func isUploaded(_ item: PostMedia) -> Bool {
-        item.storagePath != nil
-            || item.uploadStatus == .uploaded
-            || MediaFileManager.loadThumbnail(for: item.id) != nil
+    private var multiMediaStrip: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 6) {
+                    ForEach(Array(media.enumerated()), id: \.element.id) { index, item in
+                        mediaCell(item, index: index)
+                            .frame(width: 160, height: 160)
+                            .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
+                    }
+                }
+            }
+
+            // Photo count hint
+            if media.count > 2 {
+                Text("media.count \(media.count)")
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+            }
+        }
+        .fullScreenCover(item: $fullScreenIndex) { index in
+            FullScreenMediaViewer(media: media, initialIndex: index)
+        }
     }
+
+    // MARK: - Media Cell (handles upload states + tap)
 
     @ViewBuilder
-    private func mediaView(_ item: PostMedia) -> some View {
+    private func mediaCell(_ item: PostMedia, index: Int) -> some View {
         if item.uploadStatus == .failed {
-            failedView(item)
+            failedCell(item)
         } else if isUploaded(item) {
-            // Uploaded — show image
-            thumbnailImage(for: item)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
+            // Uploaded — show image, tappable for full-screen
+            CachedMediaView(
+                mediaId: item.id,
+                storagePath: item.storagePath,
+                mediaType: item.mediaType
+            )
+            .contentShape(Rectangle())
+            .onTapGesture {
+                fullScreenIndex = index
+            }
         } else {
             // Queued / uploading — syncing overlay
             ZStack {
-                thumbnailImage(for: item)
-                    .opacity(0.5)
+                CachedMediaView(
+                    mediaId: item.id,
+                    storagePath: nil,
+                    mediaType: item.mediaType
+                )
+                .opacity(0.5)
 
                 VStack(spacing: 4) {
                     ProgressView()
@@ -80,17 +95,19 @@ struct PostMediaGridView: View {
                 .padding(8)
                 .background(.black.opacity(0.4), in: RoundedRectangle(cornerRadius: 6))
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color(.systemGray5))
-            .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
         }
     }
 
     @ViewBuilder
-    private func failedView(_ item: PostMedia) -> some View {
+    private func failedCell(_ item: PostMedia) -> some View {
         ZStack {
-            thumbnailImage(for: item)
-                .opacity(0.3)
+            CachedMediaView(
+                mediaId: item.id,
+                storagePath: nil,
+                mediaType: item.mediaType
+            )
+            .opacity(0.3)
 
             VStack(spacing: 4) {
                 Image(systemName: "exclamationmark.triangle")
@@ -104,9 +121,7 @@ struct PostMediaGridView: View {
             .padding(8)
             .background(.black.opacity(0.5), in: RoundedRectangle(cornerRadius: 6))
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color(.systemGray5))
-        .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
         .overlay(
             RoundedRectangle(cornerRadius: cornerRadius)
                 .stroke(ColorTokens.failedTint, lineWidth: 1)
@@ -117,21 +132,16 @@ struct PostMediaGridView: View {
         }
     }
 
-    // MARK: - Thumbnail
+    // MARK: - Helpers
 
-    @ViewBuilder
-    private func thumbnailImage(for item: PostMedia) -> some View {
-        if let thumb = MediaFileManager.loadThumbnail(for: item.id) {
-            Image(uiImage: thumb)
-                .resizable()
-                .scaledToFill()
-        } else {
-            // Fallback: gray placeholder
-            Color(.systemGray5)
-                .overlay {
-                    Image(systemName: item.mediaType == .photo ? "photo" : "video")
-                        .foregroundStyle(.tertiary)
-                }
-        }
+    /// True if the media has finished uploading (local or remote).
+    private func isUploaded(_ item: PostMedia) -> Bool {
+        item.storagePath != nil || item.uploadStatus == .uploaded
     }
+}
+
+// MARK: - Int Identifiable conformance for fullScreenCover(item:)
+
+extension Int: @retroactive Identifiable {
+    public var id: Int { self }
 }

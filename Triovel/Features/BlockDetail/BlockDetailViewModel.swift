@@ -307,7 +307,8 @@ final class BlockDetailViewModel {
         mediaWatchTask = Task { [weak self] in
             guard let self else { return }
             do {
-                let stream = try self.postMediaRepository.watchMediaForBlock(blockId: blockId)
+                let userId = self.currentUserId ?? ""
+                let stream = try self.postMediaRepository.watchMediaForBlock(blockId: blockId, currentUserId: userId)
                 for try await allMedia in stream {
                     guard !Task.isCancelled else { break }
                     var map: [String: [PostMedia]] = [:]

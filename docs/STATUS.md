@@ -49,6 +49,8 @@ Triovel/
 │   │   ├── TripRepository.swift      — Trip CRUD: local-first reads/writes, Supabase for joinTrip
 │   │   ├── BlockRepository.swift     — Block CRUD: local-first reads/writes, reactive watch
 │   │   └── PostRepository.swift      — Post CRUD: local-first with privacy filter (defense-in-depth)
+│   ├── Storage/
+│   │   └── ImageCache.swift          — Actor-based image cache (NSCache 50MB + disk), Supabase Storage downloads
 │   └── Sync/
 │       ├── AppSchema.swift           — PowerSync SQLite schema (9 tables with indexes)
 │       ├── PowerSyncConfig.swift     — PowerSync endpoint URL
@@ -78,7 +80,8 @@ Triovel/
 │   │   ├── PostCardView.swift        — Post card: avatar, author, time, body, visibility badge, delete
 │   │   ├── PostComposerView.swift    — Shared/Just Me toggle + text input + send (visibility resets)
 │   │   ├── PostSkeletonView.swift    — Skeleton shimmer matching PostCardView layout
-│   │   └── FailedPostCardView.swift  — Failed draft card with retry + discard affordance
+│   │   ├── FailedPostCardView.swift  — Failed draft card with retry + discard affordance
+│   │   └── FullScreenMediaViewer.swift — Full-screen swipe gallery with page counter + close
 │   ├── TripSetup/
 │   │   ├── TripSetupView.swift       — Create trip: title + dates, auto-fill timezone/currency
 │   │   └── JoinTripView.swift        — Join by invite code (network required)
@@ -98,7 +101,8 @@ Triovel/
 │   └── Components/
 │       ├── ContextChip.swift         — "Group" / "Personal · Name" capsule chip
 │       ├── SyncStateIndicator.swift  — Subtle sync state icons (synced/pending/syncing/failed)
-│       └── PlainToolbarModifier.swift — Replaces iOS 26 Liquid Glass back button with plain chevron
+│       ├── PlainToolbarModifier.swift — Replaces iOS 26 Liquid Glass back button with plain chevron
+│       └── CachedMediaView.swift     — Async image view: local → cache → Supabase Storage download
 ├── Utilities/
 │   └── DateExtensions.swift          — startOfDay(in:) and dayNumber(from:in:) timezone helpers
 └── Resources/
@@ -396,12 +400,22 @@ docs/
 | Delete account is placeholder | `SettingsView.swift` | Confirmation dialog exists but no backend implementation (Phase 5) |
 | No real-time member updates | ViewModels | Members fetched once on load, not watched reactively |
 | Ghost blocks not persisted | `DaySectionView.swift` | Pure UI scaffolding — intentional per blueprint, not a bug |
-| Synchronous thumbnail loading | `PostMediaGridView` | `loadThumbnail()` reads disk synchronously in view body. Will cause scroll jank with many photos. Need async loading. |
-| No remote image loading | `PostMediaGridView` | Other users see gray placeholder — no `AsyncImage` for Supabase Storage URLs. Single-user only for now. |
-| No image caching layer | — | Remote images (when implemented) need disk + memory cache to avoid re-downloading on scroll. |
 | No data caching strategy | Repositories / ViewModels | All reads go through PowerSync local SQLite (fast), but no in-memory caching for computed data (member names, trip metadata). Acceptable for beta, review at scale. |
 | PowerSync sync reconciliation overwrites local fields | SupabaseConnector / PostMediaGridView | upload_status and storage_path get overwritten by server state before CRUD uploads. Workaround: use storagePath != nil + local file check instead of upload_status for UI. |
-| PowerSync auth.user_id() broken in sync streams | powersync-sync-rules.yaml | Using unfiltered queries (all data to all users). Acceptable for beta, must fix before multi-user production. |
+| **Deploy updated sync rules** | PowerSync Dashboard | Updated `docs/powersync-sync-rules.yaml` uses `token_parameters.user_id` to filter private posts server-side. **Must deploy to PowerSync dashboard** for full privacy enforcement. Client-side defense-in-depth already active. |
+
+### Resolved Issues (Hotfix)
+
+| Issue | Fix | Files |
+|---|---|---|
+| Private posts syncing to all users | Updated sync rules to use `token_parameters.user_id` for server-side filtering. Added client-side defense-in-depth: PostRepository and PostMediaRepository both filter `visibility = 'shared' OR user_id = ?`. Privacy audit runs on connect and logs violations. | `powersync-sync-rules.yaml`, `PostMediaRepository.swift`, `SyncManager.swift`, `AppState.swift` |
+| No remote image loading | Other users now see photos via Supabase Storage download. `ImageCache` actor downloads from `trip-media` bucket, generates 200px thumbnails, caches in memory (NSCache 50MB) + disk (`{AppSupport}/image_cache/`). | `ImageCache.swift`, `CachedMediaView.swift`, `PostMediaGridView.swift` |
+| Synchronous thumbnail loading causing scroll jank | Replaced synchronous `MediaFileManager.loadThumbnail()` in view body with `CachedMediaView` using `.task` modifier for off-main-thread loading. Memory cache ensures instant hits on re-scroll. | `PostMediaGridView.swift`, `CachedMediaView.swift` |
+| No image caching layer | `ImageCache` actor provides NSCache (50MB limit) + persistent disk cache. Deduplicates concurrent downloads. Cleared on sign-out to prevent data leaks between accounts. | `ImageCache.swift`, `AppState.swift` |
+| Archive button shows "Archive" on archived trips (Timeline) | Timeline 3-dot menu now checks `trip.archived` and shows "Unarchive Trip" (accent color) or "Archive Trip" (destructive red) accordingly. | `TripTimelineView.swift` |
+| No unarchive feedback | Toast "Trip unarchived" appears for 2s after unarchiving from timeline menu. Localized in all 4 languages. | `TripTimelineView.swift` |
+| No media loading state in composer | Skeleton placeholders with spinners appear immediately when selecting photos from library. `processingCount` tracks per-item progress. Send disabled until all processing complete. | `PostComposerView.swift`, `MediaAttachmentPreview.swift` |
+| Multi-media layout overflow + no viewer | Replaced unbounded 2-column grid with horizontal scrollable strip (160pt cells) for 2+ images. Author row and body text always visible. Tap any image opens `FullScreenMediaViewer` with swipe gallery, page counter, close button. | `PostMediaGridView.swift`, `FullScreenMediaViewer.swift` |
 
 ---
 

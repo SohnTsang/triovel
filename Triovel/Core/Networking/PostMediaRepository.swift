@@ -64,15 +64,17 @@ final class PostMediaRepository {
     }
 
     /// Reactive stream of all media for posts in a block.
-    func watchMediaForBlock(blockId: String) throws -> AsyncThrowingStream<[PostMedia], Error> {
+    /// Filters out media attached to private posts from other users (defense-in-depth).
+    func watchMediaForBlock(blockId: String, currentUserId: String) throws -> AsyncThrowingStream<[PostMedia], Error> {
         try db.watch(
             sql: """
                 SELECT pm.* FROM post_media pm
                 JOIN posts p ON pm.post_id = p.id
                 WHERE p.block_id = ?
+                  AND (p.visibility = 'shared' OR p.user_id = ?)
                 ORDER BY pm.created_at ASC
                 """,
-            parameters: [blockId],
+            parameters: [blockId, currentUserId],
             mapper: Self.postMediaMapper
         )
     }
