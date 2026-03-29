@@ -38,20 +38,12 @@ struct BlockDetailView: View {
             }
             if #available(iOS 26, *) {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button { showingBillEntry = true } label: {
-                        Image(systemName: "banknote")
-                            .font(.body.weight(.semibold))
-                            .foregroundStyle(Color(.label))
-                    }
+                    blockMenuButton
                 }
                 .sharedBackgroundVisibility(.hidden)
             } else {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button { showingBillEntry = true } label: {
-                        Image(systemName: "banknote")
-                            .font(.body.weight(.semibold))
-                            .foregroundStyle(Color(.label))
-                    }
+                    blockMenuButton
                 }
             }
         }
@@ -82,6 +74,7 @@ struct BlockDetailView: View {
             block: block,
             canEdit: viewModel.canEditHeader,
             isSaving: viewModel.isSavingHeader,
+            billSummary: viewModel.billSummary,
             isEditing: $vm.isEditingHeader,
             editTitle: $vm.editTitle,
             editLocation: $vm.editLocation,
@@ -155,6 +148,36 @@ struct BlockDetailView: View {
             },
             isSending: viewModel.isSendingPost
         )
+    }
+
+    // MARK: - Menu
+
+    private var blockMenuButton: some View {
+        Menu {
+            Button {
+                showingBillEntry = true
+            } label: {
+                Label(String(localized: "bill.add.button"), systemImage: "banknote")
+            }
+
+            if viewModel.canEditHeader {
+                Button {
+                    if let block = viewModel.block {
+                        viewModel.editTitle = block.title
+                        viewModel.editLocation = block.locationText ?? ""
+                        viewModel.editDescription = block.description ?? ""
+                        viewModel.editStartAt = block.startAt
+                        viewModel.isEditingHeader = true
+                    }
+                } label: {
+                    Label(String(localized: "block.edit.title"), systemImage: "pencil")
+                }
+            }
+        } label: {
+            Image(systemName: "ellipsis.circle")
+                .font(.body.weight(.semibold))
+                .foregroundStyle(Color(.label))
+        }
     }
 
     // MARK: - Empty State

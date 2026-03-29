@@ -7,6 +7,7 @@ struct BlockDetailHeaderView: View {
     let block: Block
     let canEdit: Bool
     var isSaving: Bool = false
+    var billSummary: String?
     @Binding var isEditing: Bool
     @Binding var editTitle: String
     @Binding var editLocation: String
@@ -40,22 +41,17 @@ struct BlockDetailHeaderView: View {
 
     @ViewBuilder
     private var displayContent: some View {
-        // Context chip + edit button
+        // Context chip + bill total
         HStack {
             ContextChip(context: block.context)
             Spacer()
-            if canEdit {
-                Button {
-                    editTitle = block.title
-                    editLocation = block.locationText ?? ""
-                    editDescription = block.description ?? ""
-                    editStartAt = block.startAt
-                    isEditing = true
-                } label: {
-                    Image(systemName: "pencil")
-                        .font(.body.weight(.semibold))
-                        .foregroundStyle(Color(.label))
-                }
+            if let summary = billSummary {
+                Label(summary, systemImage: "banknote")
+                    .font(.caption.weight(.medium))
+                    .foregroundStyle(.green)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(Color.green.opacity(0.08), in: Capsule())
             }
         }
 

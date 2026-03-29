@@ -348,6 +348,15 @@ final class BlockDetailViewModel {
         }
     }
 
+    /// Bill total summary for header badge (e.g. "¥12,000")
+    var billSummary: String? {
+        guard !bills.isEmpty else { return nil }
+        // Group by currency, show each total
+        var totals: [String: Int] = [:]
+        for bill in bills { totals[bill.currency, default: 0] += bill.amount }
+        return totals.map { $0.value.formattedCurrency($0.key) }.joined(separator: " + ")
+    }
+
     func payerName(for bill: Bill) -> String {
         memberNames[bill.payerId] ?? String(localized: "post.author.unknown")
     }
