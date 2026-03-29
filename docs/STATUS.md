@@ -80,7 +80,8 @@ Triovel/
 │   │   ├── PostCardView.swift        — Post card: avatar, author, time, body, visibility badge, delete
 │   │   ├── PostComposerView.swift    — Shared/Just Me toggle + text input + send (visibility resets)
 │   │   ├── PostSkeletonView.swift    — Skeleton shimmer matching PostCardView layout
-│   │   └── FailedPostCardView.swift  — Failed draft card with retry + discard affordance
+│   │   ├── FailedPostCardView.swift  — Failed draft card with retry + discard affordance
+│   │   └── FullScreenMediaViewer.swift — Full-screen swipe gallery with page counter + close
 │   ├── TripSetup/
 │   │   ├── TripSetupView.swift       — Create trip: title + dates, auto-fill timezone/currency
 │   │   └── JoinTripView.swift        — Join by invite code (network required)
@@ -412,6 +413,9 @@ docs/
 | Synchronous thumbnail loading causing scroll jank | Replaced synchronous `MediaFileManager.loadThumbnail()` in view body with `CachedMediaView` using `.task` modifier for off-main-thread loading. Memory cache ensures instant hits on re-scroll. | `PostMediaGridView.swift`, `CachedMediaView.swift` |
 | No image caching layer | `ImageCache` actor provides NSCache (50MB limit) + persistent disk cache. Deduplicates concurrent downloads. Cleared on sign-out to prevent data leaks between accounts. | `ImageCache.swift`, `AppState.swift` |
 | Archive button shows "Archive" on archived trips (Timeline) | Timeline 3-dot menu now checks `trip.archived` and shows "Unarchive Trip" (accent color) or "Archive Trip" (destructive red) accordingly. | `TripTimelineView.swift` |
+| No unarchive feedback | Toast "Trip unarchived" appears for 2s after unarchiving from timeline menu. Localized in all 4 languages. | `TripTimelineView.swift` |
+| No media loading state in composer | Skeleton placeholders with spinners appear immediately when selecting photos from library. `processingCount` tracks per-item progress. Send disabled until all processing complete. | `PostComposerView.swift`, `MediaAttachmentPreview.swift` |
+| Multi-media layout overflow + no viewer | Replaced unbounded 2-column grid with horizontal scrollable strip (160pt cells) for 2+ images. Author row and body text always visible. Tap any image opens `FullScreenMediaViewer` with swipe gallery, page counter, close button. | `PostMediaGridView.swift`, `FullScreenMediaViewer.swift` |
 
 ---
 
