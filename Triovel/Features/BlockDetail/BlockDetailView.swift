@@ -51,6 +51,7 @@ struct BlockDetailView: View {
         BlockDetailHeaderView(
             block: block,
             canEdit: viewModel.canEditHeader,
+            isSaving: viewModel.isSavingHeader,
             isEditing: $vm.isEditingHeader,
             editTitle: $vm.editTitle,
             editLocation: $vm.editLocation,
@@ -77,6 +78,7 @@ struct BlockDetailView: View {
                                 authorName: viewModel.authorName(for: post),
                                 isOwn: viewModel.isOwnPost(post),
                                 media: viewModel.mediaItems(for: post.id),
+                                isDeleting: viewModel.deletingPostId == post.id,
                                 onDelete: { viewModel.deletePost(post) },
                                 onRetry: nil,
                                 onMediaRetry: { mediaId in viewModel.retryMediaUpload(mediaId: mediaId) }

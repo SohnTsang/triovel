@@ -6,6 +6,7 @@ import SwiftUI
 struct BlockDetailHeaderView: View {
     let block: Block
     let canEdit: Bool
+    var isSaving: Bool = false
     @Binding var isEditing: Bool
     @Binding var editTitle: String
     @Binding var editLocation: String
@@ -130,14 +131,22 @@ struct BlockDetailHeaderView: View {
                 focusedField = nil
                 onSave()
             } label: {
-                Image(systemName: "checkmark.circle.fill")
-                    .font(.title3)
-                    .foregroundStyle(
-                        editTitle.trimmingCharacters(in: .whitespaces).isEmpty
-                            ? Color(.systemGray3) : Color.accentColor
-                    )
+                Group {
+                    if isSaving {
+                        ProgressView()
+                            .controlSize(.small)
+                    } else {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.title3)
+                            .foregroundStyle(
+                                editTitle.trimmingCharacters(in: .whitespaces).isEmpty
+                                    ? Color(.systemGray3) : Color.accentColor
+                            )
+                    }
+                }
+                .frame(width: 28, height: 28)
             }
-            .disabled(editTitle.trimmingCharacters(in: .whitespaces).isEmpty)
+            .disabled(editTitle.trimmingCharacters(in: .whitespaces).isEmpty || isSaving)
         }
         .padding(.bottom, 4)
 

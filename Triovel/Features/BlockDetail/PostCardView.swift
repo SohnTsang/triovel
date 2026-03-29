@@ -6,6 +6,7 @@ struct PostCardView: View {
     let authorName: String
     let isOwn: Bool
     var media: [PostMedia] = []
+    var isDeleting: Bool = false
     let onDelete: () -> Void
     let onRetry: (() -> Void)?
     var onMediaRetry: ((String) -> Void)?
@@ -97,6 +98,14 @@ struct PostCardView: View {
                     .strokeBorder(ColorTokens.personalBorder, lineWidth: 1)
                 : nil
         )
+        .opacity(isDeleting ? 0.5 : 1.0)
+        .overlay {
+            if isDeleting {
+                ProgressView()
+                    .tint(.secondary)
+            }
+        }
+        .allowsHitTesting(!isDeleting)
         .alert(
             String(localized: "post.delete.confirm.title"),
             isPresented: $showingDeleteConfirmation

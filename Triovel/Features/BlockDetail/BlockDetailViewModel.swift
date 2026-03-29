@@ -162,7 +162,10 @@ final class BlockDetailViewModel {
         sendTask?.cancel()
         sendTask = Task { [weak self] in
             guard let self else { return }
-            let start = ContinuousClock.now
+
+            // 500ms minimum spinner BEFORE writing to DB
+            // (writing triggers reactive watch which shows the post immediately)
+            try? await Task.sleep(for: .milliseconds(500))
 
             do {
                 let post = try await self.postRepository.createPost(
@@ -193,11 +196,6 @@ final class BlockDetailViewModel {
                 ))
             }
 
-            // 500ms minimum loading — UI changes only after this completes
-            let elapsed = ContinuousClock.now - start
-            if elapsed < .milliseconds(500) {
-                try? await Task.sleep(for: .milliseconds(500) - elapsed)
-            }
             self.isSendingPost = false
         }
     }
@@ -211,17 +209,23 @@ final class BlockDetailViewModel {
         failedDrafts.removeAll { $0.id == draft.id }
     }
 
+    private(set) var deletingPostId: String?
+
     func deletePost(_ post: Post) {
+        deletingPostId = post.id
+
         Task { [weak self] in
             guard let self else { return }
+
+            // 500ms minimum loading before post disappears
+            let start = ContinuousClock.now
+
             do {
-                // 1. Fetch media for this post before deleting
+                // 1. Fetch media before deleting
                 let media = try await self.postMediaRepository.fetchMediaForPost(postId: post.id)
 
                 if !media.isEmpty {
-                    // 2. Delete storage files from Supabase bucket
-                    // Build paths deterministically — don't rely on storagePath field
-                    // (it gets overwritten to nil by PowerSync sync reconciliation)
+                    // 2. Delete storage files (deterministic paths)
                     let storagePaths = media.map { item in
                         let ext = item.mediaType == .photo ? "jpg" : "mp4"
                         return "posts/\(post.id)/\(item.id).\(ext)"
@@ -235,17 +239,25 @@ final class BlockDetailViewModel {
                         print("[BlockDetail] ⚠️ Storage cleanup failed: \(error)")
                     }
 
-                    // 3. Delete local files (thumbnails + media)
+                    // 3. Delete local files
                     for item in media {
                         MediaFileManager.deleteLocalFiles(for: item.id, type: item.mediaType)
                     }
                 }
 
-                // 4. Delete the post (cascade deletes post_media rows)
+                // Ensure 500ms minimum before post disappears
+                let elapsed = ContinuousClock.now - start
+                if elapsed < .milliseconds(500) {
+                    try? await Task.sleep(for: .milliseconds(500) - elapsed)
+                }
+
+                // 4. Delete the post (cascade deletes post_media rows, triggers watch)
                 try await self.postRepository.deletePost(postId: post.id)
             } catch {
                 print("[BlockDetail] ❌ deletePost failed: \(error)")
             }
+
+            self.deletingPostId = nil
         }
     }
 
@@ -318,6 +330,8 @@ final class BlockDetailViewModel {
 
     // MARK: - Save Header Edits
 
+    private(set) var isSavingHeader = false
+
     func saveHeaderEdits() {
         guard let block else { return }
         let trimmedTitle = editTitle.trimmingCharacters(in: .whitespaces)
@@ -326,9 +340,14 @@ final class BlockDetailViewModel {
         let newLocation = editLocation.trimmingCharacters(in: .whitespaces)
         let newDescription = editDescription.trimmingCharacters(in: .whitespacesAndNewlines)
         let timeChanged = abs(editStartAt.timeIntervalSince(block.startAt)) > 60
+        isSavingHeader = true
 
         Task { [weak self] in
             guard let self else { return }
+
+            // 500ms minimum loading before UI updates
+            try? await Task.sleep(for: .milliseconds(500))
+
             do {
                 try await self.blockRepository.updateBlockHeader(
                     blockId: block.id,
@@ -346,6 +365,8 @@ final class BlockDetailViewModel {
             } catch {
                 self.errorMessage = String(localized: "block.detail.error.save")
             }
+
+            self.isSavingHeader = false
         }
     }
 }
