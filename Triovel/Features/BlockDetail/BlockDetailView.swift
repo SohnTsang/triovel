@@ -6,6 +6,7 @@ struct BlockDetailView: View {
     @Environment(\.horizontalSizeClass) private var sizeClass
     @State private var viewModel = BlockDetailViewModel()
     @State private var showingBillEntry = false
+    @State private var selectedBill: Bill?
 
     var body: some View {
         VStack(spacing: 0) {
@@ -57,6 +58,15 @@ struct BlockDetailView: View {
                     currentUserId: appState.currentUserId ?? ""
                 )
             }
+        }
+        .sheet(item: $selectedBill) { bill in
+            BillDetailView(
+                bill: bill,
+                payerName: viewModel.payerName(for: bill),
+                shares: viewModel.billShareDisplays(for: bill.id),
+                onDelete: { viewModel.deleteBill(bill) },
+                canDelete: bill.payerId == appState.currentUserId
+            )
         }
         .task {
             if let userId = appState.currentUserId {
@@ -114,7 +124,8 @@ struct BlockDetailView: View {
                             BillCardView(
                                 bill: bill,
                                 payerName: viewModel.payerName(for: bill),
-                                shareCount: viewModel.billShareCounts[bill.id] ?? 0
+                                shareCount: viewModel.billShareCounts[bill.id] ?? 0,
+                                onTap: { selectedBill = bill }
                             )
                             .id("bill-\(bill.id)")
                         }

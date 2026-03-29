@@ -50,6 +50,7 @@ final class BlockDetailViewModel {
     // Bills in this block
     private(set) var bills: [Bill] = []
     private(set) var billShareCounts: [String: Int] = [:]
+    private(set) var billSharesMap: [String: [BillShare]] = [:]
 
     nonisolated(unsafe) private var loadTask: Task<Void, Never>?
     nonisolated(unsafe) private var sendTask: Task<Void, Never>?
@@ -332,13 +333,16 @@ final class BlockDetailViewModel {
                     guard !Task.isCancelled else { break }
                     self.bills = bills
 
-                    // Fetch share counts for display
+                    // Fetch shares for display + detail
                     var counts: [String: Int] = [:]
+                    var sharesMap: [String: [BillShare]] = [:]
                     for bill in bills {
                         let shares = try await self.billRepository.fetchSharesForBill(billId: bill.id)
                         counts[bill.id] = shares.count
+                        sharesMap[bill.id] = shares
                     }
                     self.billShareCounts = counts
+                    self.billSharesMap = sharesMap
                 }
             } catch {
                 if !(error is CancellationError) {
@@ -370,6 +374,31 @@ final class BlockDetailViewModel {
 
     /// Trip base currency — set during load from the trip record.
     private(set) var tripBaseCurrency: String = "USD"
+
+    /// Bill share displays for the detail view.
+    func billShareDisplays(for billId: String) -> [BillShareDisplay] {
+        guard let shares = billSharesMap[billId] else { return [] }
+        return shares.map { share in
+            BillShareDisplay(
+                id: share.id,
+                userId: share.userId,
+                displayName: memberNames[share.userId] ?? String(localized: "post.author.unknown"),
+                shareAmount: share.shareAmount
+            )
+        }
+    }
+
+    func deleteBill(_ bill: Bill) {
+        Task { [weak self] in
+            guard let self else { return }
+            try? await Task.sleep(for: .milliseconds(500))
+            do {
+                try await self.billRepository.deleteBill(billId: bill.id)
+            } catch {
+                print("[BlockDetail] ❌ deleteBill failed: \(error)")
+            }
+        }
+    }
 
     // MARK: - Member Names (local read)
 

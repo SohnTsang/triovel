@@ -68,6 +68,7 @@
 		P4BF0003 /* BalanceCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = P4FR0003 /* BalanceCalculator.swift */; };
 		P4BF0004 /* BillCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = P4FR0004 /* BillCardView.swift */; };
 		P4BF0005 /* PaymentEntrySheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = P4FR0005 /* PaymentEntrySheet.swift */; };
+		P4BF0006 /* BillDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = P4FR0006 /* BillDetailView.swift */; };
 		P3BF0001 /* MediaFileManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = P3FR0001 /* MediaFileManager.swift */; };
 		P3BF0002 /* MediaCompressor.swift in Sources */ = {isa = PBXBuildFile; fileRef = P3FR0002 /* MediaCompressor.swift */; };
 		P3BF0003 /* MediaCostController.swift in Sources */ = {isa = PBXBuildFile; fileRef = P3FR0003 /* MediaCostController.swift */; };
@@ -156,6 +157,7 @@
 		P4FR0003 /* BalanceCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BalanceCalculator.swift; sourceTree = "<group>"; };
 		P4FR0004 /* BillCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BillCardView.swift; sourceTree = "<group>"; };
 		P4FR0005 /* PaymentEntrySheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentEntrySheet.swift; sourceTree = "<group>"; };
+		P4FR0006 /* BillDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BillDetailView.swift; sourceTree = "<group>"; };
 		P3FR0001 /* MediaFileManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaFileManager.swift; sourceTree = "<group>"; };
 		P3FR0002 /* MediaCompressor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaCompressor.swift; sourceTree = "<group>"; };
 		P3FR0003 /* MediaCostController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaCostController.swift; sourceTree = "<group>"; };
@@ -367,6 +369,7 @@
 			isa = PBXGroup;
 			children = (
 				P4FR0004 /* BillCardView.swift */,
+				P4FR0006 /* BillDetailView.swift */,
 				046B24F1977F74C981837C7E /* BillEntryView.swift */,
 				P4FR0005 /* PaymentEntrySheet.swift */,
 			);
@@ -604,6 +607,7 @@
 				P4BF0003 /* BalanceCalculator.swift in Sources */,
 				P4BF0004 /* BillCardView.swift in Sources */,
 				P4BF0005 /* PaymentEntrySheet.swift in Sources */,
+				P4BF0006 /* BillDetailView.swift in Sources */,
 				P3BF0001 /* MediaFileManager.swift in Sources */,
 				P3BF0002 /* MediaCompressor.swift in Sources */,
 				P3BF0003 /* MediaCostController.swift in Sources */,

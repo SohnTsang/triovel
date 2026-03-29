@@ -27,6 +27,11 @@ struct TripSummaryView: View {
                         currencySection(balance)
                     }
 
+                    // Payment history
+                    if !viewModel.payments.isEmpty {
+                        paymentHistorySection
+                    }
+
                     // Record Payment button
                     Button {
                         showingPaymentSheet = true
@@ -194,6 +199,63 @@ struct TripSummaryView: View {
 
     // MARK: - Helpers
 
+    // MARK: - Payment History
+
+    private var paymentHistorySection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("summary.payment.history")
+                .font(.caption.weight(.medium))
+                .foregroundStyle(.secondary)
+                .padding(.horizontal)
+
+            VStack(spacing: 0) {
+                ForEach(Array(viewModel.payments.enumerated()), id: \.element.id) { index, payment in
+                    HStack(spacing: 10) {
+                        Image(systemName: "arrow.right.circle.fill")
+                            .font(.body)
+                            .foregroundStyle(.blue)
+
+                        VStack(alignment: .leading, spacing: 2) {
+                            HStack(spacing: 4) {
+                                Text(viewModel.memberName(for: payment.payerId))
+                                    .font(.subheadline.weight(.medium))
+                                Image(systemName: "arrow.right")
+                                    .font(.caption2)
+                                    .foregroundStyle(.tertiary)
+                                Text(viewModel.memberName(for: payment.receiverId))
+                                    .font(.subheadline.weight(.medium))
+                            }
+                            if let note = payment.note, !note.isEmpty {
+                                Text(note)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                            Text(payment.createdAt, format: .dateTime.month(.abbreviated).day().hour().minute())
+                                .font(.caption2)
+                                .foregroundStyle(.tertiary)
+                        }
+
+                        Spacer()
+
+                        Text(payment.amount.formattedCurrency(payment.currency))
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(.blue)
+                    }
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 10)
+
+                    if index < viewModel.payments.count - 1 {
+                        Divider().padding(.leading, 44)
+                    }
+                }
+            }
+            .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 12))
+            .padding(.horizontal)
+        }
+    }
+
+    // MARK: - Helpers
+
     private func balanceDescription(_ amount: Int, currency: String) -> String {
         if amount > 0 {
             return "+\(amount.formattedCurrency(currency))"
@@ -214,6 +276,7 @@ final class TripSummaryViewModel {
     private(set) var currencyBalances: [BalanceCalculator.CurrencyBalance] = []
     private(set) var totalExpensesByCurrency: [(currency: String, total: Int)] = []
     private(set) var totalBillCount: Int = 0
+    private(set) var payments: [Payment] = []
     private(set) var isLoading = false
 
     private let blockRepository = BlockRepository()
@@ -264,6 +327,7 @@ final class TripSummaryViewModel {
 
                     let shares = try await self.billRepository.fetchAllSharesForTrip(tripId: tripId)
                     let payments = try await self.paymentRepository.fetchPaymentsForTrip(tripId: tripId)
+                    self.payments = payments
 
                     self.currencyBalances = BalanceCalculator.calculate(
                         bills: bills,
