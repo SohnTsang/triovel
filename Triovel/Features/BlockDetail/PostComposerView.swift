@@ -13,12 +13,13 @@ struct PostComposerView: View {
     @State private var selectedPhotos: [PhotosPickerItem] = []
     @State private var showCamera = false
     @State private var isProcessingMedia = false
+    @State private var processingCount = 0
     @FocusState private var isFocused: Bool
 
     private var canSend: Bool {
         let hasText = !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
         let hasMedia = !mediaItems.isEmpty
-        return (hasText || hasMedia) && !isSending
+        return (hasText || hasMedia) && !isSending && !isProcessingMedia
     }
 
     var body: some View {
@@ -35,9 +36,12 @@ struct PostComposerView: View {
             .padding(.top, 12)
             .padding(.bottom, 8)
 
-            // Media attachment preview
-            if !mediaItems.isEmpty {
-                MediaAttachmentPreview(items: mediaItems) { id in
+            // Media attachment preview (shows loaded items + loading skeletons)
+            if !mediaItems.isEmpty || processingCount > 0 {
+                MediaAttachmentPreview(
+                    items: mediaItems,
+                    processingCount: processingCount
+                ) { id in
                     mediaItems.removeAll { $0.id == id }
                 }
             }
@@ -127,6 +131,7 @@ struct PostComposerView: View {
                 text = ""
                 visibility = .shared
                 mediaItems = []
+                processingCount = 0
                 isFocused = false
             }
         }
@@ -149,9 +154,14 @@ struct PostComposerView: View {
     // MARK: - Photo Processing
 
     private func processPhoto(_ image: UIImage) {
+        processingCount += 1
+        isProcessingMedia = true
+
         Task {
-            isProcessingMedia = true
-            defer { isProcessingMedia = false }
+            defer {
+                processingCount -= 1
+                if processingCount == 0 { isProcessingMedia = false }
+            }
 
             do {
                 let compressed = try await MediaCompressor.compressPhoto(image)
@@ -170,22 +180,30 @@ struct PostComposerView: View {
     }
 
     private func processSelectedPhotos(_ pickerItems: [PhotosPickerItem]) {
+        guard !pickerItems.isEmpty else { return }
+        processingCount += pickerItems.count
+        isProcessingMedia = true
+
         for pickerItem in pickerItems {
             Task {
-                isProcessingMedia = true
-                defer { if mediaItems.count == pickerItems.count { isProcessingMedia = false } }
+                defer {
+                    processingCount -= 1
+                    if processingCount == 0 { isProcessingMedia = false }
+                }
 
                 // Try loading as image
                 if let data = try? await pickerItem.loadTransferable(type: Data.self) {
                     if let image = UIImage(data: data) {
-                        let compressed = try await MediaCompressor.compressPhoto(image)
-                        let thumbnail = MediaCompressor.generateThumbnail(from: image) ?? image
-                        let item = MediaItem(type: .photo, thumbnail: thumbnail, sourceData: compressed)
-                        await MainActor.run { mediaItems.append(item) }
+                        do {
+                            let compressed = try await MediaCompressor.compressPhoto(image)
+                            let thumbnail = MediaCompressor.generateThumbnail(from: image) ?? image
+                            let item = MediaItem(type: .photo, thumbnail: thumbnail, sourceData: compressed)
+                            await MainActor.run { mediaItems.append(item) }
+                        } catch {
+                            print("[Composer] Photo processing failed: \(error)")
+                        }
                     }
                 }
-
-                await MainActor.run { isProcessingMedia = false }
             }
         }
     }

@@ -29,6 +29,7 @@
 		4FF6FEEBECC9FE2DAC9E9056 /* Block.swift in Sources */ = {isa = PBXBuildFile; fileRef = 419AFE4DF400582FC595B4F3 /* Block.swift */; };
 		5081A6D3B0BE708EE55383B5 /* Trip.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81C874FF9C71DB8DAAD1121D /* Trip.swift */; };
 		53E7FE9CBEE71FFA4ABEFB75 /* HomeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39FEE6FDF2829878B33A2FDA /* HomeViewModel.swift */; };
+		578F6D56FEBA9C8CF05C5714 /* FullScreenMediaViewer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7507D9FC3C3E65332CC48E66 /* FullScreenMediaViewer.swift */; };
 		5B33481624F92B96350984A9 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 128876BA9CB203F0B32BD069 /* SettingsView.swift */; };
 		61A04E314EC4ED5771DCE984 /* PostSkeletonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBCE3D115C365BB3D6130339 /* PostSkeletonView.swift */; };
 		6CDEC3718C306AAAF83AF3BE /* FilterBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE1BFBA28488B4E60630B4B5 /* FilterBarView.swift */; };
@@ -124,6 +125,7 @@
 		6DBC312E03FF04F34E340413 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		6FD9045EF708D43EB57ED36E /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		72EC929A2DF4723A3383AC0D /* BlockDetailHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockDetailHeaderView.swift; sourceTree = "<group>"; };
+		7507D9FC3C3E65332CC48E66 /* FullScreenMediaViewer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FullScreenMediaViewer.swift; sourceTree = "<group>"; };
 		7551EEDD76A7BD21A1C50460 /* Post.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Post.swift; sourceTree = "<group>"; };
 		81C874FF9C71DB8DAAD1121D /* Trip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Trip.swift; sourceTree = "<group>"; };
 		888929831584B7959BD31917 /* TripCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TripCardView.swift; sourceTree = "<group>"; };
@@ -258,6 +260,7 @@
 				P3FR0008 /* PostMediaGridView.swift */,
 				FC831200F20368D54B407FCF /* FailedPostCardView.swift */,
 				EBCE3D115C365BB3D6130339 /* PostSkeletonView.swift */,
+				7507D9FC3C3E65332CC48E66 /* FullScreenMediaViewer.swift */,
 			);
 			path = BlockDetail;
 			sourceTree = "<group>";
@@ -642,6 +645,7 @@
 				PS01BF0004000004A0000004 /* SyncManager.swift in Sources */,
 				196252E38E1C17111E683C29 /* CachedMediaView.swift in Sources */,
 				72C354386B30614FE8AAC353 /* ImageCache.swift in Sources */,
+				578F6D56FEBA9C8CF05C5714 /* FullScreenMediaViewer.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

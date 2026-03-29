@@ -1,9 +1,10 @@
 import SwiftUI
 
 /// Horizontal scrollable preview of selected media before sending.
-/// Shows thumbnails with remove buttons.
+/// Shows thumbnails with remove buttons + loading skeletons for processing items.
 struct MediaAttachmentPreview: View {
     let items: [MediaItem]
+    let processingCount: Int
     let onRemove: (String) -> Void
 
     var body: some View {
@@ -40,6 +41,18 @@ struct MediaAttachmentPreview: View {
                         .offset(x: 4, y: -4)
                     }
                     .frame(width: 72, height: 72)
+                }
+
+                // Loading skeletons for items still being processed
+                ForEach(0..<processingCount, id: \.self) { _ in
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(Color(.systemGray5))
+                        .frame(width: 72, height: 72)
+                        .overlay {
+                            ProgressView()
+                                .controlSize(.small)
+                                .tint(.secondary)
+                        }
                 }
             }
             .padding(.horizontal)
