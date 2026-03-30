@@ -174,6 +174,8 @@ final class AppState {
         syncStatusTask?.cancel()
         syncStatusTask = Task { [weak self] in
             var wasConnected = true
+            var reconnectAttempts = 0
+            let maxReconnectAttempts = 3
             for await status in SyncManager.shared.db.currentStatus.asFlow() {
                 guard let self, !Task.isCancelled else { break }
                 self.isSyncConnected = status.connected
@@ -182,13 +184,16 @@ final class AppState {
                     self.hasSynced = true
                 }
 
-                // Auto-reconnect: if connection drops after being connected,
-                // wait briefly then reconnect. Prevents "first action fails"
-                // after idle WebSocket timeout.
-                if wasConnected && !status.connected && self.authStatus == .signedIn {
-                    print("[Sync] ⚠️ Connection lost, will auto-reconnect...")
+                if status.connected {
+                    // Connection restored — reset retry counter
+                    reconnectAttempts = 0
+                } else if wasConnected && self.authStatus == .signedIn && reconnectAttempts < maxReconnectAttempts {
+                    // Connection dropped — auto-reconnect with backoff
+                    reconnectAttempts += 1
+                    let delay = reconnectAttempts * 3 // 3s, 6s, 9s
+                    print("[Sync] ⚠️ Connection lost, reconnecting in \(delay)s (attempt \(reconnectAttempts)/\(maxReconnectAttempts))...")
                     Task {
-                        try? await Task.sleep(for: .seconds(2))
+                        try? await Task.sleep(for: .seconds(delay))
                         guard !Task.isCancelled else { return }
                         do {
                             try await SyncManager.shared.connect(currentUserId: self.currentUserId)
