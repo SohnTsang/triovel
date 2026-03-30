@@ -240,9 +240,14 @@ struct TimelineDay: Identifiable {
                 return a.createdAt < b.createdAt
             }
             guard let firstBlock = sorted.first else { return nil }
-            return TimeSlot(timeKey: key, time: firstBlock.startAt, blocks: sorted)
+            let isTBD = key == "00:00" && sorted.allSatisfy { $0.endAt == nil }
+            return TimeSlot(timeKey: key, time: firstBlock.startAt, blocks: sorted, isTBD: isTBD)
         }
-        .sorted { $0.time < $1.time }
+        .sorted { a, b in
+            // TBD slots sort after timed slots
+            if a.isTBD != b.isTBD { return !a.isTBD }
+            return a.time < b.time
+        }
     }
 }
 
@@ -251,6 +256,7 @@ struct TimeSlot: Identifiable {
     let timeKey: String
     let time: Date
     let blocks: [Block]
+    var isTBD: Bool = false
 
     var id: String { timeKey }
     var isCluster: Bool { blocks.count > 1 }
