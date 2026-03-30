@@ -76,7 +76,7 @@ struct BlockDetailHeaderView: View {
             }
         }
 
-        // Time row
+        // Time row — trip timezone
         HStack(spacing: 4) {
             Label {
                 if isTBDBlock {
@@ -86,7 +86,6 @@ struct BlockDetailHeaderView: View {
                         Text(block.startAt, format: .dateTime.hour().minute())
                         if let endAt = block.endAt {
                             Text("–")
-                                .foregroundStyle(.tertiary)
                             Text(endAt, format: .dateTime.hour().minute())
                         }
                     }
@@ -96,17 +95,27 @@ struct BlockDetailHeaderView: View {
             }
             .font(.subheadline)
             .foregroundStyle(.secondary)
+        }
 
-            // Local timezone label (e.g. "JST")
-            if let localTz = block.localTimezone,
-               !localTz.isEmpty,
-               localTz != tripDisplayTimezone {
-                Text(shortTimezoneLabel(localTz))
-                    .font(.caption2.weight(.medium))
-                    .foregroundStyle(.secondary)
-                    .padding(.horizontal, 6)
-                    .padding(.vertical, 2)
-                    .background(Color(.systemGray5), in: Capsule())
+        // Local time row — shown only if local timezone differs from trip
+        if !isTBDBlock, let localTz = block.localTimezone,
+           !localTz.isEmpty, localTz != tripDisplayTimezone {
+            HStack(spacing: 4) {
+                Label {
+                    HStack(spacing: 4) {
+                        Text(formatInTimezone(block.startAt, tz: localTz))
+                        if let endAt = block.endAt {
+                            Text("–")
+                            Text(formatInTimezone(endAt, tz: localTz))
+                        }
+                        Text(shortTimezoneLabel(localTz))
+                            .fontWeight(.medium)
+                    }
+                } icon: {
+                    Image(systemName: "globe")
+                }
+                .font(.caption)
+                .foregroundStyle(.secondary)
             }
         }
 
@@ -364,6 +373,17 @@ struct BlockDetailHeaderView: View {
     private func shortTimezoneLabel(_ identifier: String) -> String {
         let tz = TimeZone(identifier: identifier) ?? .current
         return tz.abbreviation() ?? identifier
+    }
+
+    /// Format a date's time in a specific timezone: "7:15 PM"
+    private func formatInTimezone(_ date: Date, tz identifier: String) -> String {
+        guard let tz = TimeZone(identifier: identifier) else {
+            return date.formatted(.dateTime.hour().minute())
+        }
+        let formatter = DateFormatter()
+        formatter.dateFormat = "h:mm a"
+        formatter.timeZone = tz
+        return formatter.string(from: date)
     }
 
     private func fullTimezoneLabel(_ identifier: String) -> String {

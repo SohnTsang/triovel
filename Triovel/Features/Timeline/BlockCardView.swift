@@ -1,9 +1,10 @@
 import SwiftUI
 
 /// Timeline block card with itinerary-style layout:
-///   from time   Title
-///   |           Location
-///   to time     Local TZ label (if different from trip)
+///   10:00 AM        Title
+///   (7:00 PM JST)   Location
+///   |
+///   11:30 AM
 struct BlockCardView: View {
     let block: Block
     var creatorName: String?
@@ -11,16 +12,19 @@ struct BlockCardView: View {
     var syncState: SyncState = .synced
 
     private var hasEndTime: Bool { block.endAt != nil }
+    private var hasLocalTz: Bool {
+        guard let tz = block.localTimezone, !tz.isEmpty else { return false }
+        return tz != tripDisplayTimezone
+    }
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
-            // Left: time column with vertical line
+            // Left: time column
             timeColumn
-                .frame(width: 56)
+                .frame(width: 72)
 
             // Right: content
             VStack(alignment: .leading, spacing: 4) {
-                // Top row: title + sync indicator
                 HStack(alignment: .top) {
                     Text(block.title)
                         .font(.headline)
@@ -29,7 +33,6 @@ struct BlockCardView: View {
                     SyncStateIndicator(state: syncState)
                 }
 
-                // Location
                 if let location = block.locationText, !location.isEmpty {
                     Label(location, systemImage: "mappin")
                         .font(.subheadline)
@@ -37,7 +40,6 @@ struct BlockCardView: View {
                         .lineLimit(1)
                 }
 
-                // Context chip for personal blocks
                 if block.context == .personal {
                     ContextChip(context: .personal, userName: creatorName)
                         .padding(.top, 2)
@@ -66,7 +68,6 @@ struct BlockCardView: View {
 
     // MARK: - Time Column
 
-    /// True if block starts at midnight (all-day block)
     private var isAllDay: Bool {
         let cal = Calendar.current
         let hour = cal.component(.hour, from: block.startAt)
@@ -82,19 +83,17 @@ struct BlockCardView: View {
                     .foregroundStyle(.secondary)
                     .padding(.top, 12)
             } else {
-                // Start time
+                // Start time (trip timezone)
                 Text(block.startAt, format: .dateTime.hour().minute())
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(.primary)
                     .padding(.top, 12)
 
-                // Local timezone label (e.g. "JST") — shown if different from trip
-                if let localTz = block.localTimezone,
-                   !localTz.isEmpty,
-                   localTz != tripDisplayTimezone {
-                    Text(shortTimezoneLabel(localTz))
-                        .font(.system(size: 9, weight: .medium))
-                        .foregroundStyle(.tertiary)
+                // Local time below start — e.g. "7:15 PM JST"
+                if hasLocalTz {
+                    Text(localTimeLabel(block.startAt))
+                        .font(.system(size: 10))
+                        .foregroundStyle(.secondary)
                         .padding(.top, 1)
                 }
 
@@ -103,26 +102,35 @@ struct BlockCardView: View {
                     RoundedRectangle(cornerRadius: 1)
                         .fill(Color(.systemGray4))
                         .frame(width: 2)
-                        .frame(minHeight: 16)
-                        .padding(.vertical, 4)
+                        .frame(minHeight: 14)
+                        .padding(.vertical, 3)
                 }
 
-                // End time
+                // End time — same style as start time
                 if let endAt = block.endAt {
                     Text(endAt, format: .dateTime.hour().minute())
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.primary)
                 }
             }
 
             Spacer(minLength: 0)
         }
         .frame(maxHeight: .infinity)
-        .padding(.leading, 14)
+        .padding(.leading, 12)
     }
 
-    private func shortTimezoneLabel(_ identifier: String) -> String {
-        let tz = TimeZone(identifier: identifier) ?? .current
-        return tz.abbreviation() ?? identifier
+    // MARK: - Helpers
+
+    /// Format a date in the block's local timezone: "7:15 PM JST"
+    private func localTimeLabel(_ date: Date) -> String {
+        guard let tzId = block.localTimezone,
+              let tz = TimeZone(identifier: tzId) else { return "" }
+        let formatter = DateFormatter()
+        formatter.dateFormat = "h:mm a"
+        formatter.timeZone = tz
+        let time = formatter.string(from: date)
+        let abbr = tz.abbreviation(for: date) ?? tzId
+        return "\(time) \(abbr)"
     }
 }
