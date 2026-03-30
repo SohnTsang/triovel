@@ -177,7 +177,7 @@ struct TripSummaryView: View {
                             .font(.title3.weight(.bold))
                         Text("summary.total.spent")
                             .font(.caption2)
-                            .foregroundStyle(.tertiary)
+                            .foregroundStyle(.secondary)
                     }
                 }
             }
@@ -185,7 +185,7 @@ struct TripSummaryView: View {
 
             Text("summary.bill.count \(viewModel.totalBillCount)")
                 .font(.caption)
-                .foregroundStyle(.tertiary)
+                .foregroundStyle(.secondary)
                 .padding(.top, 2)
         }
         .frame(maxWidth: .infinity)
@@ -293,7 +293,7 @@ struct TripSummaryView: View {
                         } else {
                             Text("summary.settled")
                                 .font(.caption)
-                                .foregroundStyle(.tertiary)
+                                .foregroundStyle(.secondary)
                         }
                     }
                     .padding(.horizontal, 14)
@@ -321,7 +321,7 @@ struct TripSummaryView: View {
                                     HStack(spacing: 3) {
                                         Text("summary.pays")
                                             .font(.caption2)
-                                            .foregroundStyle(.tertiary)
+                                            .foregroundStyle(.secondary)
                                         Text(viewModel.memberName(for: debt.toUserId))
                                             .font(.caption2.weight(.medium))
                                             .foregroundStyle(.secondary)
@@ -369,7 +369,7 @@ struct TripSummaryView: View {
                                     .font(.subheadline.weight(.medium))
                                 Image(systemName: "arrow.right")
                                     .font(.caption2)
-                                    .foregroundStyle(.tertiary)
+                                    .foregroundStyle(.secondary)
                                 Text(viewModel.memberName(for: payment.receiverId))
                                     .font(.subheadline.weight(.medium))
                             }
@@ -380,7 +380,7 @@ struct TripSummaryView: View {
                             }
                             Text(payment.createdAt, format: .dateTime.month(.abbreviated).day().hour().minute())
                                 .font(.caption2)
-                                .foregroundStyle(.tertiary)
+                                .foregroundStyle(.secondary)
                         }
 
                         Spacer()

@@ -23,7 +23,7 @@ struct BillCardView: View {
 
                     Text(formattedTime)
                         .font(.caption)
-                        .foregroundStyle(.tertiary)
+                        .foregroundStyle(.secondary)
                 }
 
                 Spacer()
@@ -35,7 +35,7 @@ struct BillCardView: View {
                             .font(.subheadline.weight(.medium))
                         Text("bill.per.person")
                             .font(.caption2)
-                            .foregroundStyle(.tertiary)
+                            .foregroundStyle(.secondary)
                     }
                 }
             }
@@ -53,7 +53,7 @@ struct BillCardView: View {
                 Spacer()
                 Text("bill.split.count \(shareCount)")
                     .font(.caption)
-                    .foregroundStyle(.tertiary)
+                    .foregroundStyle(.secondary)
             }
         }
         .padding(14)

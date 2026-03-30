@@ -215,7 +215,7 @@ struct BillDetailView: View {
                                     .font(.subheadline.weight(.medium))
                                 Image(systemName: "arrow.right")
                                     .font(.caption2)
-                                    .foregroundStyle(.tertiary)
+                                    .foregroundStyle(.secondary)
                                 Text(memberName(payment.receiverId))
                                     .font(.subheadline.weight(.medium))
                             }
@@ -226,7 +226,7 @@ struct BillDetailView: View {
                             }
                             Text(payment.createdAt, format: .dateTime.month(.abbreviated).day().hour().minute())
                                 .font(.caption2)
-                                .foregroundStyle(.tertiary)
+                                .foregroundStyle(.secondary)
                         }
 
                         Spacer()
