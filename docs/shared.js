@@ -1,11 +1,7 @@
-// Shared nav + footer for all Triovel pages.
-// Each page includes <script src="shared.js"> or <script src="../shared.js">
-// and has <div id="site-nav"></div> at top and <div id="site-footer"></div> at bottom.
-
 (function () {
-  var root = document.querySelector('script[src*="shared.js"]').getAttribute('src').replace('shared.js', '');
+  var s = document.querySelector('script[src*="shared.js"]');
+  var root = s ? s.getAttribute('src').replace('shared.js', '') : '';
 
-  // Nav
   var nav = document.getElementById('site-nav');
   if (nav) {
     nav.outerHTML =
@@ -19,16 +15,14 @@
       '</header>';
   }
 
-  // Footer
   var footer = document.getElementById('site-footer');
   if (footer) {
-    var year = new Date().getFullYear();
     footer.outerHTML =
       '<footer class="site-footer">' +
         '<div class="footer-inner">' +
           '<div class="footer-left">' +
-            '<a href="' + root + '" class="footer-logo">Triovel</a>' +
-            '<span class="footer-copy">&copy; ' + year + '</span>' +
+            '<span class="footer-logo">Triovel</span>' +
+            '<span class="footer-copy">&copy; ' + new Date().getFullYear() + '</span>' +
           '</div>' +
           '<div class="footer-links">' +
             '<a href="' + root + 'privacy-policy">Privacy</a>' +
