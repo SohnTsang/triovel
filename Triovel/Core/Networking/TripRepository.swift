@@ -92,6 +92,30 @@ final class TripRepository {
         return tripId
     }
 
+    // MARK: - Ensure Invite Link
+
+    /// Generate and save an invite link if the trip doesn't have one.
+    /// Returns the existing or newly generated code.
+    func ensureInviteLink(tripId: String) async throws -> String {
+        // Check if already set
+        if let existing = try await db.getOptional(
+            sql: "SELECT invite_link FROM trips WHERE id = ? AND invite_link IS NOT NULL",
+            parameters: [tripId],
+            mapper: { try $0.getString(name: "invite_link") }
+        ) {
+            return existing
+        }
+
+        // Generate and save
+        let code = Self.generateInviteCode()
+        try await db.execute(
+            sql: "UPDATE trips SET invite_link = ? WHERE id = ?",
+            parameters: [code, tripId]
+        )
+        print("[TripRepo] Generated invite link for trip \(tripId): \(code)")
+        return code
+    }
+
     // MARK: - Archive / Unarchive
 
     func archiveTrip(tripId: String) async throws {

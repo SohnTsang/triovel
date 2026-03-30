@@ -3008,6 +3008,33 @@
         }
       }
     },
+    "members.invite.create.link" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Create invite link" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "招待リンクを作成" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "创建邀请链接" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "建立邀請連結" } }
+      }
+    },
+    "members.invite.generating" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Creating link..." } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "リンクを作成中…" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "正在创建链接…" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "正在建立連結…" } }
+      }
+    },
+    "members.invite.error" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Couldn't create invite link. Please try again." } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "招待リンクを作成できませんでした。もう一度お試しください。" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "无法创建邀请链接，请重试。" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "無法建立邀請連結，請重試。" } }
+      }
+    },
     "members.invite.share" : {
       "extractionState" : "manual",
       "localizations" : {
