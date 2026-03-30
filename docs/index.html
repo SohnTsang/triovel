@@ -11,6 +11,7 @@
     <style>
         :root {
             --teal: #4a9d9a;
+            --teal-dark: #3a7d7a;
             --bg: #ffffff;
             --bg-alt: #f9fafb;
             --text: #1c1c1e;
@@ -33,6 +34,8 @@
             color: var(--text);
             -webkit-font-smoothing: antialiased;
         }
+
+        /* Nav */
         nav {
             padding: 16px 24px;
             border-bottom: 1px solid var(--border);
@@ -42,23 +45,35 @@
         }
         .nav-logo { font-size: 15px; font-weight: 700; color: var(--teal); letter-spacing: 0.4px; }
         .nav-link { font-size: 14px; color: var(--teal); text-decoration: none; font-weight: 500; }
+
+        /* Hero — invite card */
         .hero {
             max-width: 520px;
-            margin: 64px auto 0;
+            margin: 48px auto 0;
             padding: 0 24px;
             text-align: center;
         }
+        .invite-badge {
+            display: inline-block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--teal);
+            background: rgba(74, 157, 154, 0.1);
+            padding: 6px 14px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+        }
         .hero h1 {
-            font-size: 36px;
+            font-size: 32px;
             font-weight: 700;
-            letter-spacing: -0.5px;
+            letter-spacing: -0.3px;
+            margin-bottom: 10px;
             line-height: 1.2;
-            margin-bottom: 12px;
         }
         .hero .subtitle {
-            font-size: 17px;
+            font-size: 16px;
             color: var(--text-secondary);
-            margin-bottom: 36px;
+            margin-bottom: 32px;
             line-height: 1.5;
         }
         .btn-primary {
@@ -68,14 +83,31 @@
             font-weight: 600;
             color: #fff;
             background: var(--teal);
+            border: none;
             border-radius: 12px;
+            cursor: pointer;
             text-decoration: none;
             transition: opacity 0.15s;
         }
         .btn-primary:hover { opacity: 0.9; }
+        .btn-secondary {
+            display: inline-block;
+            margin-top: 12px;
+            font-size: 14px;
+            color: var(--teal);
+            text-decoration: none;
+        }
+        .join-status {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-top: 20px;
+            min-height: 20px;
+        }
+
+        /* Divider */
         .divider {
             max-width: 520px;
-            margin: 56px auto;
+            margin: 48px auto;
             padding: 0 24px;
             display: flex;
             align-items: center;
@@ -87,7 +119,13 @@
             height: 1px;
             background: var(--border);
         }
-        .divider span { font-size: 13px; color: var(--text-secondary); }
+        .divider span {
+            font-size: 13px;
+            color: var(--text-secondary);
+            white-space: nowrap;
+        }
+
+        /* Features */
         .features {
             max-width: 720px;
             margin: 0 auto;
@@ -98,7 +136,6 @@
         }
         @media (max-width: 600px) {
             .features { grid-template-columns: 1fr; gap: 16px; }
-            .hero h1 { font-size: 28px; }
         }
         .feature {
             padding: 24px;
@@ -106,9 +143,22 @@
             border-radius: 14px;
             border: 1px solid var(--border);
         }
-        .feature-icon { font-size: 24px; margin-bottom: 12px; }
-        .feature h3 { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
-        .feature p { font-size: 14px; color: var(--text-secondary); line-height: 1.5; }
+        .feature-icon {
+            font-size: 24px;
+            margin-bottom: 12px;
+        }
+        .feature h3 {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+        .feature p {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        /* Footer */
         footer {
             padding: 24px;
             text-align: center;
@@ -117,22 +167,29 @@
             border-top: 1px solid var(--border);
         }
         footer a { color: var(--teal); text-decoration: none; }
+
+        /* No-code state */
+        .no-code .invite-badge { display: none; }
     </style>
 </head>
 <body>
 
 <nav>
     <span class="nav-logo">TRIOVEL</span>
-    <a class="nav-link" href="https://apps.apple.com/app/triovel/id000000000">Get the app</a>
+    <a class="nav-link" href="https://apps.apple.com/app/triovel/id000000000" id="store-link">Get the app</a>
 </nav>
 
-<div class="hero">
-    <h1>Plan the anchors.<br>Capture the reality.<br>Share the trip.</h1>
-    <p class="subtitle">Triovel is a group trip app for shared timelines, memories, and expense splitting. Free during beta.</p>
-    <a class="btn-primary" href="https://apps.apple.com/app/triovel/id000000000">Download Triovel</a>
+<div class="hero" id="hero">
+    <div class="invite-badge" id="badge">Trip invite</div>
+    <h1 id="title">You're invited to a trip</h1>
+    <p class="subtitle" id="subtitle">Open Triovel to join your friends' shared timeline, post memories, and split expenses together.</p>
+    <a class="btn-primary" id="open-btn" href="#">Open in Triovel</a>
+    <br>
+    <a class="btn-secondary" id="store-btn" href="https://apps.apple.com/app/triovel/id000000000">Don't have the app? Download Triovel</a>
+    <p class="join-status" id="status"></p>
 </div>
 
-<div class="divider"><span>Built for group travel</span></div>
+<div class="divider"><span>What is Triovel?</span></div>
 
 <div class="features">
     <div class="feature">
@@ -156,5 +213,46 @@
     <a href="privacy-policy">Privacy</a> · <a href="terms-and-conditions">Terms</a> · Triovel
 </footer>
 
+<script>
+(function() {
+    var params = new URLSearchParams(window.location.search);
+    var code = params.get('code');
+    var openBtn = document.getElementById('open-btn');
+    var status = document.getElementById('status');
+    var hero = document.getElementById('hero');
+
+    if (!code) {
+        // No invite code — pure landing page
+        hero.classList.add('no-code');
+        document.getElementById('title').textContent = 'Plan the anchors. Capture the reality. Share the trip.';
+        document.getElementById('subtitle').textContent = 'Triovel is a group trip app for shared timelines, memories, and expense splitting. Free during beta.';
+        openBtn.textContent = 'Download Triovel';
+        openBtn.href = 'https://apps.apple.com/app/triovel/id000000000';
+        document.getElementById('store-btn').style.display = 'none';
+        return;
+    }
+
+    // Has invite code — join flow
+    var deepLink = 'triovel://trip/' + encodeURIComponent(code);
+    openBtn.href = deepLink;
+
+    // Try to open app automatically on mobile
+    var ua = navigator.userAgent.toLowerCase();
+    if (/iphone|ipad|ipod|android/.test(ua)) {
+        window.location.href = deepLink;
+        setTimeout(function() {
+            status.textContent = 'If the app didn\'t open, tap the button above.';
+        }, 1500);
+    }
+
+    openBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        window.location.href = deepLink;
+        setTimeout(function() {
+            status.textContent = 'App not opening? Download it first, then tap the link again.';
+        }, 2000);
+    });
+})();
+</script>
 </body>
 </html>

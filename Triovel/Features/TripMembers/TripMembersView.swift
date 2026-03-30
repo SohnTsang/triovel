@@ -16,7 +16,7 @@ struct TripMembersView: View {
     /// Full shareable URL that opens the app or redirects to App Store.
     private var shareURL: String? {
         guard let code = inviteCode ?? inviteLink else { return nil }
-        return "https://sohntsang.github.io/triovel/join?code=\(code)"
+        return "https://sohntsang.github.io/triovel?code=\(code)"
     }
 
     var body: some View {
