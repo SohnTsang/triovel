@@ -139,12 +139,34 @@ struct TripTimelineView: View {
             }
             if #available(iOS 26, *) {
                 ToolbarItem(placement: .topBarTrailing) {
-                    tripMenu
+                    HStack(spacing: 4) {
+                        Button {
+                            router.push(.tripMembers(tripId: tripId, members: viewModel.members, inviteLink: viewModel.trip?.inviteLink))
+                        } label: {
+                            Image(systemName: "person.2")
+                                .font(.body)
+                                .foregroundStyle(Color(.label))
+                        }
+                        .buttonStyle(.plain)
+
+                        tripMenu
+                    }
                 }
                 .sharedBackgroundVisibility(.hidden)
             } else {
                 ToolbarItem(placement: .topBarTrailing) {
-                    tripMenu
+                    HStack(spacing: 4) {
+                        Button {
+                            router.push(.tripMembers(tripId: tripId, members: viewModel.members, inviteLink: viewModel.trip?.inviteLink))
+                        } label: {
+                            Image(systemName: "person.2")
+                                .font(.body)
+                                .foregroundStyle(Color(.label))
+                        }
+                        .buttonStyle(.plain)
+
+                        tripMenu
+                    }
                 }
             }
         }
@@ -228,12 +250,6 @@ struct TripTimelineView: View {
                 router.push(.tripSummary(tripId: tripId))
             } label: {
                 Label(String(localized: "summary.title"), systemImage: "receipt")
-            }
-
-            Button {
-                router.push(.tripMembers(tripId: tripId, members: viewModel.members, inviteLink: viewModel.trip?.inviteLink))
-            } label: {
-                Label(String(localized: "trip.members.title"), systemImage: "person.2")
             }
 
             if isOwner {

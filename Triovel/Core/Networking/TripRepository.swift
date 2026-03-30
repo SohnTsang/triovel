@@ -21,18 +21,20 @@ final class TripRepository {
     ) async throws -> String {
         let tripId = UUID().uuidString.lowercased()
         let memberId = UUID().uuidString.lowercased()
+        let inviteCode = Self.generateInviteCode()
         let now = Self.isoString(from: Date())
 
         try await db.writeTransaction { tx in
             try tx.execute(
                 sql: """
-                    INSERT INTO trips (id, title, start_date, end_date, display_timezone, base_currency, archived, created_by, created_at)
-                    VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?)
+                    INSERT INTO trips (id, title, start_date, end_date, invite_link, display_timezone, base_currency, archived, created_by, created_at)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?, ?)
                     """,
                 parameters: [
                     tripId, title,
                     Self.dateOnlyString(from: startDate),
                     Self.dateOnlyString(from: endDate),
+                    inviteCode,
                     displayTimezone, baseCurrency,
                     createdBy, now,
                 ]
@@ -337,6 +339,12 @@ final class TripRepository {
     }
 
     // MARK: - Helpers
+
+    /// Generate a short, unique invite code (8 chars alphanumeric).
+    private static func generateInviteCode() -> String {
+        let chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789" // No 0/O/1/I to avoid confusion
+        return String((0..<8).map { _ in chars.randomElement()! })
+    }
 
     private static func dateOnlyString(from date: Date) -> String {
         let f = DateFormatter()
