@@ -18,24 +18,18 @@
         @media (prefers-color-scheme: dark) {
             body { background: #0e0e0e; color: #f2f2f7; }
             nav { background: #0e0e0e; border-color: #1c1c1e; }
-            footer { border-color: #1c1c1e; }
+            footer { border-color: #2c2c2e; color: #aeaeb2; }
             a { color: #5fbfba; }
         }
         nav {
-            position: sticky;
-            top: 0;
-            z-index: 10;
-            padding: 18px 32px;
-            border-bottom: 1px solid #f0f0f0;
+            padding: 16px 24px;
+            border-bottom: 1px solid #e5e7eb;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: rgba(255,255,255,0.92);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
         }
         @media (prefers-color-scheme: dark) {
-            nav { background: rgba(14,14,14,0.92); }
+            nav { border-color: #2c2c2e; }
         }
         .nav-logo {
             font-size: 15px;
@@ -94,12 +88,15 @@
         a { color: #4a9d9a; text-decoration: none; }
         a:hover { text-decoration: underline; }
         footer {
-            max-width: 780px;
-            margin: 0 auto;
-            padding: 24px 32px;
+            padding: 24px;
+            text-align: center;
             font-size: 13px;
-            color: #b0b0b0;
-            border-top: 1px solid #f0f0f0;
+            color: #636366;
+            border-top: 1px solid #e5e7eb;
+        }
+        footer a { color: #4a9d9a; text-decoration: none; }
+        @media (prefers-color-scheme: dark) {
+            footer a { color: #5fbfba; }
         }
         .lang { display: none; }
         .lang.active { display: block; }
