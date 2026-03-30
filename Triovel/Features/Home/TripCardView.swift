@@ -124,6 +124,8 @@ extension Trip {
     var formattedDateRangeShort: String {
         let f = DateFormatter()
         f.dateFormat = "MMM d"
-        return "\(f.string(from: startDate)) – \(f.string(from: endDate))"
+        let y = DateFormatter()
+        y.dateFormat = "yyyy"
+        return "\(f.string(from: startDate)) – \(f.string(from: endDate)), \(y.string(from: endDate))"
     }
 }
