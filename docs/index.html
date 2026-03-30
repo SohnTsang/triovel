@@ -8,48 +8,18 @@
     <meta property="og:title" content="Triovel">
     <meta property="og:description" content="Plan the anchors. Capture the reality. Share the trip.">
     <meta property="og:type" content="website">
+    <link rel="stylesheet" href="shared.css">
     <style>
-        :root {
-            --teal: #4a9d9a;
-            --teal-dark: #3a7d7a;
-            --bg: #ffffff;
-            --bg-alt: #f9fafb;
-            --text: #000000;
-            --text-secondary: #3c3c43;
-            --border: #e5e7eb;
-        }
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --bg: #000000;
-                --bg-alt: #1c1c1e;
-                --text: #ffffff;
-                --text-secondary: #ebebf5;
-                --border: #38383a;
-            }
-        }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
-            background: var(--bg);
-            color: var(--text);
+            background: var(--t-bg);
+            color: var(--t-text);
             -webkit-font-smoothing: antialiased;
         }
-
-        /* Nav */
-        nav {
-            padding: 16px 24px;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .nav-logo { font-size: 15px; font-weight: 700; color: var(--teal); letter-spacing: 0.4px; }
-        .nav-link { font-size: 14px; color: var(--teal); text-decoration: none; font-weight: 500; }
-
-        /* Hero — invite card */
         .hero {
             max-width: 520px;
-            margin: 48px auto 0;
+            margin: 56px auto 0;
             padding: 0 24px;
             text-align: center;
         }
@@ -57,7 +27,7 @@
             display: inline-block;
             font-size: 13px;
             font-weight: 600;
-            color: var(--teal);
+            color: var(--t-teal);
             background: rgba(74, 157, 154, 0.1);
             padding: 6px 14px;
             border-radius: 20px;
@@ -72,7 +42,7 @@
         }
         .hero .subtitle {
             font-size: 16px;
-            color: var(--text-secondary);
+            color: var(--t-text-sec);
             margin-bottom: 32px;
             line-height: 1.5;
         }
@@ -82,7 +52,7 @@
             font-size: 16px;
             font-weight: 600;
             color: #fff;
-            background: var(--teal);
+            background: var(--t-teal);
             border: none;
             border-radius: 12px;
             cursor: pointer;
@@ -94,17 +64,15 @@
             display: inline-block;
             margin-top: 12px;
             font-size: 14px;
-            color: var(--teal);
+            color: var(--t-teal);
             text-decoration: none;
         }
         .join-status {
             font-size: 13px;
-            color: var(--text-secondary);
+            color: var(--t-text-sec);
             margin-top: 20px;
             min-height: 20px;
         }
-
-        /* Divider */
         .divider {
             max-width: 520px;
             margin: 48px auto;
@@ -117,15 +85,13 @@
             content: "";
             flex: 1;
             height: 1px;
-            background: var(--border);
+            background: var(--t-border);
         }
         .divider span {
             font-size: 13px;
-            color: var(--text-secondary);
+            color: var(--t-text-sec);
             white-space: nowrap;
         }
-
-        /* Features */
         .features {
             max-width: 720px;
             margin: 0 auto;
@@ -139,45 +105,19 @@
         }
         .feature {
             padding: 24px;
-            background: var(--bg-alt);
+            background: var(--t-bg);
             border-radius: 14px;
-            border: 1px solid var(--border);
+            border: 1px solid var(--t-border);
         }
-        .feature-icon {
-            font-size: 24px;
-            margin-bottom: 12px;
-        }
-        .feature h3 {
-            font-size: 15px;
-            font-weight: 600;
-            margin-bottom: 6px;
-        }
-        .feature p {
-            font-size: 14px;
-            color: var(--text-secondary);
-            line-height: 1.5;
-        }
-
-        /* Footer */
-        footer {
-            padding: 24px;
-            text-align: center;
-            font-size: 13px;
-            color: var(--text-secondary);
-            border-top: 1px solid var(--border);
-        }
-        footer a { color: var(--teal); text-decoration: none; }
-
-        /* No-code state */
+        .feature-icon { font-size: 24px; margin-bottom: 12px; }
+        .feature h3 { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+        .feature p { font-size: 14px; color: var(--t-text-sec); line-height: 1.5; }
         .no-code .invite-badge { display: none; }
     </style>
 </head>
 <body>
 
-<nav>
-    <span class="nav-logo">TRIOVEL</span>
-    <a class="nav-link" href="https://apps.apple.com/app/triovel/id000000000" id="store-link">Get the app</a>
-</nav>
+<div id="site-nav"></div>
 
 <div class="hero" id="hero">
     <div class="invite-badge" id="badge">Trip invite</div>
@@ -209,10 +149,9 @@
     </div>
 </div>
 
-<footer>
-    <a href="privacy-policy">Privacy</a> · <a href="terms-and-conditions">Terms</a> · Triovel
-</footer>
+<div id="site-footer"></div>
 
+<script src="shared.js"></script>
 <script>
 (function() {
     var params = new URLSearchParams(window.location.search);
@@ -222,7 +161,6 @@
     var hero = document.getElementById('hero');
 
     if (!code) {
-        // No invite code — pure landing page
         hero.classList.add('no-code');
         document.getElementById('title').textContent = 'Plan the anchors. Capture the reality. Share the trip.';
         document.getElementById('subtitle').textContent = 'Triovel is a group trip app for shared timelines, memories, and expense splitting. Free during beta.';
@@ -232,11 +170,9 @@
         return;
     }
 
-    // Has invite code — join flow
     var deepLink = 'triovel://trip/' + encodeURIComponent(code);
     openBtn.href = deepLink;
 
-    // Try to open app automatically on mobile
     var ua = navigator.userAgent.toLowerCase();
     if (/iphone|ipad|ipod|android/.test(ua)) {
         window.location.href = deepLink;

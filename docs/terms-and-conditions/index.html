@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Terms of Service — Triovel</title>
+    <link rel="stylesheet" href="../shared.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -17,31 +18,9 @@
         }
         @media (prefers-color-scheme: dark) {
             body { background: #0e0e0e; color: #f2f2f7; }
-            nav { background: #0e0e0e; border-color: #1c1c1e; }
-            footer { border-color: #2c2c2e; color: #aeaeb2; }
             a { color: #5fbfba; }
         }
-        nav {
-            padding: 16px 24px;
-            border-bottom: 1px solid #e5e7eb;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
         @media (prefers-color-scheme: dark) {
-            nav { border-color: #2c2c2e; }
-        }
-        .nav-logo {
-            font-size: 15px;
-            font-weight: 700;
-            color: #4a9d9a;
-            letter-spacing: 0.4px;
-        }
-        .nav-link {
-            font-size: 14px;
-            color: #4a9d9a;
-            text-decoration: none;
-            font-weight: 500;
         }
         .wrap {
             max-width: 780px;
@@ -87,27 +66,15 @@
         strong { color: inherit; font-weight: 600; }
         a { color: #4a9d9a; text-decoration: none; }
         a:hover { text-decoration: underline; }
-        footer {
-            padding: 24px;
-            text-align: center;
-            font-size: 13px;
-            color: #636366;
-            border-top: 1px solid #e5e7eb;
-        }
-        footer a { color: #4a9d9a; text-decoration: none; }
         @media (prefers-color-scheme: dark) {
-            footer a { color: #5fbfba; }
-        }
+            }
         .lang { display: none; }
         .lang.active { display: block; }
     </style>
 </head>
 <body>
 
-<nav>
-    <span class="nav-logo">TRIOVEL</span>
-    <a class="nav-link" href="https://apps.apple.com/app/triovel/id000000000">Get the app</a>
-</nav>
+<div id="site-nav"></div>
 
 <div class="wrap">
 <div class="lang" id="en">
@@ -526,9 +493,7 @@
 </div>
 </div>
 
-<footer>
-    <a href="../privacy-policy">Privacy</a> · <a href="../terms-and-conditions">Terms</a> · Triovel
-</footer>
+<div id="site-footer"></div>
 
 <script>
 (function(){
@@ -540,5 +505,6 @@
     document.documentElement.lang=id;
 })();
 </script>
+<script src="../shared.js"></script>
 </body>
 </html>
