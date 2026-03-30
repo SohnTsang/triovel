@@ -40,13 +40,13 @@ struct TripCardView: View {
                 storagePath: path,
                 mediaType: .photo
             )
-            .frame(height: 100)
+            .aspectRatio(1, contentMode: .fit)
             .frame(maxWidth: .infinity)
             .clipShape(RoundedRectangle(cornerRadius: 10))
         } else {
             RoundedRectangle(cornerRadius: 10)
                 .fill(Color(.systemGray5))
-                .frame(height: 100)
+                .aspectRatio(1, contentMode: .fit)
                 .overlay {
                     Image(systemName: "photo")
                         .font(.title3)
