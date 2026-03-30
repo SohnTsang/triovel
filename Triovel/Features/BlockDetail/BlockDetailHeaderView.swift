@@ -94,7 +94,7 @@ struct BlockDetailHeaderView: View {
                 Image(systemName: "clock")
             }
             .font(.subheadline)
-            .foregroundStyle(.secondary)
+            .foregroundStyle(.primary)
         }
 
         // Local time row — shown only if local timezone differs from trip
@@ -115,7 +115,7 @@ struct BlockDetailHeaderView: View {
                     Image(systemName: "globe")
                 }
                 .font(.caption)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.primary)
             }
         }
 
