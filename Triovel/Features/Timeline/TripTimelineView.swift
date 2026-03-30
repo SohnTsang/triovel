@@ -121,15 +121,20 @@ struct TripTimelineView: View {
         .plainBackButton()
         .toolbar {
             ToolbarItem(placement: .principal) {
-                if let title = viewModel.trip?.title {
+                if let trip = viewModel.trip {
                     VStack(spacing: 2) {
-                        Text(title)
+                        Text(trip.title)
                             .font(.headline)
                             .lineLimit(1)
                         if !appState.isSyncConnected && appState.hasSynced {
                             Text(String(localized: "state.offline"))
                                 .font(.caption2)
                                 .foregroundStyle(ColorTokens.pendingTint)
+                        } else {
+                            let tz = TimeZone(identifier: trip.displayTimezone) ?? .current
+                            Text(tz.abbreviation() ?? trip.displayTimezone)
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
                         }
                     }
                 } else {
