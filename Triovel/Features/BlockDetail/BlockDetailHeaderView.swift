@@ -22,6 +22,13 @@ struct BlockDetailHeaderView: View {
     @State private var editEndTime = Date()
     @FocusState private var focusedField: EditField?
 
+    private var isTBDBlock: Bool {
+        let cal = Calendar.current
+        let hour = cal.component(.hour, from: block.startAt)
+        let minute = cal.component(.minute, from: block.startAt)
+        return hour == 0 && minute == 0 && block.endAt == nil
+    }
+
     private enum EditField {
         case title, location, description
     }
@@ -72,12 +79,16 @@ struct BlockDetailHeaderView: View {
         // Time row
         HStack(spacing: 4) {
             Label {
-                HStack(spacing: 4) {
-                    Text(block.startAt, format: .dateTime.hour().minute())
-                    if let endAt = block.endAt {
-                        Text("–")
-                            .foregroundStyle(.tertiary)
-                        Text(endAt, format: .dateTime.hour().minute())
+                if isTBDBlock {
+                    Text("block.card.no.time")
+                } else {
+                    HStack(spacing: 4) {
+                        Text(block.startAt, format: .dateTime.hour().minute())
+                        if let endAt = block.endAt {
+                            Text("–")
+                                .foregroundStyle(.tertiary)
+                            Text(endAt, format: .dateTime.hour().minute())
+                        }
                     }
                 }
             } icon: {
