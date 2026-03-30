@@ -7,7 +7,6 @@
     <meta name="description" content="Shared trip timelines, memories, and expense splitting for group travel.">
     <meta property="og:title" content="Triovel — Group travel, organized">
     <meta property="og:description" content="Plan the anchors. Capture the reality. Share the trip.">
-    <meta property="og:type" content="website">
     <link rel="stylesheet" href="shared.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -19,56 +18,38 @@
             overflow-x: hidden;
         }
 
-        /* Hero */
-        .hero {
-            max-width: 1100px;
+        .scene {
+            min-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 80px 40px;
+            max-width: 860px;
             margin: 0 auto;
-            padding: 120px 40px 100px;
-            display: flex;
-            align-items: center;
-            gap: 80px;
         }
-        .hero-text { flex: 1; min-width: 0; }
-        .hero-visual {
-            flex: 0 0 360px;
-            position: relative;
-            height: 460px;
+        @media (max-width: 600px) {
+            .scene { padding: 56px 24px; min-height: 70vh; }
         }
-        @media (max-width: 900px) {
-            .hero {
-                flex-direction: column;
-                padding: 72px 24px 56px;
-                gap: 48px;
-                text-align: center;
-            }
-            .hero-visual { flex: none; width: 100%; max-width: 340px; height: 400px; margin: 0 auto; }
-            .hero-text p { margin-left: auto; margin-right: auto; }
-            .hero-actions { justify-content: center; }
-        }
-        .hero h1 {
-            font-size: clamp(2.6rem, 5.5vw, 3.8rem);
+
+        /* Scene 1 — opening */
+        .opening h1 {
+            font-size: clamp(2.8rem, 7vw, 5rem);
             font-weight: 700;
-            letter-spacing: -0.035em;
-            line-height: 1.05;
-            margin-bottom: 22px;
+            letter-spacing: -0.04em;
+            line-height: 1.0;
+            margin-bottom: 28px;
         }
-        .hero h1 span { color: var(--t-teal); }
-        .hero-text p {
-            font-size: 18px;
-            line-height: 1.65;
+        .opening h1 span { color: var(--t-teal); }
+        .opening p {
+            font-size: 20px;
+            line-height: 1.55;
             color: var(--t-text-sec);
-            max-width: 480px;
-            margin-bottom: 36px;
-        }
-        .hero-actions {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            flex-wrap: wrap;
+            max-width: 520px;
+            margin-bottom: 40px;
         }
         .cta {
             display: inline-block;
-            padding: 14px 32px;
+            padding: 15px 36px;
             font-size: 16px;
             font-weight: 600;
             color: #fff;
@@ -78,205 +59,173 @@
             transition: transform 150ms ease, box-shadow 150ms ease;
             backface-visibility: hidden;
         }
-        .cta:hover { transform: scale(1.02); box-shadow: 0 4px 20px rgba(74,157,154,0.3); }
+        .cta:hover { transform: scale(1.02); box-shadow: 0 4px 24px rgba(74,157,154,0.3); }
         .cta:active { transform: scale(0.98); }
-        .cta-note {
+        .opening small {
+            display: block;
+            margin-top: 14px;
             font-size: 13px;
             color: var(--t-text-sec);
         }
 
-        /* Floating concept cards */
+        /* Scene cards */
+        .scene-pair {
+            display: flex;
+            align-items: center;
+            gap: 64px;
+        }
+        .scene-pair.flip { flex-direction: row-reverse; }
+        @media (max-width: 700px) {
+            .scene-pair, .scene-pair.flip { flex-direction: column; gap: 32px; }
+        }
+        .scene-words { flex: 1; }
+        .scene-words h2 {
+            font-size: 32px;
+            font-weight: 700;
+            letter-spacing: -0.025em;
+            line-height: 1.1;
+            margin-bottom: 14px;
+        }
+        .scene-words p {
+            font-size: 17px;
+            line-height: 1.6;
+            color: var(--t-text-sec);
+        }
+
+        /* Product cards */
         .card {
-            position: absolute;
+            flex: 0 0 320px;
             background: var(--t-bg);
             border: 1px solid var(--t-border);
-            border-radius: 16px;
-            padding: 18px 20px;
-            width: 260px;
-            box-shadow: 0 8px 40px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04);
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 12px 48px rgba(0,0,0,0.06), 0 2px 6px rgba(0,0,0,0.03);
         }
         @media (prefers-color-scheme: dark) {
-            .card { box-shadow: 0 8px 40px rgba(0,0,0,0.3), 0 1px 4px rgba(0,0,0,0.2); }
+            .card { box-shadow: 0 12px 48px rgba(0,0,0,0.4); }
         }
-        .card-1 { top: 0; left: 10px; transform: rotate(-2deg); z-index: 3; }
-        .card-2 { top: 155px; left: 70px; transform: rotate(1.5deg); z-index: 2; }
-        .card-3 { top: 310px; left: 25px; transform: rotate(-1deg); z-index: 1; }
-
+        @media (max-width: 700px) {
+            .card { flex: none; width: 100%; max-width: 340px; }
+        }
         .card-label {
             font-size: 11px;
             font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.6px;
             color: var(--t-text-sec);
-            margin-bottom: 10px;
+            margin-bottom: 14px;
         }
         .card-row {
             display: flex;
             justify-content: space-between;
             align-items: baseline;
-            padding: 6px 0;
+            padding: 8px 0;
         }
         .card-row + .card-row { border-top: 1px solid var(--t-border); }
-        .card-title { font-size: 14px; font-weight: 500; }
-        .card-meta { font-size: 12px; color: var(--t-text-sec); }
+        .card-title { font-size: 15px; font-weight: 500; }
+        .card-meta { font-size: 13px; color: var(--t-text-sec); }
         .card-ghost {
-            font-size: 13px;
+            font-size: 14px;
             color: var(--t-text-sec);
-            padding: 6px 0;
+            padding: 8px 0;
             border-top: 1px dashed var(--t-border);
-            opacity: 0.6;
+            opacity: 0.5;
         }
         .card-photo {
             width: 100%;
-            height: 80px;
-            background: linear-gradient(135deg, #d4ece8 0%, #a8d5cf 50%, #7ec4bb 100%);
-            border-radius: 10px;
-            margin-bottom: 10px;
+            height: 120px;
+            background: linear-gradient(145deg, #c8e0db, #8bc4bb, #5da69f);
+            border-radius: 12px;
+            margin-bottom: 14px;
         }
-        .card-body { font-size: 14px; line-height: 1.5; }
+        .card-body { font-size: 15px; line-height: 1.5; margin-bottom: 6px; }
         .card-chip {
             display: inline-block;
             font-size: 11px;
-            font-weight: 500;
+            font-weight: 600;
             color: var(--t-teal);
-            background: rgba(74,157,154,0.1);
-            padding: 3px 8px;
-            border-radius: 6px;
-            margin-top: 6px;
+            background: rgba(74,157,154,0.08);
+            padding: 4px 10px;
+            border-radius: 8px;
         }
         .card-amount {
-            font-size: 22px;
+            font-size: 28px;
             font-weight: 700;
-            margin-bottom: 4px;
+            letter-spacing: -0.5px;
+            margin-bottom: 6px;
         }
-        .card-split {
-            font-size: 13px;
-            color: var(--t-text-sec);
-            margin-bottom: 8px;
-        }
-        .card-owe {
+        .card-split { font-size: 14px; color: var(--t-text-sec); margin-bottom: 12px; }
+        .card-balance {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-top: 1px solid var(--t-border);
             font-size: 14px;
-            font-weight: 600;
-            color: #e85d4a;
+        }
+        .card-balance .owe { color: #d4513d; font-weight: 600; }
+        .card-balance .paid { color: var(--t-teal); font-weight: 600; }
+
+        /* Closing */
+        .closing {
+            text-align: center;
+            border-top: 1px solid var(--t-border);
+        }
+        .closing h2 {
+            font-size: 36px;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            margin-bottom: 16px;
+        }
+        .closing p {
+            font-size: 17px;
+            color: var(--t-text-sec);
+            margin-bottom: 32px;
         }
 
         /* Invite */
         .invite {
             display: none;
-            margin-bottom: 28px;
-            padding: 18px 22px;
-            background: rgba(74,157,154,0.05);
+            margin-bottom: 40px;
+            padding: 20px 24px;
+            background: rgba(74,157,154,0.04);
             border: 1px solid rgba(74,157,154,0.12);
-            border-radius: 14px;
+            border-radius: 16px;
             max-width: 480px;
         }
-        .invite p { font-size: 16px; color: var(--t-text); margin: 0 0 14px; max-width: none; }
-        .invite .cta { font-size: 14px; padding: 10px 22px; }
-        .invite-status { font-size: 13px; color: var(--t-text-sec); margin-top: 10px; }
+        .invite p { font-size: 17px; margin: 0 0 16px; }
+        .invite .cta { font-size: 15px; padding: 12px 28px; }
+        .invite-status { font-size: 13px; color: var(--t-text-sec); margin-top: 12px; }
         .has-invite .invite { display: block; }
         .has-invite .hero-default { display: none; }
-
-        /* Features — alternating left/right */
-        .features {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 0 40px;
-        }
-        @media (max-width: 900px) { .features { padding: 0 24px; } }
-        .feat {
-            display: flex;
-            align-items: center;
-            gap: 56px;
-            padding: 72px 0;
-            border-top: 1px solid var(--t-border);
-        }
-        .feat:nth-child(even) { flex-direction: row-reverse; }
-        .feat-text { flex: 1; }
-        .feat-vis {
-            flex: 0 0 220px;
-            height: 180px;
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 40px;
-        }
-        .feat-vis-1 { background: #eef6f5; color: var(--t-teal); }
-        .feat-vis-2 { background: #f3f0ea; color: #b8a078; }
-        .feat-vis-3 { background: #eef0f6; color: #6b7db3; }
-        @media (prefers-color-scheme: dark) {
-            .feat-vis-1 { background: #162220; }
-            .feat-vis-2 { background: #1e1c17; }
-            .feat-vis-3 { background: #181a22; }
-        }
-        @media (max-width: 700px) {
-            .feat, .feat:nth-child(even) { flex-direction: column; gap: 24px; text-align: center; }
-            .feat-vis { flex: none; width: 100%; height: 140px; }
-        }
-        .feat-label {
-            font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.6px;
-            color: var(--t-teal);
-            margin-bottom: 8px;
-        }
-        .feat h3 {
-            font-size: 24px;
-            font-weight: 650;
-            letter-spacing: -0.02em;
-            line-height: 1.15;
-            margin-bottom: 10px;
-        }
-        .feat p {
-            font-size: 16px;
-            line-height: 1.6;
-            color: var(--t-text-sec);
-        }
-
-        /* Bottom */
-        .bottom {
-            border-top: 1px solid var(--t-border);
-            text-align: center;
-            padding: 80px 40px;
-        }
-        @media (max-width: 900px) { .bottom { padding: 56px 24px; } }
-        .bottom h2 {
-            font-size: 30px;
-            font-weight: 700;
-            letter-spacing: -0.02em;
-            margin-bottom: 12px;
-        }
-        .bottom p {
-            font-size: 16px;
-            color: var(--t-text-sec);
-            margin-bottom: 28px;
-        }
     </style>
 </head>
 <body>
 
 <div id="site-nav"></div>
 
-<div class="hero" id="hero">
-    <div class="hero-text">
-        <div class="hero-default">
-            <h1>Plan the anchors.<br>Capture the reality.<br><span>Share the trip.</span></h1>
-            <p>A shared timeline for your group trip. Post memories to every moment, split expenses by currency, and keep everyone on the same page — even offline.</p>
-            <div class="hero-actions">
-                <a class="cta" href="https://apps.apple.com/app/triovel/id000000000" id="open-btn">Download for iOS</a>
-                <span class="cta-note">Free during beta</span>
-            </div>
-        </div>
-        <div class="invite" id="invite-bar">
-            <p>You've been invited to join a trip on Triovel.</p>
-            <a class="cta" href="#" id="invite-btn">Open in Triovel</a>
-            <div class="invite-status" id="status"></div>
-        </div>
+<!-- 1. Opening -->
+<div class="scene opening" id="hero">
+    <div class="hero-default">
+        <h1>Plan the anchors.<br>Capture the reality.<br><span>Share the trip.</span></h1>
+        <p>The group trip app that replaces your shared spreadsheet, your group chat itinerary, and that notes file where someone tracked expenses.</p>
+        <a class="cta" href="https://apps.apple.com/app/triovel/id000000000" id="open-btn">Download for iOS</a>
+        <small>Free during beta. Works offline.</small>
     </div>
+    <div class="invite" id="invite-bar">
+        <p>Someone invited you to their trip.</p>
+        <a class="cta" href="#" id="invite-btn">Open in Triovel</a>
+        <div class="invite-status" id="status"></div>
+    </div>
+</div>
 
-    <div class="hero-visual">
-        <div class="card card-1">
+<!-- 2. Timeline -->
+<div class="scene">
+    <div class="scene-pair">
+        <div class="scene-words">
+            <h2>Your whole trip, day&nbsp;by&nbsp;day</h2>
+            <p>Add activities as you plan them. Change them as reality happens. Everyone in the group sees the same timeline and can contribute — even without wifi.</p>
+        </div>
+        <div class="card">
             <div class="card-label">Day 3 · Shibuya</div>
             <div class="card-row">
                 <span class="card-title">Ramen in Shibuya</span>
@@ -286,55 +235,60 @@
                 <span class="card-title">Meiji Shrine</span>
                 <span class="card-meta">2:30 PM</span>
             </div>
+            <div class="card-row">
+                <span class="card-title">Shibuya Crossing</span>
+                <span class="card-meta">4:00 PM</span>
+            </div>
             <div class="card-ghost">Dinner</div>
         </div>
+    </div>
+</div>
 
-        <div class="card card-2">
+<!-- 3. Memories -->
+<div class="scene">
+    <div class="scene-pair flip">
+        <div class="scene-words">
+            <h2>Every moment gets its own&nbsp;page</h2>
+            <p>Tap into any activity and start posting — photos, notes, whatever you want to remember. Private entries stay between you and your phone. No one else sees them, ever.</p>
+        </div>
+        <div class="card">
             <div class="card-photo"></div>
-            <div class="card-body">The queue was worth it.</div>
-            <span class="card-chip">Shared · 3 photos</span>
-        </div>
-
-        <div class="card card-3">
-            <div class="card-amount">&yen;3,600</div>
-            <div class="card-split">Paid by Sohn · split 3 ways</div>
-            <div class="card-owe">You owe &yen;1,200</div>
+            <div class="card-body">"The queue was insane but completely worth it. Best tonkotsu I've ever had."</div>
+            <span class="card-chip">Shared · 4 photos</span>
         </div>
     </div>
 </div>
 
-<div class="features">
-    <div class="feat">
-        <div class="feat-text">
-            <div class="feat-label">Timeline</div>
-            <h3>One trip, one timeline, everyone in sync</h3>
-            <p>Build a day-by-day plan together. Add activities as you go, see what everyone's doing, and stay coordinated across timezones — online or offline.</p>
+<!-- 4. Expenses -->
+<div class="scene">
+    <div class="scene-pair">
+        <div class="scene-words">
+            <h2>Who paid? Who owes&nbsp;what? Sorted.</h2>
+            <p>Log expenses as they happen. Triovel handles the math — per currency, per person, no rounding errors. Settle up whenever you're ready. No rush.</p>
         </div>
-        <div class="feat-vis feat-vis-1">📅</div>
-    </div>
-
-    <div class="feat">
-        <div class="feat-text">
-            <div class="feat-label">Memories</div>
-            <h3>Post photos and notes to every moment</h3>
-            <p>Each activity becomes a shared space for the group. Post what you saw, what you ate, what was funny. Private notes stay completely private.</p>
+        <div class="card">
+            <div class="card-amount">&yen;4,800</div>
+            <div class="card-split">Ramen in Shibuya · paid by Sohn</div>
+            <div class="card-balance">
+                <span>Alex</span>
+                <span class="owe">owes &yen;1,600</span>
+            </div>
+            <div class="card-balance">
+                <span>Kim</span>
+                <span class="owe">owes &yen;1,600</span>
+            </div>
+            <div class="card-balance">
+                <span>Sohn</span>
+                <span class="paid">settled</span>
+            </div>
         </div>
-        <div class="feat-vis feat-vis-2">📷</div>
-    </div>
-
-    <div class="feat">
-        <div class="feat-text">
-            <div class="feat-label">Expenses</div>
-            <h3>Track costs, split fair, settle later</h3>
-            <p>Log who paid for what. Triovel calculates what everyone owes, currency by currency. No converting, no spreadsheets, no arguments.</p>
-        </div>
-        <div class="feat-vis feat-vis-3">💰</div>
     </div>
 </div>
 
-<div class="bottom">
-    <h2>Your next trip, organized</h2>
-    <p>Stop juggling group chats, spreadsheets, and shared albums.<br>One app for the whole trip.</p>
+<!-- 5. Closing -->
+<div class="scene closing">
+    <h2>One app for the whole trip</h2>
+    <p>iPhone and iPad. Works offline. Free during beta.</p>
     <a class="cta" href="https://apps.apple.com/app/triovel/id000000000">Download Triovel</a>
 </div>
 
@@ -354,8 +308,7 @@
         setTimeout(function() { status.textContent = 'Didn\'t open? Tap the button above.'; }, 1500);
     }
     document.getElementById('invite-btn').addEventListener('click', function(e) {
-        e.preventDefault();
-        window.location.href = deep;
+        e.preventDefault(); window.location.href = deep;
         setTimeout(function() { status.textContent = 'App not installed? Download first, then open this link again.'; }, 2000);
     });
 })();
