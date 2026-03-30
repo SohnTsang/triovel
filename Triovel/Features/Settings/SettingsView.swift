@@ -37,13 +37,13 @@ struct SettingsView: View {
             // Legal
             Section(String(localized: "settings.legal")) {
                 Button {
-                    safariURL = URL(string: "https://sohntsang.github.io/triovel/privacy-policy.html")
+                    safariURL = URL(string: "https://sohntsang.github.io/triovel/privacy-policy")
                 } label: {
                     Label(String(localized: "settings.privacy.policy"), systemImage: "hand.raised")
                 }
 
                 Button {
-                    safariURL = URL(string: "https://sohntsang.github.io/triovel/terms-and-conditions.html")
+                    safariURL = URL(string: "https://sohntsang.github.io/triovel/terms-and-conditions")
                 } label: {
                     Label(String(localized: "settings.terms"), systemImage: "doc.text")
                 }
