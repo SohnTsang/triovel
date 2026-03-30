@@ -4,7 +4,7 @@
     --t-teal: #4a9d9a;
     --t-bg: #ffffff;
     --t-text: #1c1c1e;
-    --t-text-sec: #86868b;
+    --t-text-sec: #a1a1a6;
     --t-border: #d2d2d7;
 }
 
@@ -12,7 +12,7 @@
     :root {
         --t-bg: #0e0e0e;
         --t-text: #f5f5f7;
-        --t-text-sec: #86868b;
+        --t-text-sec: #a1a1a6;
         --t-border: #424245;
     }
 }
