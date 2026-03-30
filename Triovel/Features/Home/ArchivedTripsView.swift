@@ -15,20 +15,11 @@ struct ArchivedTripsView: View {
                 )
             } else {
                 ScrollView {
-                    LazyVGrid(
-                        columns: [
-                            GridItem(.flexible(), spacing: 12),
-                            GridItem(.flexible(), spacing: 12),
-                        ],
-                        spacing: 12
-                    ) {
-                        ForEach(trips) { trip in
-                            TripCardView(trip: trip, members: [])
-                                .contentShape(Rectangle())
-                                .onTapGesture {
-                                    router.push(.tripTimeline(tripId: trip.id))
-                                }
-                        }
+                    TripGridByYear(
+                        trips: trips,
+                        membersByTrip: [:]
+                    ) { tripId in
+                        router.push(.tripTimeline(tripId: tripId))
                     }
                     .padding(.horizontal)
                     .padding(.top, 8)

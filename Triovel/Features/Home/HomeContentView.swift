@@ -26,23 +26,11 @@ struct HomeContentView: View {
                 )
             } else {
                 ScrollView {
-                    LazyVGrid(
-                        columns: [
-                            GridItem(.flexible(), spacing: 12),
-                            GridItem(.flexible(), spacing: 12),
-                        ],
-                        spacing: 12
-                    ) {
-                        ForEach(viewModel.activeTrips) { trip in
-                            TripCardView(
-                                trip: trip,
-                                members: viewModel.membersByTrip[trip.id] ?? []
-                            )
-                            .contentShape(Rectangle())
-                            .onTapGesture {
-                                router.push(.tripTimeline(tripId: trip.id))
-                            }
-                        }
+                    TripGridByYear(
+                        trips: viewModel.activeTrips,
+                        membersByTrip: viewModel.membersByTrip
+                    ) { tripId in
+                        router.push(.tripTimeline(tripId: tripId))
                     }
                     .padding(.horizontal)
                     .padding(.top, 8)

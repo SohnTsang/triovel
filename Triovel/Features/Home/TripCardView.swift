@@ -109,6 +109,54 @@ private struct AvatarCircle: View {
     }
 }
 
+// MARK: - Trip Grid By Year
+
+/// Groups trips by start year and displays as 2-column grids with year headers.
+struct TripGridByYear: View {
+    let trips: [Trip]
+    let membersByTrip: [String: [TripMemberDisplay]]
+    let onTripTap: (String) -> Void
+
+    private var groupedByYear: [(year: Int, trips: [Trip])] {
+        let cal = Calendar.current
+        var groups: [Int: [Trip]] = [:]
+        for trip in trips {
+            let year = cal.component(.year, from: trip.startDate)
+            groups[year, default: []].append(trip)
+        }
+        return groups.sorted { $0.key > $1.key }.map { (year: $0.key, trips: $0.value) }
+    }
+
+    private let columns = [
+        GridItem(.flexible(), spacing: 12),
+        GridItem(.flexible(), spacing: 12),
+    ]
+
+    var body: some View {
+        LazyVStack(alignment: .leading, spacing: 20) {
+            ForEach(groupedByYear, id: \.year) { group in
+                // Year header
+                Text(String(group.year))
+                    .font(.title3.weight(.bold))
+                    .padding(.top, group.year == groupedByYear.first?.year ? 0 : 4)
+
+                LazyVGrid(columns: columns, spacing: 12) {
+                    ForEach(group.trips) { trip in
+                        TripCardView(
+                            trip: trip,
+                            members: membersByTrip[trip.id] ?? []
+                        )
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            onTripTap(trip.id)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 // MARK: - Date Formatting
 
 extension Trip {
