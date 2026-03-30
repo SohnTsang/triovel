@@ -147,7 +147,7 @@ struct EditTripView: View {
                     Image(uiImage: preview)
                         .resizable()
                         .scaledToFill()
-                        .frame(height: 140)
+                        .frame(height: 220)
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                 } else if let path = trip.coverImagePath, !path.isEmpty {
                     CachedMediaView(
@@ -155,12 +155,12 @@ struct EditTripView: View {
                         storagePath: path,
                         mediaType: .photo
                     )
-                    .frame(height: 140)
+                    .frame(height: 220)
                     .clipShape(RoundedRectangle(cornerRadius: 12))
                 } else {
                     RoundedRectangle(cornerRadius: 12)
                         .fill(Color(.systemGray5))
-                        .frame(height: 140)
+                        .frame(height: 220)
                         .overlay {
                             Image(systemName: "photo")
                                 .font(.title)
@@ -172,7 +172,7 @@ struct EditTripView: View {
                 if isProcessingCover {
                     RoundedRectangle(cornerRadius: 12)
                         .fill(.black.opacity(0.3))
-                        .frame(height: 140)
+                        .frame(height: 220)
                         .overlay {
                             ProgressView()
                                 .tint(.white)
