@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Triovel — Group travel, organized</title>
     <meta name="description" content="Shared trip timelines, memories, and expense splitting for group travel.">
-    <meta property="og:title" content="Triovel">
+    <meta property="og:title" content="Triovel — Group travel, organized">
     <meta property="og:description" content="Plan the anchors. Capture the reality. Share the trip.">
     <meta property="og:type" content="website">
     <link rel="stylesheet" href="shared.css">
@@ -18,36 +18,72 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        /* Hero */
-        .hero {
-            max-width: 980px;
-            margin: 0 auto;
-            padding: 100px 32px 80px;
-            text-align: center;
+        /* Hero — warm background, text-left */
+        .hero-wrap {
+            background: #f0f5f4;
+            border-bottom: 1px solid var(--t-border);
         }
-        @media (max-width: 600px) {
-            .hero { padding: 56px 20px 48px; }
+        @media (prefers-color-scheme: dark) {
+            .hero-wrap { background: #141e1d; border-color: #2a2a2a; }
+        }
+        .hero {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 80px 40px 88px;
+            display: flex;
+            align-items: center;
+            gap: 64px;
+        }
+        .hero-text { flex: 1; min-width: 0; }
+        .hero-visual {
+            flex: 0 0 340px;
+            height: 420px;
+            background: rgba(74,157,154,0.08);
+            border-radius: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .hero-visual span {
+            font-size: 64px;
+            font-weight: 700;
+            color: var(--t-teal);
+            opacity: 0.3;
+        }
+        @media (max-width: 800px) {
+            .hero { flex-direction: column; padding: 48px 24px 56px; gap: 40px; text-align: center; }
+            .hero-visual { flex: none; width: 100%; height: 280px; }
         }
         .hero h1 {
-            font-size: clamp(2.5rem, 6vw, 4rem);
-            font-weight: 600;
-            letter-spacing: -0.035em;
-            line-height: 1.06;
-            text-wrap: balance;
-            margin-bottom: 20px;
+            font-size: clamp(2.2rem, 5vw, 3.4rem);
+            font-weight: 650;
+            letter-spacing: -0.03em;
+            line-height: 1.08;
+            margin-bottom: 18px;
         }
         .hero h1 span { color: var(--t-teal); }
-        .hero p {
-            font-size: 18px;
+        .hero-text p {
+            font-size: 17px;
             line-height: 1.6;
             color: var(--t-text-sec);
-            max-width: 520px;
-            margin: 0 auto 40px;
-            text-wrap: balance;
+            max-width: 480px;
+            margin-bottom: 28px;
+        }
+        @media (max-width: 800px) {
+            .hero-text p { margin-left: auto; margin-right: auto; }
+        }
+        .hero-actions {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        @media (max-width: 800px) {
+            .hero-actions { justify-content: center; }
         }
         .cta {
             display: inline-block;
-            padding: 13px 30px;
+            padding: 13px 28px;
             font-size: 15px;
             font-weight: 600;
             color: #fff;
@@ -57,19 +93,22 @@
             transition: transform 150ms ease, box-shadow 150ms ease;
             backface-visibility: hidden;
         }
-        .cta:hover { transform: scale(1.02); box-shadow: 0 4px 16px rgba(74,157,154,0.25); }
+        .cta:hover { transform: scale(1.02); box-shadow: 0 4px 20px rgba(74,157,154,0.3); }
         .cta:active { transform: scale(0.98); }
+        .hero-note {
+            font-size: 13px;
+            color: var(--t-text-sec);
+        }
 
-        /* Invite overlay */
+        /* Invite */
         .invite {
             display: none;
-            max-width: 420px;
-            margin: 0 auto 40px;
-            padding: 20px 24px;
-            background: rgba(74,157,154,0.05);
-            border: 1px solid rgba(74,157,154,0.12);
+            margin-bottom: 28px;
+            padding: 18px 22px;
+            background: rgba(74,157,154,0.06);
+            border: 1px solid rgba(74,157,154,0.15);
             border-radius: 14px;
-            text-align: left;
+            max-width: 480px;
         }
         .invite p { font-size: 16px; color: var(--t-text); margin: 0 0 14px; max-width: none; }
         .invite .cta { font-size: 14px; padding: 10px 22px; }
@@ -77,54 +116,70 @@
         .has-invite .invite { display: block; }
         .has-invite .hero-default { display: none; }
 
-        /* Features */
+        /* Features — bold colored blocks (Splitwise-inspired) */
         .features {
-            max-width: 980px;
+            max-width: 1100px;
             margin: 0 auto;
-            padding: 0 32px;
-        }
-        @media (max-width: 600px) {
-            .features { padding: 0 20px; }
-        }
-        .feature-row {
+            padding: 64px 40px;
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
-            gap: 1px;
-            background: var(--t-border);
-            border-top: 1px solid var(--t-border);
-            border-bottom: 1px solid var(--t-border);
+            gap: 16px;
         }
-        @media (max-width: 700px) {
-            .feature-row { grid-template-columns: 1fr; }
+        @media (max-width: 800px) {
+            .features { grid-template-columns: 1fr; padding: 40px 24px; gap: 12px; }
         }
-        .feature-cell {
-            padding: 48px 36px;
-            background: var(--t-bg);
+        .feat {
+            padding: 40px 32px;
+            border-radius: 20px;
+            min-height: 200px;
         }
-        @media (max-width: 600px) {
-            .feature-cell { padding: 32px 24px; }
-        }
-        .feature-cell h3 {
-            font-size: 17px;
+        .feat h3 {
+            font-size: 19px;
             font-weight: 600;
             letter-spacing: -0.01em;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
         }
-        .feature-cell p {
+        .feat p {
             font-size: 15px;
             line-height: 1.6;
+            opacity: 0.85;
+        }
+        .feat-timeline { background: #1a3a38; color: #fff; }
+        .feat-memories { background: #f0f5f4; color: var(--t-text); }
+        .feat-expenses { background: var(--t-teal); color: #fff; }
+        @media (prefers-color-scheme: dark) {
+            .feat-memories { background: #1c2625; color: var(--t-text); }
+        }
+
+        /* Social proof strip */
+        .proof {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 40px 64px;
+            text-align: center;
+        }
+        @media (max-width: 800px) {
+            .proof { padding: 0 24px 48px; }
+        }
+        .proof p {
+            font-size: 14px;
             color: var(--t-text-sec);
         }
 
-        /* Bottom */
+        /* Bottom CTA */
         .bottom {
-            max-width: 980px;
-            margin: 0 auto;
-            padding: 80px 32px;
+            border-top: 1px solid var(--t-border);
+            padding: 64px 40px;
             text-align: center;
         }
-        @media (max-width: 600px) {
-            .bottom { padding: 48px 20px; }
+        @media (max-width: 800px) {
+            .bottom { padding: 48px 24px; }
+        }
+        .bottom h2 {
+            font-size: 28px;
+            font-weight: 650;
+            letter-spacing: -0.02em;
+            margin-bottom: 12px;
         }
         .bottom p {
             font-size: 15px;
@@ -137,39 +192,53 @@
 
 <div id="site-nav"></div>
 
-<div class="hero" id="hero">
-    <div class="hero-default">
-        <h1>Plan the anchors. Capture the reality. <span>Share the trip.</span></h1>
-        <p>One shared timeline for your group trip. Post memories to every moment, split expenses by currency, and keep everyone on the same page.</p>
-        <a class="cta" href="https://apps.apple.com/app/triovel/id000000000" id="open-btn">Download for iOS</a>
-    </div>
+<div class="hero-wrap">
+    <div class="hero" id="hero">
+        <div class="hero-text">
+            <div class="hero-default">
+                <h1>Plan the anchors. Capture the reality. <span>Share the trip.</span></h1>
+                <p>One shared timeline for your group trip. Post memories to every moment, split expenses by currency, and keep everyone on the same page — even offline.</p>
+                <div class="hero-actions">
+                    <a class="cta" href="https://apps.apple.com/app/triovel/id000000000" id="open-btn">Download for iOS</a>
+                    <span class="hero-note">Free during beta</span>
+                </div>
+            </div>
 
-    <div class="invite" id="invite-bar">
-        <p>You've been invited to join a trip on Triovel.</p>
-        <a class="cta" href="#" id="invite-btn">Open in Triovel</a>
-        <div class="invite-status" id="status"></div>
+            <div class="invite" id="invite-bar">
+                <p>You've been invited to join a trip on Triovel.</p>
+                <a class="cta" href="#" id="invite-btn">Open in Triovel</a>
+                <div class="invite-status" id="status"></div>
+            </div>
+        </div>
+
+        <div class="hero-visual">
+            <span>T</span>
+        </div>
     </div>
 </div>
 
 <div class="features">
-    <div class="feature-row">
-        <div class="feature-cell">
-            <h3>Shared timeline</h3>
-            <p>Build a day-by-day plan together. Everyone sees the same schedule, adds activities, and stays in sync — online or offline.</p>
-        </div>
-        <div class="feature-cell">
-            <h3>Trip memories</h3>
-            <p>Attach photos, notes, and videos to each moment. Private entries stay private. The trip journal writes itself while you travel.</p>
-        </div>
-        <div class="feature-cell">
-            <h3>Expense splitting</h3>
-            <p>Log who paid for what. Balances calculated per currency, no rounding errors, no spreadsheets. Settle up when you're ready.</p>
-        </div>
+    <div class="feat feat-timeline">
+        <h3>Shared timeline</h3>
+        <p>Build a day-by-day plan together. Everyone sees the same schedule and can add activities — online or off.</p>
+    </div>
+    <div class="feat feat-memories">
+        <h3>Trip memories</h3>
+        <p>Attach photos, notes, and videos to each moment. Private entries stay private. The journal writes itself.</p>
+    </div>
+    <div class="feat feat-expenses">
+        <h3>Expense splitting</h3>
+        <p>Log who paid for what. Balances per currency, no spreadsheets, no guesswork. Settle when you're ready.</p>
     </div>
 </div>
 
+<div class="proof">
+    <p>Available on iPhone and iPad. Built for real group trips.</p>
+</div>
+
 <div class="bottom">
-    <p>Free during beta. Works offline. iPhone and iPad.</p>
+    <h2>Your next trip, organized</h2>
+    <p>Stop juggling group chats, spreadsheets, and shared albums. One app for the whole trip.</p>
     <a class="cta" href="https://apps.apple.com/app/triovel/id000000000">Download Triovel</a>
 </div>
 
