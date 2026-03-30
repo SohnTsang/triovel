@@ -228,23 +228,22 @@ struct PostCardView: View {
 
     private func saveEdit() {
         isSavingEdit = true
-        Task {
-            let start = ContinuousClock.now
 
-            // Update text if changed
-            let trimmed = editText.trimmingCharacters(in: .whitespacesAndNewlines)
-            if trimmed != (post.body ?? "") {
+        // Capture values before async — DB write happens AFTER loading
+        let trimmed = editText.trimmingCharacters(in: .whitespacesAndNewlines)
+        let textChanged = trimmed != (post.body ?? "")
+        let removedIds = mediaToRemove
+
+        Task {
+            // 500ms loading first — UI stays unchanged during this time
+            try? await Task.sleep(for: .milliseconds(500))
+
+            // NOW write to DB — UI updates after sheet dismisses
+            if textChanged {
                 onEdit?(trimmed)
             }
-
-            // Remove marked media
-            for mediaId in mediaToRemove {
+            for mediaId in removedIds {
                 onRemoveMedia?(mediaId)
-            }
-
-            let elapsed = ContinuousClock.now - start
-            if elapsed < .milliseconds(500) {
-                try? await Task.sleep(for: .milliseconds(500) - elapsed)
             }
 
             isSavingEdit = false
