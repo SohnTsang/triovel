@@ -34,25 +34,25 @@ struct TripCardView: View {
 
     @ViewBuilder
     private var coverImage: some View {
-        if let path = trip.coverImagePath, !path.isEmpty {
-            CachedMediaView(
-                mediaId: "trip-cover-\(trip.id)",
-                storagePath: path,
-                mediaType: .photo
-            )
+        Color.clear
             .aspectRatio(1, contentMode: .fit)
-            .frame(maxWidth: .infinity)
-            .clipShape(RoundedRectangle(cornerRadius: 10))
-        } else {
-            RoundedRectangle(cornerRadius: 10)
-                .fill(Color(.systemGray5))
-                .aspectRatio(1, contentMode: .fit)
-                .overlay {
-                    Image(systemName: "photo")
-                        .font(.title3)
-                        .foregroundStyle(.quaternary)
+            .overlay {
+                if let path = trip.coverImagePath, !path.isEmpty {
+                    CachedMediaView(
+                        mediaId: "trip-cover-\(trip.id)",
+                        storagePath: path,
+                        mediaType: .photo
+                    )
+                } else {
+                    Color(.systemGray5)
+                        .overlay {
+                            Image(systemName: "photo")
+                                .font(.title3)
+                                .foregroundStyle(.quaternary)
+                        }
                 }
-        }
+            }
+            .clipShape(RoundedRectangle(cornerRadius: 10))
     }
 }
 
