@@ -4,7 +4,7 @@ import Foundation
 /// No third-party SDK, no user-identifiable data, no content tracking.
 /// All counters stored in UserDefaults — read by the team, not uploaded.
 enum BetaAnalytics {
-    private static let defaults = UserDefaults.standard
+    nonisolated(unsafe) private static let defaults = UserDefaults.standard
 
     // MARK: - Track Events
 

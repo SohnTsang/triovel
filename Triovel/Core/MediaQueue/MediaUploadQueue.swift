@@ -21,7 +21,7 @@ final class MediaUploadQueue {
     private let repository = PostMediaRepository()
     private let storageBucket = "trip-media"
     private let maxRetries = 5
-    nonisolated(unsafe) private var processTask: Task<Void, Never>?
+    @ObservationIgnored private var processTask: Task<Void, Never>?
 
     private init() {}
 
@@ -162,8 +162,8 @@ final class MediaUploadQueue {
             _ = try await SupabaseConfig.client.storage
                 .from(storageBucket)
                 .upload(
-                    path: remotePath,
-                    file: fileData,
+                    remotePath,
+                    data: fileData,
                     options: FileOptions(contentType: contentType)
                 )
 

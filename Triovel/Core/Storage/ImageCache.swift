@@ -91,27 +91,34 @@ actor ImageCache {
             return await existing.value
         }
 
-        let task = Task<UIImage?, Never> { [weak self] in
-            guard let self else { return nil }
-
+        let storageBucket = self.storageBucket
+        let task = Task<UIImage?, Never> {
             do {
                 let data = try await SupabaseConfig.client.storage
-                    .from(self.storageBucket)
+                    .from(storageBucket)
                     .download(path: storagePath)
 
                 guard let fullImage = UIImage(data: data) else { return nil }
 
-                // Generate thumbnail for stream display
-                let thumbnail = await self.generateThumbnail(from: fullImage)
-
-                // Cache thumbnail
-                let thumbData = thumbnail.jpegData(compressionQuality: 0.8) ?? Data()
-                self.memoryCache.setObject(thumbnail, forKey: key as NSString, cost: thumbData.count)
-                await self.saveToDisk(data: thumbData, key: key)
+                // Generate thumbnail for stream display (runs on background thread)
+                let maxWidth = CGFloat(400)
+                let thumbnail: UIImage
+                if fullImage.size.width > maxWidth {
+                    thumbnail = await Task.detached(priority: .utility) {
+                        let scale = maxWidth / fullImage.size.width
+                        let newSize = CGSize(width: maxWidth, height: fullImage.size.height * scale)
+                        let renderer = UIGraphicsImageRenderer(size: newSize)
+                        return renderer.image { _ in
+                            fullImage.draw(in: CGRect(origin: .zero, size: newSize))
+                        }
+                    }.value
+                } else {
+                    thumbnail = fullImage
+                }
 
                 return thumbnail
             } catch {
-                print("[ImageCache] ❌ Download failed for \(storagePath): \(error)")
+                print("[ImageCache] Download failed for \(storagePath): \(error)")
                 return nil
             }
         }
@@ -119,6 +126,14 @@ actor ImageCache {
         activeDownloads[key] = task
         let result = await task.value
         activeDownloads[key] = nil
+
+        // Cache the result within actor isolation
+        if let thumbnail = result {
+            let thumbData = thumbnail.jpegData(compressionQuality: 0.8) ?? Data()
+            memoryCache.setObject(thumbnail, forKey: key as NSString, cost: thumbData.count)
+            saveToDisk(data: thumbData, key: key)
+        }
+
         return result
     }
 
@@ -151,7 +166,7 @@ actor ImageCache {
         return UIImage(data: data)
     }
 
-    private func saveToDisk(data: Data, key: String) async {
+    private func saveToDisk(data: Data, key: String) {
         let url = diskURL(for: key)
         try? data.write(to: url, options: .atomic)
     }

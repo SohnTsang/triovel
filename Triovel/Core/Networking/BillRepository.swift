@@ -3,7 +3,7 @@ import PowerSync
 
 /// CRUD for bills and bill_shares in local PowerSync SQLite.
 /// Amounts are always integers in smallest currency unit (e.g. cents).
-final class BillRepository {
+final class BillRepository: @unchecked Sendable {
     private var db: PowerSyncDatabaseProtocol { SyncManager.shared.db }
 
     // MARK: - Create Bill + Shares (local-first)

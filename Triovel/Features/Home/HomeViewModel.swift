@@ -21,7 +21,7 @@ final class HomeViewModel {
 
     private var currentUserId: String?
     private let tripRepository = TripRepository()
-    nonisolated(unsafe) private var watchTask: Task<Void, Never>?
+    @ObservationIgnored private var watchTask: Task<Void, Never>?
 
     private var ownedActiveTripCount: Int {
         guard let uid = currentUserId else { return 0 }

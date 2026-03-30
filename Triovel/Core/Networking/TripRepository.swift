@@ -5,7 +5,7 @@ import Supabase
 /// Reads trips from local PowerSync SQLite. Writes locally first, then
 /// PowerSync uploads to Supabase via the connector.
 /// Exception: joinTrip requires network (trip not in local DB until membership exists).
-final class TripRepository {
+final class TripRepository: @unchecked Sendable {
     private var db: PowerSyncDatabaseProtocol { SyncManager.shared.db }
     private let client = SupabaseConfig.client
 

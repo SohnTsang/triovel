@@ -3,7 +3,7 @@ import PowerSync
 
 /// CRUD for payments in local PowerSync SQLite.
 /// Payments are trip-level (not block-level) repayments between two people.
-final class PaymentRepository {
+final class PaymentRepository: @unchecked Sendable {
     private var db: PowerSyncDatabaseProtocol { SyncManager.shared.db }
 
     // MARK: - Create Payment

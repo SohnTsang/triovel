@@ -2,7 +2,7 @@ import Foundation
 import PowerSync
 
 /// CRUD for post_media records in local PowerSync SQLite.
-final class PostMediaRepository {
+final class PostMediaRepository: @unchecked Sendable {
     private var db: PowerSyncDatabaseProtocol { SyncManager.shared.db }
 
     // MARK: - Create

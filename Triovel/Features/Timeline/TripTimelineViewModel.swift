@@ -34,8 +34,8 @@ final class TripTimelineViewModel {
     private let tripRepository = TripRepository()
     private var currentTripId: String?
     private var currentUserId: String?
-    nonisolated(unsafe) private var loadTask: Task<Void, Never>?
-    nonisolated(unsafe) private var blockWatchTask: Task<Void, Never>?
+    @ObservationIgnored private var loadTask: Task<Void, Never>?
+    @ObservationIgnored private var blockWatchTask: Task<Void, Never>?
 
     // MARK: - Load
 

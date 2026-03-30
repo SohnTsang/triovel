@@ -3,7 +3,7 @@ import PowerSync
 
 /// Reads posts from local PowerSync SQLite. Writes locally first.
 /// Private posts are filtered server-side by sync rules AND client-side as defense-in-depth.
-final class PostRepository {
+final class PostRepository: @unchecked Sendable {
     private var db: PowerSyncDatabaseProtocol { SyncManager.shared.db }
 
     // MARK: - Create Post (local-first)

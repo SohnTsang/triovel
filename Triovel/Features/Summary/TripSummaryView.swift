@@ -528,7 +528,7 @@ final class TripSummaryViewModel {
     private let billRepository = BillRepository()
     private let paymentRepository = PaymentRepository()
     private var memberNames: [String: String] = [:]
-    nonisolated(unsafe) private var watchTask: Task<Void, Never>?
+    @ObservationIgnored private var watchTask: Task<Void, Never>?
 
     deinit { watchTask?.cancel() }
 

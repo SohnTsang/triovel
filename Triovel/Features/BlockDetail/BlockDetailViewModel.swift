@@ -56,11 +56,11 @@ final class BlockDetailViewModel {
     private(set) var tripPayments: [Payment] = []
     private let paymentRepository = PaymentRepository()
 
-    nonisolated(unsafe) private var loadTask: Task<Void, Never>?
-    nonisolated(unsafe) private var sendTask: Task<Void, Never>?
-    nonisolated(unsafe) private var postWatchTask: Task<Void, Never>?
-    nonisolated(unsafe) private var mediaWatchTask: Task<Void, Never>?
-    nonisolated(unsafe) private var billWatchTask: Task<Void, Never>?
+    @ObservationIgnored private var loadTask: Task<Void, Never>?
+    @ObservationIgnored private var sendTask: Task<Void, Never>?
+    @ObservationIgnored private var postWatchTask: Task<Void, Never>?
+    @ObservationIgnored private var mediaWatchTask: Task<Void, Never>?
+    @ObservationIgnored private var billWatchTask: Task<Void, Never>?
 
     deinit {
         loadTask?.cancel()

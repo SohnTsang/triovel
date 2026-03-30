@@ -25,7 +25,7 @@ final class AppState {
     private(set) var lastSyncedAt: Date?
 
     let authService = AuthService()
-    nonisolated(unsafe) private var syncStatusTask: Task<Void, Never>?
+    @ObservationIgnored private var syncStatusTask: Task<Void, Never>?
 
     /// Called on app launch. Follows the auth refresh flow from sync.md:
     /// 1. Restore local session

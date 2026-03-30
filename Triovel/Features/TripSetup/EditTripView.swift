@@ -180,11 +180,12 @@ struct EditTripView: View {
                 }
             }
 
+            let hasCover = trip.coverImagePath != nil || coverPreview != nil
             PhotosPicker(
                 selection: $selectedPhoto,
                 matching: .images
             ) {
-                Text(trip.coverImagePath != nil || coverPreview != nil
+                Text(hasCover
                      ? "trip.edit.cover.change"
                      : "trip.edit.cover.add")
                     .font(.subheadline)
@@ -247,8 +248,8 @@ struct EditTripView: View {
                     _ = try await SupabaseConfig.client.storage
                         .from(storageBucket)
                         .upload(
-                            path: remotePath,
-                            file: compressed,
+                            remotePath,
+                            data: compressed,
                             options: FileOptions(contentType: "image/jpeg", upsert: true)
                         )
                     newCoverPath = remotePath

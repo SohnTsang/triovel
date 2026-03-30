@@ -66,7 +66,8 @@ final class AppleSignInCoordinator: NSObject,
 
     // MARK: - Presentation Context
 
-    nonisolated func presentationAnchor(
+    @MainActor
+    func presentationAnchor(
         for controller: ASAuthorizationController
     ) -> ASPresentationAnchor {
         // Return the key window for presenting the Apple Sign-In sheet

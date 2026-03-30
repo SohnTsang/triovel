@@ -3,7 +3,7 @@ import PowerSync
 import Supabase
 
 /// Reads blocks from local PowerSync SQLite. Writes locally first.
-final class BlockRepository {
+final class BlockRepository: @unchecked Sendable {
     private var db: PowerSyncDatabaseProtocol { SyncManager.shared.db }
 
     // MARK: - Create Block (local-first)
