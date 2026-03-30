@@ -163,7 +163,7 @@ final class AuthService {
         // "Users can delete their own account" enabled in Auth settings
         do {
             // Try the Supabase auth admin delete endpoint
-            try await client.auth.admin.deleteUser(id: user.id.uuidString)
+            try await client.auth.admin.deleteUser(id: user.id)
         } catch {
             // Fallback: sign out + let server-side cleanup handle it
             // Some Supabase configs require an Edge Function for self-deletion
