@@ -364,10 +364,11 @@ final class TripRepository {
 
     // MARK: - Helpers
 
-    /// Generate a short, unique invite code (8 chars alphanumeric).
+    /// Generate a cryptographically secure invite code.
+    /// Uses UUID format (128-bit entropy) — unguessable by brute force.
+    /// Displayed as lowercase hex for clean URLs.
     private static func generateInviteCode() -> String {
-        let chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789" // No 0/O/1/I to avoid confusion
-        return String((0..<8).map { _ in chars.randomElement()! })
+        UUID().uuidString.lowercased().replacingOccurrences(of: "-", with: "")
     }
 
     private static func dateOnlyString(from date: Date) -> String {
