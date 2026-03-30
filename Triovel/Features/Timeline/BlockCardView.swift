@@ -122,7 +122,7 @@ struct BlockCardView: View {
                 }
             }
 
-            Spacer(minLength: 0)
+            Spacer(minLength: 12)
         }
         .frame(maxHeight: .infinity)
         .padding(.leading, 12)
