@@ -15,7 +15,13 @@ struct ArchivedTripsView: View {
                 )
             } else {
                 ScrollView {
-                    LazyVStack(spacing: 16) {
+                    LazyVGrid(
+                        columns: [
+                            GridItem(.flexible(), spacing: 12),
+                            GridItem(.flexible(), spacing: 12),
+                        ],
+                        spacing: 12
+                    ) {
                         ForEach(trips) { trip in
                             TripCardView(trip: trip, members: [])
                                 .contentShape(Rectangle())

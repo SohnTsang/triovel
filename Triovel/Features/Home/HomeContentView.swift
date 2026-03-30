@@ -26,7 +26,13 @@ struct HomeContentView: View {
                 )
             } else {
                 ScrollView {
-                    LazyVStack(spacing: 16) {
+                    LazyVGrid(
+                        columns: [
+                            GridItem(.flexible(), spacing: 12),
+                            GridItem(.flexible(), spacing: 12),
+                        ],
+                        spacing: 12
+                    ) {
                         ForEach(viewModel.activeTrips) { trip in
                             TripCardView(
                                 trip: trip,
@@ -42,7 +48,7 @@ struct HomeContentView: View {
                     .padding(.top, 8)
                     .padding(.bottom, 80)
                     .frame(maxWidth: sizeClass == .regular ? 600 : .infinity)
-                    .frame(maxWidth: .infinity) // Center on iPad
+                    .frame(maxWidth: .infinity)
                 }
             }
 
