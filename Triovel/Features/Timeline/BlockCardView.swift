@@ -89,9 +89,9 @@ struct BlockCardView: View {
                     .foregroundStyle(.primary)
                     .padding(.top, 12)
 
-                // Local time below start — e.g. "7:15 PM JST"
+                // Local start time — just time, no abbreviation
                 if hasLocalTz {
-                    Text(localTimeLabel(block.startAt))
+                    Text(localTimeOnly(block.startAt))
                         .font(.system(size: 10))
                         .foregroundStyle(.secondary)
                         .padding(.top, 1)
@@ -106,11 +106,19 @@ struct BlockCardView: View {
                         .padding(.vertical, 3)
                 }
 
-                // End time — same style as start time
+                // End time
                 if let endAt = block.endAt {
                     Text(endAt, format: .dateTime.hour().minute())
                         .font(.caption.weight(.semibold))
                         .foregroundStyle(.primary)
+
+                    // Local end time
+                    if hasLocalTz {
+                        Text(localTimeOnly(endAt))
+                            .font(.system(size: 10))
+                            .foregroundStyle(.secondary)
+                            .padding(.top, 1)
+                    }
                 }
             }
 
@@ -122,15 +130,13 @@ struct BlockCardView: View {
 
     // MARK: - Helpers
 
-    /// Format a date in the block's local timezone: "7:15 PM JST"
-    private func localTimeLabel(_ date: Date) -> String {
+    /// Format a date in the block's local timezone — just time, no abbreviation.
+    private func localTimeOnly(_ date: Date) -> String {
         guard let tzId = block.localTimezone,
               let tz = TimeZone(identifier: tzId) else { return "" }
         let formatter = DateFormatter()
         formatter.dateFormat = "h:mm a"
         formatter.timeZone = tz
-        let time = formatter.string(from: date)
-        let abbr = tz.abbreviation(for: date) ?? tzId
-        return "\(time) \(abbr)"
+        return formatter.string(from: date)
     }
 }
