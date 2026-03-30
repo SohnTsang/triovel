@@ -112,11 +112,12 @@ final class TripRepository {
 
     func updateTrip(
         tripId: String,
-        title: String?,
-        startDate: Date?,
-        endDate: Date?,
-        displayTimezone: String?,
-        baseCurrency: String?
+        title: String? = nil,
+        startDate: Date? = nil,
+        endDate: Date? = nil,
+        displayTimezone: String? = nil,
+        baseCurrency: String? = nil,
+        coverImagePath: String? = nil
     ) async throws {
         var setClauses: [String] = []
         var params: [Sendable?] = []
@@ -140,6 +141,10 @@ final class TripRepository {
         if let baseCurrency {
             setClauses.append("base_currency = ?")
             params.append(baseCurrency)
+        }
+        if let coverImagePath {
+            setClauses.append("cover_image_path = ?")
+            params.append(coverImagePath)
         }
 
         guard !setClauses.isEmpty else { return }

@@ -77,9 +77,9 @@ struct BlockCardView: View {
     private var timeColumn: some View {
         VStack(spacing: 0) {
             if isAllDay {
-                Text("block.card.all.day")
+                Text("block.card.no.time")
                     .font(.caption2.weight(.medium))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.tertiary)
                     .padding(.top, 12)
             } else {
                 // Start time

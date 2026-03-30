@@ -18,7 +18,7 @@ struct AddMomentView: View {
 
     @State private var title: String = ""
     @State private var context: BlockContext = .group
-    @State private var isAllDay = false
+    @State private var hasTime = true
     @State private var startTime = Date()
     @State private var hasEndTime = false
     @State private var endTime = Date()
@@ -49,16 +49,16 @@ struct AddMomentView: View {
                 .padding(.horizontal)
                 .disabled(isSaving)
 
-                // All day toggle
-                Toggle(String(localized: "block.add.all.day"), isOn: $isAllDay)
+                // Time toggle — default ON, OFF means "time not decided"
+                Toggle(String(localized: "block.add.set.time"), isOn: $hasTime)
                     .padding(.horizontal)
                     .disabled(isSaving)
-                    .onChange(of: isAllDay) { _, allDay in
-                        if allDay { hasEndTime = false }
+                    .onChange(of: hasTime) { _, on in
+                        if !on { hasEndTime = false }
                     }
 
-                // Time pickers (hidden when All Day)
-                if !isAllDay {
+                // Time pickers (shown when time is set)
+                if hasTime {
                     DatePicker(
                         String(localized: "block.add.start.time"),
                         selection: $startTime,
@@ -179,8 +179,8 @@ struct AddMomentView: View {
 
         let startAt: Date
         let endAt: Date?
-        if isAllDay {
-            // All-day: use start of the day
+        if !hasTime {
+            // Time not set: use start of the day
             startAt = Calendar.current.startOfDay(for: dayDate ?? Date())
             endAt = nil
         } else {

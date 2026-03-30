@@ -1,4 +1,6 @@
 import SwiftUI
+import PhotosUI
+import Supabase
 
 /// Sheet for editing trip settings. Only trip owner can access.
 /// Pre-filled with current values. Same layout as TripSetupView.
@@ -16,7 +18,14 @@ struct EditTripView: View {
     @State private var errorMessage: String?
     @FocusState private var titleFocused: Bool
 
+    // Cover image
+    @State private var selectedPhoto: PhotosPickerItem?
+    @State private var coverPreview: UIImage?
+    @State private var isProcessingCover = false
+    @State private var coverChanged = false
+
     private let tripRepository = TripRepository()
+    private let storageBucket = "trip-media"
 
     init(trip: Trip, onSaved: @escaping () -> Void) {
         self.trip = trip
@@ -34,11 +43,17 @@ struct EditTripView: View {
         || !Calendar.current.isDate(endDate, inSameDayAs: trip.endDate)
         || displayTimezone != trip.displayTimezone
         || baseCurrency != trip.baseCurrency
+        || coverChanged
     }
 
     var body: some View {
         NavigationStack {
             Form {
+                // Cover image section
+                Section {
+                    coverImageSection
+                }
+
                 Section {
                     TextField(String(localized: "trip.setup.name.placeholder"), text: $title)
                         .font(.title3)
@@ -102,7 +117,9 @@ struct EditTripView: View {
                     } else {
                         Button(String(localized: "common.save")) { saveTrip() }
                             .disabled(
-                                title.trimmingCharacters(in: .whitespaces).isEmpty || !hasChanges
+                                title.trimmingCharacters(in: .whitespaces).isEmpty
+                                || !hasChanges
+                                || isProcessingCover
                             )
                     }
                 }
@@ -113,8 +130,97 @@ struct EditTripView: View {
                     endDate = Calendar.current.date(byAdding: .day, value: 1, to: newStart) ?? newStart
                 }
             }
+            .onChange(of: selectedPhoto) { _, newItem in
+                processSelectedPhoto(newItem)
+            }
         }
     }
+
+    // MARK: - Cover Image Section
+
+    @ViewBuilder
+    private var coverImageSection: some View {
+        VStack(spacing: 12) {
+            // Preview
+            ZStack {
+                if let preview = coverPreview {
+                    Image(uiImage: preview)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(height: 140)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                } else if let path = trip.coverImagePath, !path.isEmpty {
+                    CachedMediaView(
+                        mediaId: "trip-cover-\(trip.id)",
+                        storagePath: path,
+                        mediaType: .photo
+                    )
+                    .frame(height: 140)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                } else {
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color(.systemGray5))
+                        .frame(height: 140)
+                        .overlay {
+                            Image(systemName: "photo")
+                                .font(.title)
+                                .foregroundStyle(.quaternary)
+                        }
+                }
+
+                // Processing overlay
+                if isProcessingCover {
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(.black.opacity(0.3))
+                        .frame(height: 140)
+                        .overlay {
+                            ProgressView()
+                                .tint(.white)
+                        }
+                }
+            }
+
+            PhotosPicker(
+                selection: $selectedPhoto,
+                matching: .images
+            ) {
+                Text(trip.coverImagePath != nil || coverPreview != nil
+                     ? "trip.edit.cover.change"
+                     : "trip.edit.cover.add")
+                    .font(.subheadline)
+                    .foregroundStyle(Color.accentColor)
+            }
+        }
+    }
+
+    // MARK: - Photo Processing
+
+    private func processSelectedPhoto(_ item: PhotosPickerItem?) {
+        guard let item else { return }
+        isProcessingCover = true
+
+        Task {
+            defer { isProcessingCover = false }
+
+            guard let data = try? await item.loadTransferable(type: Data.self),
+                  let image = UIImage(data: data) else {
+                errorMessage = String(localized: "trip.edit.cover.error")
+                return
+            }
+
+            // Compress to 1.5MB target
+            do {
+                _ = try await MediaCompressor.compressPhoto(image)
+                let thumbnail = MediaCompressor.generateThumbnail(from: image) ?? image
+                coverPreview = thumbnail
+                coverChanged = true
+            } catch {
+                errorMessage = String(localized: "trip.edit.cover.error")
+            }
+        }
+    }
+
+    // MARK: - Save
 
     private func saveTrip() {
         let trimmed = title.trimmingCharacters(in: .whitespaces)
@@ -126,13 +232,37 @@ struct EditTripView: View {
         Task {
             let start = ContinuousClock.now
             do {
+                var newCoverPath: String? = nil
+
+                // Upload cover image if changed
+                if coverChanged, let preview = coverPreview,
+                   let jpegData = preview.jpegData(compressionQuality: 0.8) {
+                    // Compress properly
+                    let compressed = try await MediaCompressor.compressPhoto(
+                        UIImage(data: jpegData) ?? preview
+                    )
+                    let remotePath = "covers/\(trip.id).jpg"
+
+                    // Upload (upsert to overwrite existing)
+                    _ = try await SupabaseConfig.client.storage
+                        .from(storageBucket)
+                        .upload(
+                            path: remotePath,
+                            file: compressed,
+                            options: FileOptions(contentType: "image/jpeg", upsert: true)
+                        )
+                    newCoverPath = remotePath
+                    print("[EditTrip] Cover uploaded: \(remotePath)")
+                }
+
                 try await tripRepository.updateTrip(
                     tripId: trip.id,
                     title: trimmed != trip.title ? trimmed : nil,
                     startDate: !Calendar.current.isDate(startDate, inSameDayAs: trip.startDate) ? startDate : nil,
                     endDate: !Calendar.current.isDate(endDate, inSameDayAs: trip.endDate) ? endDate : nil,
                     displayTimezone: displayTimezone != trip.displayTimezone ? displayTimezone : nil,
-                    baseCurrency: baseCurrency != trip.baseCurrency ? baseCurrency : nil
+                    baseCurrency: baseCurrency != trip.baseCurrency ? baseCurrency : nil,
+                    coverImagePath: newCoverPath
                 )
 
                 let elapsed = ContinuousClock.now - start
@@ -149,6 +279,8 @@ struct EditTripView: View {
             }
         }
     }
+
+    // MARK: - Helpers
 
     private func timezoneDisplayLabel(_ identifier: String) -> String {
         let tz = TimeZone(identifier: identifier) ?? .current
