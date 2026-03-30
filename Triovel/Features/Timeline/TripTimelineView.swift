@@ -132,7 +132,9 @@ struct TripTimelineView: View {
                                 .foregroundStyle(ColorTokens.pendingTint)
                         } else {
                             let tz = TimeZone(identifier: trip.displayTimezone) ?? .current
-                            Text(tz.abbreviation() ?? trip.displayTimezone)
+                            let abbr = tz.abbreviation() ?? ""
+                            let city = trip.displayTimezone.components(separatedBy: "/").last?.replacingOccurrences(of: "_", with: " ") ?? trip.displayTimezone
+                            Text("\(abbr) · \(city)")
                                 .font(.caption2)
                                 .foregroundStyle(.secondary)
                         }
