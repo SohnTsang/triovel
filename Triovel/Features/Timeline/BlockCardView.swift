@@ -78,8 +78,8 @@ struct BlockCardView: View {
         VStack(spacing: 0) {
             if isAllDay {
                 Text("block.card.no.time")
-                    .font(.caption2.weight(.medium))
-                    .foregroundStyle(.tertiary)
+                    .font(.caption2.weight(.semibold))
+                    .foregroundStyle(.secondary)
                     .padding(.top, 12)
             } else {
                 // Start time

@@ -185,7 +185,13 @@ final class TripTimelineViewModel {
             let dayBlocks = allBlocks.filter { block in
                 block.startAt >= dayStart && block.startAt < dayEnd
                 && !pendingBlockIds.contains(block.id)
-            }.sorted { $0.startAt < $1.startAt }
+            }.sorted { a, b in
+                let aIsTBD = isMidnight(a.startAt, in: cal) && a.endAt == nil
+                let bIsTBD = isMidnight(b.startAt, in: cal) && b.endAt == nil
+                // TBD blocks sort after timed blocks
+                if aIsTBD != bIsTBD { return !aIsTBD }
+                return a.startAt < b.startAt
+            }
 
             return TimelineDay(
                 dayNumber: dayNumber,
@@ -194,6 +200,12 @@ final class TripTimelineViewModel {
                 blocks: dayBlocks
             )
         }
+    }
+
+    private func isMidnight(_ date: Date, in cal: Calendar) -> Bool {
+        let hour = cal.component(.hour, from: date)
+        let minute = cal.component(.minute, from: date)
+        return hour == 0 && minute == 0
     }
 }
 
