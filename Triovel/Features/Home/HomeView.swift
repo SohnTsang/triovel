@@ -32,5 +32,15 @@ struct HomeView: View {
                 viewModel.load(userId: userId)
             }
         }
+        .onChange(of: appState.pendingNavigateTripId) { _, tripId in
+            if let tripId {
+                appState.pendingNavigateTripId = nil
+                // Small delay to let sync pick up the new trip
+                Task {
+                    try? await Task.sleep(for: .milliseconds(500))
+                    router.push(.tripTimeline(tripId: tripId))
+                }
+            }
+        }
     }
 }

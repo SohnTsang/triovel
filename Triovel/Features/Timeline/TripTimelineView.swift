@@ -52,6 +52,7 @@ struct TripTimelineView: View {
                             ? filteredDays[viewModel.selectedDayIndex] : nil {
                             DaySectionView(
                                 day: selectedDay,
+                                tripDisplayTimezone: viewModel.trip?.displayTimezone ?? "",
                                 creatorNameForBlock: { viewModel.creatorName(for: $0) },
                                 onBlockTap: { block in
                                     router.push(.blockDetail(blockId: block.id))
@@ -120,15 +121,22 @@ struct TripTimelineView: View {
         .plainBackButton()
         .toolbar {
             ToolbarItem(placement: .principal) {
-                if let title = viewModel.trip?.title {
+                if let trip = viewModel.trip {
                     VStack(spacing: 2) {
-                        Text(title)
+                        Text(trip.title)
                             .font(.headline)
                             .lineLimit(1)
                         if !appState.isSyncConnected && appState.hasSynced {
                             Text(String(localized: "state.offline"))
                                 .font(.caption2)
                                 .foregroundStyle(ColorTokens.pendingTint)
+                        } else {
+                            let tz = TimeZone(identifier: trip.displayTimezone) ?? .current
+                            let abbr = tz.abbreviation() ?? ""
+                            let city = trip.displayTimezone.components(separatedBy: "/").last?.replacingOccurrences(of: "_", with: " ") ?? trip.displayTimezone
+                            Text("\(abbr) · \(city)")
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
                         }
                     }
                 } else {
@@ -138,12 +146,34 @@ struct TripTimelineView: View {
             }
             if #available(iOS 26, *) {
                 ToolbarItem(placement: .topBarTrailing) {
-                    tripMenu
+                    HStack(spacing: 4) {
+                        Button {
+                            router.push(.tripMembers(tripId: tripId, members: viewModel.members, inviteLink: viewModel.trip?.inviteLink))
+                        } label: {
+                            Image(systemName: "person.2")
+                                .font(.body)
+                                .foregroundStyle(Color(.label))
+                        }
+                        .buttonStyle(.plain)
+
+                        tripMenu
+                    }
                 }
                 .sharedBackgroundVisibility(.hidden)
             } else {
                 ToolbarItem(placement: .topBarTrailing) {
-                    tripMenu
+                    HStack(spacing: 4) {
+                        Button {
+                            router.push(.tripMembers(tripId: tripId, members: viewModel.members, inviteLink: viewModel.trip?.inviteLink))
+                        } label: {
+                            Image(systemName: "person.2")
+                                .font(.body)
+                                .foregroundStyle(Color(.label))
+                        }
+                        .buttonStyle(.plain)
+
+                        tripMenu
+                    }
                 }
             }
         }
@@ -227,12 +257,6 @@ struct TripTimelineView: View {
                 router.push(.tripSummary(tripId: tripId))
             } label: {
                 Label(String(localized: "summary.title"), systemImage: "receipt")
-            }
-
-            Button {
-                router.push(.tripMembers(tripId: tripId, members: viewModel.members, inviteLink: viewModel.trip?.inviteLink))
-            } label: {
-                Label(String(localized: "trip.members.title"), systemImage: "person.2")
             }
 
             if isOwner {

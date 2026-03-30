@@ -50,7 +50,7 @@ struct PostMediaGridView: View {
             if media.count > 2 {
                 Text("media.count \(media.count)")
                     .font(.caption2)
-                    .foregroundStyle(.tertiary)
+                    .foregroundStyle(.secondary)
             }
         }
         .fullScreenCover(item: $fullScreenIndex) { index in

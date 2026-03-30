@@ -13,21 +13,24 @@ final class BlockRepository {
         title: String,
         context: BlockContext,
         startAt: Date,
+        endAt: Date? = nil,
         displayTimezone: String,
+        localTimezone: String? = nil,
         createdBy: String
     ) async throws -> Block {
         let blockId = UUID().uuidString.lowercased()
         let isoStartAt = Self.isoString(from: startAt)
+        let isoEndAt = endAt.map { Self.isoString(from: $0) }
         let now = Self.isoString(from: Date())
 
         try await db.execute(
             sql: """
-                INSERT INTO blocks (id, trip_id, title, context, start_at, display_timezone, created_by, created_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO blocks (id, trip_id, title, context, start_at, end_at, display_timezone, local_timezone, created_by, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
             parameters: [
                 blockId, tripId, title, context.rawValue,
-                isoStartAt, displayTimezone, createdBy, now,
+                isoStartAt, isoEndAt, displayTimezone, localTimezone, createdBy, now,
             ]
         )
 
@@ -41,11 +44,11 @@ final class BlockRepository {
             context: context,
             createdBy: createdBy,
             startAt: startAt,
-            endAt: nil,
+            endAt: endAt,
             locationText: nil,
             description: nil,
             displayTimezone: displayTimezone,
-            localTimezone: nil,
+            localTimezone: localTimezone,
             untimedRank: nil,
             coverMediaId: nil,
             createdAt: Date()
@@ -97,10 +100,12 @@ final class BlockRepository {
 
     func updateBlockHeader(
         blockId: String,
-        title: String?,
-        locationText: String?,
-        description: String?,
-        startAt: Date?
+        title: String? = nil,
+        locationText: String? = nil,
+        description: String? = nil,
+        startAt: Date? = nil,
+        endAt: Date?? = nil,
+        localTimezone: String?? = nil
     ) async throws {
         var setClauses: [String] = []
         var params: [Sendable?] = []
@@ -120,6 +125,15 @@ final class BlockRepository {
         if let startAt {
             setClauses.append("start_at = ?")
             params.append(Self.isoString(from: startAt))
+        }
+        // Double-optional: .some(nil) clears, .some(.some(date)) sets, nil = no change
+        if let endAtOuter = endAt {
+            setClauses.append("end_at = ?")
+            params.append(endAtOuter.map { Self.isoString(from: $0) })
+        }
+        if let tzOuter = localTimezone {
+            setClauses.append("local_timezone = ?")
+            params.append(tzOuter)
         }
 
         guard !setClauses.isEmpty else { return }

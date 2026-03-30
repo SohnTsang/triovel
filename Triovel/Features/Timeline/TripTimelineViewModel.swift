@@ -185,7 +185,13 @@ final class TripTimelineViewModel {
             let dayBlocks = allBlocks.filter { block in
                 block.startAt >= dayStart && block.startAt < dayEnd
                 && !pendingBlockIds.contains(block.id)
-            }.sorted { $0.startAt < $1.startAt }
+            }.sorted { a, b in
+                let aIsTBD = isMidnight(a.startAt, in: cal) && a.endAt == nil
+                let bIsTBD = isMidnight(b.startAt, in: cal) && b.endAt == nil
+                // TBD blocks sort after timed blocks
+                if aIsTBD != bIsTBD { return !aIsTBD }
+                return a.startAt < b.startAt
+            }
 
             return TimelineDay(
                 dayNumber: dayNumber,
@@ -194,6 +200,12 @@ final class TripTimelineViewModel {
                 blocks: dayBlocks
             )
         }
+    }
+
+    private func isMidnight(_ date: Date, in cal: Calendar) -> Bool {
+        let hour = cal.component(.hour, from: date)
+        let minute = cal.component(.minute, from: date)
+        return hour == 0 && minute == 0
     }
 }
 
@@ -228,9 +240,14 @@ struct TimelineDay: Identifiable {
                 return a.createdAt < b.createdAt
             }
             guard let firstBlock = sorted.first else { return nil }
-            return TimeSlot(timeKey: key, time: firstBlock.startAt, blocks: sorted)
+            let isTBD = key == "00:00" && sorted.allSatisfy { $0.endAt == nil }
+            return TimeSlot(timeKey: key, time: firstBlock.startAt, blocks: sorted, isTBD: isTBD)
         }
-        .sorted { $0.time < $1.time }
+        .sorted { a, b in
+            // TBD slots sort after timed slots
+            if a.isTBD != b.isTBD { return !a.isTBD }
+            return a.time < b.time
+        }
     }
 }
 
@@ -239,6 +256,7 @@ struct TimeSlot: Identifiable {
     let timeKey: String
     let time: Date
     let blocks: [Block]
+    var isTBD: Bool = false
 
     var id: String { timeKey }
     var isCluster: Bool { blocks.count > 1 }

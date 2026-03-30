@@ -5,49 +5,54 @@ struct TripCardView: View {
     let members: [TripMemberDisplay]
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            // Cover image area
+        VStack(alignment: .leading, spacing: 8) {
+            // Cover image
             coverImage
 
-            VStack(alignment: .leading, spacing: 6) {
+            VStack(alignment: .leading, spacing: 4) {
                 Text(trip.title)
-                    .font(.headline)
+                    .font(.subheadline.weight(.semibold))
                     .lineLimit(1)
 
-                Text(trip.formattedDateRange)
-                    .font(.subheadline)
+                Text(trip.formattedDateRangeShort)
+                    .font(.caption)
                     .foregroundStyle(.secondary)
+                    .lineLimit(1)
             }
-            .padding(.horizontal, 4)
+            .padding(.horizontal, 2)
 
-            // Member avatars
             if !members.isEmpty {
                 MemberAvatarRow(members: members)
-                    .padding(.horizontal, 4)
+                    .padding(.horizontal, 2)
             }
         }
-        .padding(16)
+        .padding(10)
         .background(Color(.secondarySystemBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 16))
-        .shadow(color: .black.opacity(0.06), radius: 8, x: 0, y: 2)
+        .clipShape(RoundedRectangle(cornerRadius: 14))
+        .shadow(color: .black.opacity(0.06), radius: 6, x: 0, y: 2)
     }
 
     @ViewBuilder
     private var coverImage: some View {
-        RoundedRectangle(cornerRadius: 12)
-            .fill(Color(.systemGray5))
-            .frame(height: 140)
+        Color.clear
+            .aspectRatio(1, contentMode: .fit)
             .overlay {
-                if trip.coverImagePath != nil {
-                    // Actual image loading comes with media pipeline (Phase 3)
-                    Color.clear
+                if let path = trip.coverImagePath, !path.isEmpty {
+                    CachedMediaView(
+                        mediaId: "trip-cover-\(trip.id)",
+                        storagePath: path,
+                        mediaType: .photo
+                    )
                 } else {
-                    Image(systemName: "photo")
-                        .font(.title)
-                        .foregroundStyle(.quaternary)
+                    Color(.systemGray5)
+                        .overlay {
+                            Image(systemName: "photo")
+                                .font(.title3)
+                                .foregroundStyle(.quaternary)
+                        }
                 }
             }
-            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .clipShape(RoundedRectangle(cornerRadius: 10))
     }
 }
 
@@ -56,22 +61,21 @@ struct TripCardView: View {
 struct MemberAvatarRow: View {
     let members: [TripMemberDisplay]
 
-    /// Show at most 5 avatars, then a +N overflow chip.
-    private let maxVisible = 5
+    private let maxVisible = 4
 
     var body: some View {
-        HStack(spacing: -8) {
+        HStack(spacing: -6) {
             ForEach(visibleMembers) { member in
                 AvatarCircle(member: member)
             }
 
             if overflowCount > 0 {
                 Text("+\(overflowCount)")
-                    .font(.caption2.weight(.medium))
+                    .font(.system(size: 9, weight: .medium))
                     .foregroundStyle(.secondary)
-                    .frame(width: 28, height: 28)
+                    .frame(width: 24, height: 24)
                     .background(Color(.systemGray5), in: Circle())
-                    .overlay { Circle().stroke(.white, lineWidth: 2) }
+                    .overlay { Circle().stroke(.white, lineWidth: 1.5) }
             }
         }
     }
@@ -91,22 +95,65 @@ private struct AvatarCircle: View {
     let member: TripMemberDisplay
 
     var body: some View {
-        ZStack {
-            if member.avatarPath != nil {
-                // Actual avatar loading comes with media pipeline
-                Circle().fill(Color(.systemGray4))
-            } else {
-                Circle()
-                    .fill(Color(.systemGray4))
-                    .overlay {
-                        Text(member.initials)
-                            .font(.caption2.weight(.medium))
-                            .foregroundStyle(.white)
+        Circle()
+            .fill(Color(.systemGray4))
+            .frame(width: 24, height: 24)
+            .overlay {
+                if member.avatarPath == nil {
+                    Text(member.initials)
+                        .font(.system(size: 9, weight: .medium))
+                        .foregroundStyle(.white)
+                }
+            }
+            .overlay { Circle().stroke(.white, lineWidth: 1.5) }
+    }
+}
+
+// MARK: - Trip Grid By Year
+
+/// Groups trips by start year and displays as 2-column grids with year headers.
+struct TripGridByYear: View {
+    let trips: [Trip]
+    let membersByTrip: [String: [TripMemberDisplay]]
+    let onTripTap: (String) -> Void
+
+    private var groupedByYear: [(year: Int, trips: [Trip])] {
+        let cal = Calendar.current
+        var groups: [Int: [Trip]] = [:]
+        for trip in trips {
+            let year = cal.component(.year, from: trip.startDate)
+            groups[year, default: []].append(trip)
+        }
+        return groups.sorted { $0.key > $1.key }.map { (year: $0.key, trips: $0.value) }
+    }
+
+    private let columns = [
+        GridItem(.flexible(), spacing: 12),
+        GridItem(.flexible(), spacing: 12),
+    ]
+
+    var body: some View {
+        LazyVStack(alignment: .leading, spacing: 20) {
+            ForEach(groupedByYear, id: \.year) { group in
+                // Year header
+                Text(String(group.year))
+                    .font(.title3.weight(.bold))
+                    .padding(.top, group.year == groupedByYear.first?.year ? 0 : 4)
+
+                LazyVGrid(columns: columns, spacing: 12) {
+                    ForEach(group.trips) { trip in
+                        TripCardView(
+                            trip: trip,
+                            members: membersByTrip[trip.id] ?? []
+                        )
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            onTripTap(trip.id)
+                        }
                     }
+                }
             }
         }
-        .frame(width: 28, height: 28)
-        .overlay { Circle().stroke(.white, lineWidth: 2) }
     }
 }
 
@@ -120,5 +167,13 @@ extension Trip {
         let start = formatter.string(from: startDate)
         let end = formatter.string(from: endDate)
         return "\(start) – \(end)"
+    }
+
+    var formattedDateRangeShort: String {
+        let f = DateFormatter()
+        f.dateFormat = "MMM d"
+        let y = DateFormatter()
+        y.dateFormat = "yyyy"
+        return "\(f.string(from: startDate)) – \(f.string(from: endDate)), \(y.string(from: endDate))"
     }
 }

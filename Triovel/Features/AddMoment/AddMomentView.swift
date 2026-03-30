@@ -18,7 +18,10 @@ struct AddMomentView: View {
 
     @State private var title: String = ""
     @State private var context: BlockContext = .group
-    @State private var time = Date()
+    @State private var hasTime = true
+    @State private var startTime = Date()
+    @State private var hasEndTime = false
+    @State private var endTime = Date()
     @State private var isSaving = false
     @State private var errorMessage: String?
 
@@ -46,10 +49,53 @@ struct AddMomentView: View {
                 .padding(.horizontal)
                 .disabled(isSaving)
 
-                // Time picker
-                DatePicker(String(localized: "block.add.time"), selection: $time, displayedComponents: .hourAndMinute)
+                // Time toggle — default ON, OFF means "time not decided"
+                Toggle(String(localized: "block.add.set.time"), isOn: $hasTime)
                     .padding(.horizontal)
                     .disabled(isSaving)
+                    .onChange(of: hasTime) { _, on in
+                        if !on { hasEndTime = false }
+                    }
+
+                // Time pickers (shown when time is set)
+                if hasTime {
+                    DatePicker(
+                        String(localized: "block.add.start.time"),
+                        selection: $startTime,
+                        displayedComponents: .hourAndMinute
+                    )
+                    .padding(.horizontal)
+                    .disabled(isSaving)
+
+                    // End time (optional)
+                    VStack(spacing: 8) {
+                        if hasEndTime {
+                            DatePicker(
+                                String(localized: "block.add.end.time"),
+                                selection: $endTime,
+                                in: startTime...,
+                                displayedComponents: .hourAndMinute
+                            )
+                            .padding(.horizontal)
+                            .disabled(isSaving)
+                        }
+
+                        Button {
+                            withAnimation(.easeInOut(duration: 0.2)) {
+                                hasEndTime.toggle()
+                                if hasEndTime {
+                                    endTime = Calendar.current.date(byAdding: .hour, value: 1, to: startTime) ?? startTime
+                                }
+                            }
+                        } label: {
+                            Text(hasEndTime ? "block.add.end.time.remove" : "block.add.end.time.add")
+                                .font(.subheadline)
+                                .foregroundStyle(Color.accentColor)
+                        }
+                        .padding(.horizontal)
+                        .disabled(isSaving)
+                    }
+                }
 
                 if let error = errorMessage {
                     Text(error)
@@ -109,15 +155,21 @@ struct AddMomentView: View {
                 if let date = dayDate {
                     let cal = Calendar.current
                     if cal.isDateInToday(date) {
-                        time = Date()
+                        startTime = Date()
                     } else {
-                        time = cal.date(bySettingHour: 12, minute: 0, second: 0, of: date) ?? Date()
+                        startTime = cal.date(bySettingHour: 12, minute: 0, second: 0, of: date) ?? Date()
                     }
                 }
                 titleFocused = true
             }
+            .onChange(of: startTime) { _, newStart in
+                // Keep end time valid
+                if hasEndTime && endTime < newStart {
+                    endTime = Calendar.current.date(byAdding: .hour, value: 1, to: newStart) ?? newStart
+                }
+            }
         }
-        .presentationDetents(sizeClass == .regular ? [.medium, .large] : [.medium])
+        .presentationDetents(sizeClass == .regular ? [.medium, .large] : [.medium, .large])
     }
 
     private func createBlock() {
@@ -125,30 +177,33 @@ struct AddMomentView: View {
         guard !trimmedTitle.isEmpty else { return }
         guard let userId = appState.currentUserId else { return }
 
-        // Build the full startAt by combining dayDate with selected time
-        let startAt = buildStartAt()
+        let startAt: Date
+        let endAt: Date?
+        if !hasTime {
+            // Time not set: use start of the day
+            startAt = Calendar.current.startOfDay(for: dayDate ?? Date())
+            endAt = nil
+        } else {
+            startAt = buildDateTime(from: startTime)
+            endAt = hasEndTime ? buildDateTime(from: endTime) : nil
+        }
 
         isSaving = true
         errorMessage = nil
 
         Task {
             do {
-                // Write to DB immediately (offline-safe)
-                print("[AddMoment] Creating block: tripId=\(tripId), title=\(trimmedTitle), context=\(context.rawValue), startAt=\(startAt), tz=\(displayTimezone), userId=\(userId)")
                 let block = try await blockRepository.createBlock(
                     tripId: tripId,
                     title: trimmedTitle,
                     context: context,
                     startAt: startAt,
+                    endAt: endAt,
                     displayTimezone: displayTimezone,
                     createdBy: userId
                 )
-                print("[AddMoment] Block created: \(block.id)")
 
-                // Hide from timeline until loading finishes (write-immediately + hide)
                 await MainActor.run { timelineViewModel?.hideBlockUntilReady(block.id) }
-
-                // 500ms minimum spinner, then reveal + navigate
                 try? await Task.sleep(for: .milliseconds(500))
                 await MainActor.run { timelineViewModel?.revealBlock(block.id) }
                 dismiss()
@@ -156,30 +211,24 @@ struct AddMomentView: View {
                 onBlockCreated?(block.id)
             } catch {
                 print("[AddMoment] ❌ Block creation failed: \(error)")
-                print("[AddMoment] ❌ Error type: \(type(of: error))")
-                if let localizedError = error as? LocalizedError {
-                    print("[AddMoment] ❌ Description: \(localizedError.errorDescription ?? "nil")")
-                }
                 errorMessage = String(localized: "block.add.error")
                 isSaving = false
             }
         }
     }
 
-    /// Combine the day date with the selected time.
-    private func buildStartAt() -> Date {
+    private func buildDateTime(from time: Date) -> Date {
         let cal = Calendar.current
-        let timeComponents = cal.dateComponents([.hour, .minute], from: time)
+        let components = cal.dateComponents([.hour, .minute], from: time)
 
         if let dayDate {
             return cal.date(
-                bySettingHour: timeComponents.hour ?? 12,
-                minute: timeComponents.minute ?? 0,
+                bySettingHour: components.hour ?? 12,
+                minute: components.minute ?? 0,
                 second: 0,
                 of: dayDate
             ) ?? time
         }
-
         return time
     }
 }

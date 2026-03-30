@@ -26,23 +26,17 @@ struct HomeContentView: View {
                 )
             } else {
                 ScrollView {
-                    LazyVStack(spacing: 16) {
-                        ForEach(viewModel.activeTrips) { trip in
-                            TripCardView(
-                                trip: trip,
-                                members: viewModel.membersByTrip[trip.id] ?? []
-                            )
-                            .contentShape(Rectangle())
-                            .onTapGesture {
-                                router.push(.tripTimeline(tripId: trip.id))
-                            }
-                        }
+                    TripGridByYear(
+                        trips: viewModel.activeTrips,
+                        membersByTrip: viewModel.membersByTrip
+                    ) { tripId in
+                        router.push(.tripTimeline(tripId: tripId))
                     }
                     .padding(.horizontal)
                     .padding(.top, 8)
                     .padding(.bottom, 80)
                     .frame(maxWidth: sizeClass == .regular ? 600 : .infinity)
-                    .frame(maxWidth: .infinity) // Center on iPad
+                    .frame(maxWidth: .infinity)
                 }
             }
 

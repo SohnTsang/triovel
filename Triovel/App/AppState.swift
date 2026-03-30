@@ -14,6 +14,11 @@ final class AppState {
     var authStatus: AuthStatus = .unknown
     var currentUserId: String?
 
+    // Deep link: pending invite code to join after sign-in
+    var pendingInviteCode: String?
+    // Deep link: trip ID to navigate to after joining
+    var pendingNavigateTripId: String?
+
     // Sync status (observed by UI for indicators)
     private(set) var isSyncConnected = false
     private(set) var hasSynced = false
@@ -49,6 +54,8 @@ final class AppState {
 
         Task {
             await connectSync()
+            // Process any pending deep link invite
+            await processPendingInvite()
         }
     }
 
@@ -76,12 +83,40 @@ final class AppState {
             }
 
         case "trip":
-            // triovel://trip/{invite_code} — handle in follow-up
-            break
+            // triovel://trip/{invite_code}
+            let pathComponents = url.pathComponents.filter { $0 != "/" }
+            guard let code = pathComponents.first, !code.isEmpty else { return }
+
+            if authStatus == .signedIn, let userId = currentUserId {
+                // Already signed in — join immediately
+                await joinTripFromDeepLink(code: code, userId: userId)
+            } else {
+                // Not signed in — save for after sign-in
+                pendingInviteCode = code
+            }
 
         default:
             break
         }
+    }
+
+    /// Join a trip from a deep link invite code.
+    func joinTripFromDeepLink(code: String, userId: String) async {
+        do {
+            let tripId = try await TripRepository().joinTrip(inviteCode: code, userId: userId)
+            pendingNavigateTripId = tripId
+            print("[AppState] Joined trip from deep link: \(tripId)")
+        } catch {
+            print("[AppState] ❌ Deep link join failed: \(error)")
+            // Trip will still be accessible if user was already a member
+        }
+    }
+
+    /// Process any pending invite code after sign-in completes.
+    func processPendingInvite() async {
+        guard let code = pendingInviteCode, let userId = currentUserId else { return }
+        pendingInviteCode = nil
+        await joinTripFromDeepLink(code: code, userId: userId)
     }
 
     func signOut() async {

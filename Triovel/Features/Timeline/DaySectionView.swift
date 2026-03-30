@@ -3,6 +3,7 @@ import SwiftUI
 /// A single day's content in the timeline: time slots with real blocks.
 struct DaySectionView: View {
     let day: TimelineDay
+    var tripDisplayTimezone: String = ""
     var creatorNameForBlock: ((Block) -> String?)? = nil
     let onBlockTap: (Block) -> Void
 
@@ -21,6 +22,7 @@ struct DaySectionView: View {
             ForEach(day.timeSlots) { slot in
                 TimeSlotView(
                     slot: slot,
+                    tripDisplayTimezone: tripDisplayTimezone,
                     creatorNameForBlock: creatorNameForBlock,
                     onBlockTap: onBlockTap
                 )
@@ -43,16 +45,17 @@ struct DaySectionView: View {
 
 private struct TimeSlotView: View {
     let slot: TimeSlot
+    var tripDisplayTimezone: String = ""
     var creatorNameForBlock: ((Block) -> String?)?
     let onBlockTap: (Block) -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            // Block cards — time is shown inside each card
             ForEach(slot.blocks) { block in
                 BlockCardView(
                     block: block,
-                    creatorName: creatorNameForBlock?(block)
+                    creatorName: creatorNameForBlock?(block),
+                    tripDisplayTimezone: tripDisplayTimezone
                 )
                 .contentShape(Rectangle())
                 .onTapGesture {

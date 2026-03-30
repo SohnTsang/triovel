@@ -21,18 +21,20 @@ final class TripRepository {
     ) async throws -> String {
         let tripId = UUID().uuidString.lowercased()
         let memberId = UUID().uuidString.lowercased()
+        let inviteCode = Self.generateInviteCode()
         let now = Self.isoString(from: Date())
 
         try await db.writeTransaction { tx in
             try tx.execute(
                 sql: """
-                    INSERT INTO trips (id, title, start_date, end_date, display_timezone, base_currency, archived, created_by, created_at)
-                    VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?)
+                    INSERT INTO trips (id, title, start_date, end_date, invite_link, display_timezone, base_currency, archived, created_by, created_at)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?, ?)
                     """,
                 parameters: [
                     tripId, title,
                     Self.dateOnlyString(from: startDate),
                     Self.dateOnlyString(from: endDate),
+                    inviteCode,
                     displayTimezone, baseCurrency,
                     createdBy, now,
                 ]
@@ -90,6 +92,30 @@ final class TripRepository {
         return tripId
     }
 
+    // MARK: - Ensure Invite Link
+
+    /// Generate and save an invite link if the trip doesn't have one.
+    /// Returns the existing or newly generated code.
+    func ensureInviteLink(tripId: String) async throws -> String {
+        // Check if already set
+        if let existing = try await db.getOptional(
+            sql: "SELECT invite_link FROM trips WHERE id = ? AND invite_link IS NOT NULL",
+            parameters: [tripId],
+            mapper: { try $0.getString(name: "invite_link") }
+        ) {
+            return existing
+        }
+
+        // Generate and save
+        let code = Self.generateInviteCode()
+        try await db.execute(
+            sql: "UPDATE trips SET invite_link = ? WHERE id = ?",
+            parameters: [code, tripId]
+        )
+        print("[TripRepo] Generated invite link for trip \(tripId): \(code)")
+        return code
+    }
+
     // MARK: - Archive / Unarchive
 
     func archiveTrip(tripId: String) async throws {
@@ -112,11 +138,12 @@ final class TripRepository {
 
     func updateTrip(
         tripId: String,
-        title: String?,
-        startDate: Date?,
-        endDate: Date?,
-        displayTimezone: String?,
-        baseCurrency: String?
+        title: String? = nil,
+        startDate: Date? = nil,
+        endDate: Date? = nil,
+        displayTimezone: String? = nil,
+        baseCurrency: String? = nil,
+        coverImagePath: String? = nil
     ) async throws {
         var setClauses: [String] = []
         var params: [Sendable?] = []
@@ -140,6 +167,10 @@ final class TripRepository {
         if let baseCurrency {
             setClauses.append("base_currency = ?")
             params.append(baseCurrency)
+        }
+        if let coverImagePath {
+            setClauses.append("cover_image_path = ?")
+            params.append(coverImagePath)
         }
 
         guard !setClauses.isEmpty else { return }
@@ -332,6 +363,13 @@ final class TripRepository {
     }
 
     // MARK: - Helpers
+
+    /// Generate a cryptographically secure invite code.
+    /// Uses UUID format (128-bit entropy) — unguessable by brute force.
+    /// Displayed as lowercase hex for clean URLs.
+    private static func generateInviteCode() -> String {
+        UUID().uuidString.lowercased().replacingOccurrences(of: "-", with: "")
+    }
 
     private static func dateOnlyString(from date: Date) -> String {
         let f = DateFormatter()
