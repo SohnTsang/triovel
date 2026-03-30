@@ -138,6 +138,18 @@ final class AppState {
 
     // MARK: - Sync Lifecycle
 
+    /// Reconnect sync if disconnected (called when app returns to foreground).
+    func ensureSyncConnected() async {
+        guard authStatus == .signedIn, !isSyncConnected else { return }
+        print("[Sync] Reconnecting on foreground...")
+        do {
+            try await SyncManager.shared.connect(currentUserId: currentUserId)
+            print("[Sync] ✓ Foreground reconnect succeeded")
+        } catch {
+            print("[Sync] ❌ Foreground reconnect failed: \(error)")
+        }
+    }
+
     private func connectSync() async {
         do {
             try await SyncManager.shared.connect(currentUserId: currentUserId)
@@ -161,6 +173,7 @@ final class AppState {
     private func startWatchingSyncStatus() {
         syncStatusTask?.cancel()
         syncStatusTask = Task { [weak self] in
+            var wasConnected = true
             for await status in SyncManager.shared.db.currentStatus.asFlow() {
                 guard let self, !Task.isCancelled else { break }
                 self.isSyncConnected = status.connected
@@ -168,6 +181,24 @@ final class AppState {
                 if status.hasSynced == true {
                     self.hasSynced = true
                 }
+
+                // Auto-reconnect: if connection drops after being connected,
+                // wait briefly then reconnect. Prevents "first action fails"
+                // after idle WebSocket timeout.
+                if wasConnected && !status.connected && self.authStatus == .signedIn {
+                    print("[Sync] ⚠️ Connection lost, will auto-reconnect...")
+                    Task {
+                        try? await Task.sleep(for: .seconds(2))
+                        guard !Task.isCancelled else { return }
+                        do {
+                            try await SyncManager.shared.connect(currentUserId: self.currentUserId)
+                            print("[Sync] ✓ Auto-reconnected")
+                        } catch {
+                            print("[Sync] ❌ Auto-reconnect failed: \(error)")
+                        }
+                    }
+                }
+                wasConnected = status.connected
             }
         }
     }
