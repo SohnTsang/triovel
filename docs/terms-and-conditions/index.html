@@ -17,11 +17,11 @@
         }
         @media (prefers-color-scheme: dark) {
             body { background: #0e0e0e; color: #f2f2f7; }
-            .nav { background: #0e0e0e; border-color: #1c1c1e; }
-            .footer { border-color: #1c1c1e; }
+            nav { background: #0e0e0e; border-color: #1c1c1e; }
+            footer { border-color: #1c1c1e; }
             a { color: #5fbfba; }
         }
-        .nav {
+        nav {
             position: sticky;
             top: 0;
             z-index: 10;
@@ -32,13 +32,19 @@
             -webkit-backdrop-filter: blur(12px);
         }
         @media (prefers-color-scheme: dark) {
-            .nav { background: rgba(14,14,14,0.92); }
+            nav { background: rgba(14,14,14,0.92); }
         }
-        .nav span {
+        .nav-logo {
             font-size: 15px;
-            font-weight: 600;
-            color: inherit;
+            font-weight: 700;
+            color: #4a9d9a;
             letter-spacing: 0.4px;
+        }
+        .nav-link {
+            font-size: 14px;
+            color: #4a9d9a;
+            text-decoration: none;
+            font-weight: 500;
         }
         .wrap {
             max-width: 780px;
@@ -84,7 +90,7 @@
         strong { color: inherit; font-weight: 600; }
         a { color: #4a9d9a; text-decoration: none; }
         a:hover { text-decoration: underline; }
-        .footer {
+        footer {
             max-width: 780px;
             margin: 0 auto;
             padding: 24px 32px;
@@ -98,7 +104,10 @@
 </head>
 <body>
 
-<div class="nav"><span>Triovel</span></div>
+<nav>
+    <span class="nav-logo">TRIOVEL</span>
+    <a class="nav-link" href="https://apps.apple.com/app/triovel/id000000000">Get the app</a>
+</nav>
 
 <div class="wrap">
 <div class="lang" id="en">
@@ -517,7 +526,9 @@
 </div>
 </div>
 
-<div class="footer">Triovel</div>
+<footer>
+    <a href="../privacy-policy">Privacy</a> · <a href="../terms-and-conditions">Terms</a> · Triovel
+</footer>
 
 <script>
 (function(){
