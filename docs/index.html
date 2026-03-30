@@ -17,184 +17,163 @@
             -webkit-font-smoothing: antialiased;
             overflow-x: hidden;
         }
+        .w { max-width: 1120px; margin: 0 auto; padding: 0 40px; }
+        @media (max-width: 600px) { .w { padding: 0 20px; } }
 
-        .scene {
-            min-height: 80vh;
+        /* Hero */
+        .hero {
+            padding: 72px 0 0;
+            position: relative;
+        }
+        .hero-inner {
             display: flex;
-            flex-direction: column;
+            align-items: flex-start;
+            gap: 48px;
+        }
+        .hero-text { flex: 1; padding-top: 24px; }
+        .hero-img {
+            flex: 0 0 440px;
+            height: 480px;
+            background: linear-gradient(155deg, #d6ece8, #a3d4cc, #6dbfb7);
+            border-radius: 24px;
+            display: flex;
+            align-items: center;
             justify-content: center;
-            padding: 80px 40px;
-            max-width: 860px;
-            margin: 0 auto;
+            font-size: 14px;
+            color: rgba(0,0,0,0.25);
+            font-weight: 500;
         }
-        @media (max-width: 600px) {
-            .scene { padding: 56px 24px; min-height: 70vh; }
+        @media (max-width: 900px) {
+            .hero-inner { flex-direction: column; gap: 32px; }
+            .hero-text { padding-top: 0; text-align: center; }
+            .hero-img { flex: none; width: 100%; height: 320px; }
+            .hero-text p { margin-left: auto; margin-right: auto; }
+            .hero-actions { justify-content: center; }
         }
-
-        /* Scene 1 — opening */
-        .opening h1 {
-            font-size: clamp(2.8rem, 7vw, 5rem);
+        .hero h1 {
+            font-size: clamp(2.4rem, 5vw, 3.6rem);
             font-weight: 700;
-            letter-spacing: -0.04em;
-            line-height: 1.0;
-            margin-bottom: 28px;
+            letter-spacing: -0.035em;
+            line-height: 1.06;
+            margin-bottom: 18px;
         }
-        .opening h1 span { color: var(--t-teal); }
-        .opening p {
-            font-size: 20px;
+        .hero h1 span { color: var(--t-teal); }
+        .hero-text p {
+            font-size: 18px;
             line-height: 1.55;
             color: var(--t-text-sec);
-            max-width: 520px;
-            margin-bottom: 40px;
+            max-width: 460px;
+            margin-bottom: 28px;
         }
+        .hero-actions { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
         .cta {
             display: inline-block;
-            padding: 15px 36px;
-            font-size: 16px;
+            padding: 14px 32px;
+            font-size: 15px;
             font-weight: 600;
             color: #fff;
             background: var(--t-teal);
-            border-radius: 14px;
+            border-radius: 12px;
             text-decoration: none;
             transition: transform 150ms ease, box-shadow 150ms ease;
             backface-visibility: hidden;
         }
-        .cta:hover { transform: scale(1.02); box-shadow: 0 4px 24px rgba(74,157,154,0.3); }
+        .cta:hover { transform: scale(1.02); box-shadow: 0 4px 20px rgba(74,157,154,0.3); }
         .cta:active { transform: scale(0.98); }
-        .opening small {
-            display: block;
-            margin-top: 14px;
-            font-size: 13px;
-            color: var(--t-text-sec);
-        }
+        .cta-note { font-size: 13px; color: var(--t-text-sec); }
 
-        /* Scene cards */
-        .scene-pair {
+        /* What it does — tight 3-col */
+        .what {
+            padding: 64px 0;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 32px;
+        }
+        @media (max-width: 700px) { .what { grid-template-columns: 1fr; gap: 20px; } }
+        .what h3 { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
+        .what p { font-size: 15px; line-height: 1.55; color: var(--t-text-sec); }
+
+        /* Showcase sections — image with overlapping text */
+        .show {
+            padding: 40px 0;
+            position: relative;
+        }
+        .show-img {
+            width: 100%;
+            height: 400px;
+            border-radius: 20px;
             display: flex;
             align-items: center;
-            gap: 64px;
+            justify-content: center;
+            font-size: 14px;
+            color: rgba(255,255,255,0.4);
+            font-weight: 500;
         }
-        .scene-pair.flip { flex-direction: row-reverse; }
-        @media (max-width: 700px) {
-            .scene-pair, .scene-pair.flip { flex-direction: column; gap: 32px; }
-        }
-        .scene-words { flex: 1; }
-        .scene-words h2 {
-            font-size: 32px;
-            font-weight: 700;
-            letter-spacing: -0.025em;
-            line-height: 1.1;
-            margin-bottom: 14px;
-        }
-        .scene-words p {
-            font-size: 17px;
-            line-height: 1.6;
-            color: var(--t-text-sec);
-        }
-
-        /* Product cards */
-        .card {
-            flex: 0 0 320px;
+        @media (max-width: 600px) { .show-img { height: 280px; } }
+        .show-img-1 { background: linear-gradient(145deg, #1a3a38, #2a5a56, #3a7a74); }
+        .show-img-2 { background: linear-gradient(145deg, #2a3a50, #3a5a7a, #4a7a9a); }
+        .show-caption {
+            position: relative;
+            margin-top: -48px;
+            margin-left: 32px;
+            margin-right: 32px;
             background: var(--t-bg);
             border: 1px solid var(--t-border);
-            border-radius: 20px;
-            padding: 24px;
-            box-shadow: 0 12px 48px rgba(0,0,0,0.06), 0 2px 6px rgba(0,0,0,0.03);
+            border-radius: 16px;
+            padding: 28px 32px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.06);
+            max-width: 480px;
         }
         @media (prefers-color-scheme: dark) {
-            .card { box-shadow: 0 12px 48px rgba(0,0,0,0.4); }
+            .show-caption { box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
         }
-        @media (max-width: 700px) {
-            .card { flex: none; width: 100%; max-width: 340px; }
+        .show-caption.right { margin-left: auto; }
+        @media (max-width: 600px) {
+            .show-caption { margin-left: 16px; margin-right: 16px; margin-top: -36px; padding: 20px 24px; }
         }
-        .card-label {
-            font-size: 11px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.6px;
+        .show-caption h3 {
+            font-size: 20px;
+            font-weight: 650;
+            letter-spacing: -0.02em;
+            margin-bottom: 8px;
+        }
+        .show-caption p {
+            font-size: 15px;
+            line-height: 1.55;
             color: var(--t-text-sec);
-            margin-bottom: 14px;
         }
-        .card-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: baseline;
-            padding: 8px 0;
-        }
-        .card-row + .card-row { border-top: 1px solid var(--t-border); }
-        .card-title { font-size: 15px; font-weight: 500; }
-        .card-meta { font-size: 13px; color: var(--t-text-sec); }
-        .card-ghost {
-            font-size: 14px;
-            color: var(--t-text-sec);
-            padding: 8px 0;
-            border-top: 1px dashed var(--t-border);
-            opacity: 0.5;
-        }
-        .card-photo {
-            width: 100%;
-            height: 120px;
-            background: linear-gradient(145deg, #c8e0db, #8bc4bb, #5da69f);
-            border-radius: 12px;
-            margin-bottom: 14px;
-        }
-        .card-body { font-size: 15px; line-height: 1.5; margin-bottom: 6px; }
-        .card-chip {
-            display: inline-block;
-            font-size: 11px;
-            font-weight: 600;
-            color: var(--t-teal);
-            background: rgba(74,157,154,0.08);
-            padding: 4px 10px;
-            border-radius: 8px;
-        }
-        .card-amount {
-            font-size: 28px;
-            font-weight: 700;
-            letter-spacing: -0.5px;
-            margin-bottom: 6px;
-        }
-        .card-split { font-size: 14px; color: var(--t-text-sec); margin-bottom: 12px; }
-        .card-balance {
-            display: flex;
-            justify-content: space-between;
-            padding: 10px 0;
-            border-top: 1px solid var(--t-border);
-            font-size: 14px;
-        }
-        .card-balance .owe { color: #d4513d; font-weight: 600; }
-        .card-balance .paid { color: var(--t-teal); font-weight: 600; }
 
-        /* Closing */
-        .closing {
+        /* Bottom CTA */
+        .bottom {
+            padding: 64px 0;
             text-align: center;
             border-top: 1px solid var(--t-border);
         }
-        .closing h2 {
-            font-size: 36px;
+        .bottom h2 {
+            font-size: 28px;
             font-weight: 700;
-            letter-spacing: -0.03em;
-            margin-bottom: 16px;
+            letter-spacing: -0.02em;
+            margin-bottom: 10px;
         }
-        .closing p {
-            font-size: 17px;
+        .bottom p {
+            font-size: 15px;
             color: var(--t-text-sec);
-            margin-bottom: 32px;
+            margin-bottom: 24px;
         }
 
         /* Invite */
         .invite {
             display: none;
-            margin-bottom: 40px;
-            padding: 20px 24px;
+            margin-bottom: 28px;
+            padding: 18px 22px;
             background: rgba(74,157,154,0.04);
             border: 1px solid rgba(74,157,154,0.12);
-            border-radius: 16px;
-            max-width: 480px;
+            border-radius: 14px;
+            max-width: 460px;
         }
-        .invite p { font-size: 17px; margin: 0 0 16px; }
-        .invite .cta { font-size: 15px; padding: 12px 28px; }
-        .invite-status { font-size: 13px; color: var(--t-text-sec); margin-top: 12px; }
+        .invite p { font-size: 16px; margin: 0 0 14px; }
+        .invite .cta { font-size: 14px; padding: 11px 24px; }
+        .invite-status { font-size: 13px; color: var(--t-text-sec); margin-top: 10px; }
         .has-invite .invite { display: block; }
         .has-invite .hero-default { display: none; }
     </style>
@@ -203,93 +182,77 @@
 
 <div id="site-nav"></div>
 
-<!-- 1. Opening -->
-<div class="scene opening" id="hero">
-    <div class="hero-default">
-        <h1>Plan the anchors.<br>Capture the reality.<br><span>Share the trip.</span></h1>
-        <p>The group trip app that replaces your shared spreadsheet, your group chat itinerary, and that notes file where someone tracked expenses.</p>
-        <a class="cta" href="https://apps.apple.com/app/triovel/id000000000" id="open-btn">Download for iOS</a>
-        <small>Free during beta. Works offline.</small>
-    </div>
-    <div class="invite" id="invite-bar">
-        <p>Someone invited you to their trip.</p>
-        <a class="cta" href="#" id="invite-btn">Open in Triovel</a>
-        <div class="invite-status" id="status"></div>
-    </div>
-</div>
-
-<!-- 2. Timeline -->
-<div class="scene">
-    <div class="scene-pair">
-        <div class="scene-words">
-            <h2>Your whole trip, day&nbsp;by&nbsp;day</h2>
-            <p>Add activities as you plan them. Change them as reality happens. Everyone in the group sees the same timeline and can contribute — even without wifi.</p>
-        </div>
-        <div class="card">
-            <div class="card-label">Day 3 · Shibuya</div>
-            <div class="card-row">
-                <span class="card-title">Ramen in Shibuya</span>
-                <span class="card-meta">12:00 PM</span>
+<!-- Hero: what is it + why download -->
+<div class="hero">
+    <div class="w">
+        <div class="hero-inner" id="hero">
+            <div class="hero-text">
+                <div class="hero-default">
+                    <h1>Group travel,<br><span>organized.</span></h1>
+                    <p>Shared timeline, trip memories, expense splitting. One app instead of group chats, spreadsheets, and shared albums.</p>
+                    <div class="hero-actions">
+                        <a class="cta" href="https://apps.apple.com/app/triovel/id000000000" id="open-btn">Download for iOS</a>
+                        <span class="cta-note">Free during beta</span>
+                    </div>
+                </div>
+                <div class="invite" id="invite-bar">
+                    <p>You've been invited to a trip.</p>
+                    <a class="cta" href="#" id="invite-btn">Open in Triovel</a>
+                    <div class="invite-status" id="status"></div>
+                </div>
             </div>
-            <div class="card-row">
-                <span class="card-title">Meiji Shrine</span>
-                <span class="card-meta">2:30 PM</span>
-            </div>
-            <div class="card-row">
-                <span class="card-title">Shibuya Crossing</span>
-                <span class="card-meta">4:00 PM</span>
-            </div>
-            <div class="card-ghost">Dinner</div>
+            <div class="hero-img">App screenshot here</div>
         </div>
     </div>
 </div>
 
-<!-- 3. Memories -->
-<div class="scene">
-    <div class="scene-pair flip">
-        <div class="scene-words">
-            <h2>Every moment gets its own&nbsp;page</h2>
-            <p>Tap into any activity and start posting — photos, notes, whatever you want to remember. Private entries stay between you and your phone. No one else sees them, ever.</p>
+<!-- What it does — 3 short points -->
+<div class="w">
+    <div class="what">
+        <div>
+            <h3>Shared timeline</h3>
+            <p>Plan day by day. Everyone sees the same schedule and adds activities — online or offline.</p>
         </div>
-        <div class="card">
-            <div class="card-photo"></div>
-            <div class="card-body">"The queue was insane but completely worth it. Best tonkotsu I've ever had."</div>
-            <span class="card-chip">Shared · 4 photos</span>
+        <div>
+            <h3>Trip memories</h3>
+            <p>Post photos and notes to each moment. Private entries stay private. The journal writes itself.</p>
         </div>
-    </div>
-</div>
-
-<!-- 4. Expenses -->
-<div class="scene">
-    <div class="scene-pair">
-        <div class="scene-words">
-            <h2>Who paid? Who owes&nbsp;what? Sorted.</h2>
-            <p>Log expenses as they happen. Triovel handles the math — per currency, per person, no rounding errors. Settle up whenever you're ready. No rush.</p>
-        </div>
-        <div class="card">
-            <div class="card-amount">&yen;4,800</div>
-            <div class="card-split">Ramen in Shibuya · paid by Sohn</div>
-            <div class="card-balance">
-                <span>Alex</span>
-                <span class="owe">owes &yen;1,600</span>
-            </div>
-            <div class="card-balance">
-                <span>Kim</span>
-                <span class="owe">owes &yen;1,600</span>
-            </div>
-            <div class="card-balance">
-                <span>Sohn</span>
-                <span class="paid">settled</span>
-            </div>
+        <div>
+            <h3>Expense splitting</h3>
+            <p>Log who paid. Balances per currency, no spreadsheets. Settle up when you're ready.</p>
         </div>
     </div>
 </div>
 
-<!-- 5. Closing -->
-<div class="scene closing">
-    <h2>One app for the whole trip</h2>
-    <p>iPhone and iPad. Works offline. Free during beta.</p>
-    <a class="cta" href="https://apps.apple.com/app/triovel/id000000000">Download Triovel</a>
+<!-- Showcase 1: timeline screenshot with overlapping caption -->
+<div class="w">
+    <div class="show">
+        <div class="show-img show-img-1">Timeline screenshot here</div>
+        <div class="show-caption">
+            <h3>Your trip, day by day</h3>
+            <p>Add activities as you plan. Change them as reality happens. The whole group stays in sync across timezones.</p>
+        </div>
+    </div>
+</div>
+
+<!-- Showcase 2: expense screenshot with overlapping caption (right-aligned) -->
+<div class="w">
+    <div class="show">
+        <div class="show-img show-img-2">Expense split screenshot here</div>
+        <div class="show-caption right">
+            <h3>Who owes what? Sorted.</h3>
+            <p>Track expenses per currency. Triovel does the math so you don't have to. No converting, no arguments.</p>
+        </div>
+    </div>
+</div>
+
+<!-- Download -->
+<div class="w">
+    <div class="bottom">
+        <h2>Try it on your next trip</h2>
+        <p>iPhone and iPad. Works offline. Free during beta.</p>
+        <a class="cta" href="https://apps.apple.com/app/triovel/id000000000">Download Triovel</a>
+    </div>
 </div>
 
 <div id="site-footer"></div>
