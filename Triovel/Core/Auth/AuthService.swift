@@ -63,6 +63,8 @@ final class AuthService {
             self.currentSession = session
             self.currentUser = session.user
         } catch {
+            print("[Auth] ❌ Apple Sign-In failed: \(error)")
+            print("[Auth] ❌ Error details: \(String(describing: error))")
             throw AuthError.appleSignInFailed
         }
     }
