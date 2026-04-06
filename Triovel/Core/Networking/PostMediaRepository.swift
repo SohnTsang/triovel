@@ -88,6 +88,23 @@ final class PostMediaRepository: @unchecked Sendable {
         )
     }
 
+    /// All uploaded media for a trip (shared posts only, excluding private).
+    func fetchMediaForTrip(tripId: String, currentUserId: String) async throws -> [PostMedia] {
+        try await db.getAll(
+            sql: """
+                SELECT pm.* FROM post_media pm
+                JOIN posts p ON pm.post_id = p.id
+                JOIN blocks b ON p.block_id = b.id
+                WHERE b.trip_id = ?
+                  AND pm.upload_status = 'uploaded'
+                  AND (p.visibility = 'shared' OR p.user_id = ?)
+                ORDER BY pm.created_at DESC
+                """,
+            parameters: [tripId, currentUserId],
+            mapper: Self.postMediaMapper
+        )
+    }
+
     // MARK: - Mapper
 
     static let postMediaMapper: @Sendable (SqlCursor) throws -> PostMedia = { cursor in

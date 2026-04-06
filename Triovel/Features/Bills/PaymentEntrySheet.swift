@@ -156,6 +156,7 @@ struct PaymentEntrySheet: View {
         errorMessage = nil
 
         Task {
+            let start = ContinuousClock.now
             do {
                 _ = try await paymentRepository.createPayment(
                     tripId: tripId,
@@ -166,7 +167,10 @@ struct PaymentEntrySheet: View {
                     note: note.isEmpty ? nil : note
                 )
 
-                try? await Task.sleep(for: .milliseconds(500))
+                let elapsed = ContinuousClock.now - start
+                if elapsed < .milliseconds(500) {
+                    try? await Task.sleep(for: .milliseconds(500) - elapsed)
+                }
                 dismiss()
                 onPaymentCreated?()
             } catch {

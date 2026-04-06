@@ -397,7 +397,7 @@ docs/
 |---|---|---|
 | Supabase credentials hardcoded | `SupabaseConfig.swift` | Should use xcconfig per environment (Dev/Staging/Prod) |
 | PowerSync URL hardcoded | `PowerSyncConfig.swift` | Same — should be xcconfig |
-| Delete account is placeholder | `SettingsView.swift` | Confirmation dialog exists but no backend implementation (Phase 5) |
+| Delete account | `AuthService.swift` | Safe deletion via `delete_own_account` RPC: transfers trip ownership, anonymizes user, keeps shared content |
 | No real-time member updates | ViewModels | Members fetched once on load, not watched reactively |
 | Ghost blocks not persisted | `DaySectionView.swift` | Pure UI scaffolding — intentional per blueprint, not a bug |
 | No data caching strategy | Repositories / ViewModels | All reads go through PowerSync local SQLite (fast), but no in-memory caching for computed data (member names, trip metadata). Acceptable for beta, review at scale. |
@@ -416,6 +416,47 @@ docs/
 | No unarchive feedback | Toast "Trip unarchived" appears for 2s after unarchiving from timeline menu. Localized in all 4 languages. | `TripTimelineView.swift` |
 | No media loading state in composer | Skeleton placeholders with spinners appear immediately when selecting photos from library. `processingCount` tracks per-item progress. Send disabled until all processing complete. | `PostComposerView.swift`, `MediaAttachmentPreview.swift` |
 | Multi-media layout overflow + no viewer | Replaced unbounded 2-column grid with horizontal scrollable strip (160pt cells) for 2+ images. Author row and body text always visible. Tap any image opens `FullScreenMediaViewer` with swipe gallery, page counter, close button. | `PostMediaGridView.swift`, `FullScreenMediaViewer.swift` |
+
+### Post-Beta Improvements (main)
+
+| Feature | Details | Files |
+|---|---|---|
+| Auth flow hardening | Existing email signup now shows error (not verification screen). Supabase returns empty identities for existing emails — detected and classified as `.emailTaken`. | `AuthService.swift` |
+| Forgot password | Reset password sheet with email input + Supabase `resetPasswordForEmail`. Green confirmation on success. | `AuthView.swift`, `AuthService.swift` |
+| Apple button style | Changed from `.black` to `.white` (white background, black text). | `AuthView.swift` |
+| Swipe-back gesture | `.navigationBarBackButtonHidden(true)` disables swipe-back in SwiftUI. Fixed with `SwipeBackGestureEnabler` UIViewControllerRepresentable that re-enables `interactivePopGestureRecognizer`. | `PlainToolbarModifier.swift` |
+| Sync reconnect | Token refresh before every reconnect. Guard against re-entrant `connect()` calls that caused infinite disconnect/reconnect loops. Privacy audit runs once per session. | `SyncManager.swift`, `AppState.swift`, `SupabaseConnector.swift` |
+| Join trip via invite | RPC `join_trip_by_invite` bypasses RLS for invite code lookup. Writes trip_members locally for instant home screen appearance. | `TripRepository.swift`, `supabase/migrations/20260401000000_join_trip_rpc.sql` |
+| Leave trip | Non-owners can leave via Members screen. Deletes trip_members row locally, syncs to Supabase. | `TripMembersView.swift`, `TripRepository.swift` |
+| Safe account deletion | `delete_own_account` RPC: transfers ownership to earliest joiner, deletes solo trips, leaves shared trips (keeps content), deletes private posts, anonymizes user to "Deleted User". Broke CASCADE FK from auth.users → public.users. | `AuthService.swift`, `supabase/migrations/20260402000000_safe_account_deletion.sql` |
+| Trip media gallery | All-media grid screen accessible from toolbar. 3-column layout, sort newest/oldest, tap opens `FullScreenMediaViewer`. | `TripMediaView.swift`, `PostMediaRepository.swift`, `Router.swift` |
+| Timeline toolbar redesign | Member icon moved into 3-dot menu. Media gallery icon in toolbar. Summary renamed to "Bills". | `TripTimelineView.swift` |
+| Trip title below navbar | Navbar shows "Trip Details". Title is below navbar, expandable on tap (2-line default, full on tap). | `TripTimelineView.swift` |
+| Block edit sheet | Redesigned as proper modal sheet (List form) instead of inline editing. Date picker (graphical), time picker, timezone picker (separate sheet). 500ms loading + save. | `EditBlockSheet.swift`, `BlockDetailHeaderView.swift` (now display-only) |
+| Timezone picker | Shared `TimezoneList` with 46 zones (UTC-12 to UTC+14, all half-hour offsets). Used in both Edit Trip and Edit Block. | `TimezoneList.swift`, `TimezonePickerView.swift`, `EditTripView.swift` |
+| Cross-midnight blocks | End time can be before start time (next day). Block shows on both days: start day shows `23:00 |`, continuation day shows `| 08:00`. | `AddMomentView.swift`, `EditBlockSheet.swift`, `TripTimelineViewModel.swift`, `BlockCardView.swift` |
+| Day fix for timezone mismatch | `buildDateTime` now uses trip's display timezone for date math. Previously used device timezone, causing Day 3 blocks to land on Day 2. | `AddMomentView.swift` |
+| Display name editing | Editable name field in Settings profile card. Writes to local `users` table, syncs via PowerSync. 50 char max. | `SettingsView.swift` |
+| Block documents | File attachments (PDF, JPEG, PNG, HEIC) tied to blocks. 10MB max. Local-first import → upload to `documents` Supabase Storage bucket. Compact card UI with QuickLook preview. Context menu delete. | `BlockDocument.swift`, `BlockDocumentRepository.swift`, `DocumentFileManager.swift`, `DocumentSectionView.swift`, `BlockDetailViewModel.swift` |
+| 500ms loading consistency | All user actions standardized to elapsed-time pattern (min 500ms, no extra delay). 13 flat-sleep instances fixed. | Multiple files |
+| Invite page centering | Web invite page centers content when `?code=` is present, hides irrelevant hero image. | `docs/index.html` |
+| Timezone display | `.shortGeneric` for reliable "JST" instead of "GMT+9". `TimezoneList.displayLabel` for consistent "UTC+9 Tokyo" everywhere. | `TripTimelineView.swift`, `TimezoneList.swift` |
+| Commented out (temporarily) | Local timezone UI (edit + display + block cards), archive/unarchive (menu + alert + home button), timezone subtitle in navbar. Code preserved in block comments. | Multiple files |
+
+### Supabase Migrations (new)
+
+| Migration | Purpose |
+|---|---|
+| `20260401000000_join_trip_rpc.sql` | `join_trip_by_invite(p_invite_code)` RPC — bypasses RLS for invite lookup |
+| `20260402000000_safe_account_deletion.sql` | `delete_own_account()` RPC — safe deletion with ownership transfer + anonymization. Breaks CASCADE FK. |
+| `20260406000000_block_documents.sql` | `block_documents` table + RLS policies for file attachments |
+
+### Supabase Storage Buckets
+
+| Bucket | Purpose | Limits |
+|---|---|---|
+| `trip-media` | Post photos/videos | 5MB photos, 60MB videos |
+| `documents` | Block document attachments (PDFs, images) | 10MB per file, MIME: application/pdf, image/jpeg, image/png, image/heic |
 
 ### Pre-Beta CRUD (feature/pre-beta-crud)
 

@@ -12,6 +12,14 @@ final class SyncManager: @unchecked Sendable {
     /// Local PowerSync SQLite database. Safe to access from any actor.
     let db: PowerSyncDatabaseProtocol
 
+    /// Prevents re-entrant connect() calls that cause disconnect/reconnect loops.
+    /// When db.connect() is called on an already-connected instance, PowerSync
+    /// first stops the current connection (emitting connected=false), then starts
+    /// a new one. The status watcher misinterprets the brief disconnect as a
+    /// connection drop and triggers another reconnect — creating an infinite loop.
+    private var isConnecting = false
+    private var hasAuditedThisSession = false
+
     private init() {
         db = PowerSyncDatabase(
             schema: AppSchema.schema,
@@ -22,12 +30,28 @@ final class SyncManager: @unchecked Sendable {
     /// Connect to PowerSync with Supabase credentials.
     /// Call after successful sign-in.
     func connect(currentUserId: String? = nil) async throws {
+        // Guard: if already connected or in the process of connecting, skip.
+        // Calling db.connect() on an active connection causes a stop+restart
+        // cycle that the status watcher misinterprets as a real disconnect.
+        guard !isConnecting else {
+            print("[Sync] Already connecting, skipping")
+            return
+        }
+        if db.currentStatus.connected {
+            print("[Sync] Already connected, skipping")
+            return
+        }
+
+        isConnecting = true
+        defer { isConnecting = false }
+
         let connector = SupabaseConnector()
         try await db.connect(connector: connector)
         print("[Sync] Connected to PowerSync")
 
-        // Privacy audit: check if private posts from other users leaked into local DB
-        if let userId = currentUserId {
+        // Privacy audit: run once per session, not on every reconnect
+        if !hasAuditedThisSession, let userId = currentUserId {
+            hasAuditedThisSession = true
             Task.detached(priority: .utility) { [db] in
                 try? await Task.sleep(for: .seconds(5)) // Wait for initial sync
                 await Self.auditPrivacyLeaks(db: db, currentUserId: userId)
@@ -69,6 +93,7 @@ final class SyncManager: @unchecked Sendable {
     /// Disconnect and clear all local data. Call on sign-out
     /// to ensure no data leaks between accounts.
     func disconnectAndClear() async {
+        hasAuditedThisSession = false
         do {
             try await db.disconnectAndClear()
             print("[Sync] Disconnected and cleared local data")

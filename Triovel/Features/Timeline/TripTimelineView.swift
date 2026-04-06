@@ -15,6 +15,7 @@ struct TripTimelineView: View {
     @State private var isDeletingTrip = false
     @State private var showToast = false
     @State private var toastMessage = ""
+    @State private var isTitleExpanded = false
 
     private var isOwner: Bool {
         viewModel.trip?.createdBy == appState.currentUserId
@@ -35,6 +36,24 @@ struct TripTimelineView: View {
                 .frame(maxWidth: .infinity)
             } else {
                 VStack(spacing: 0) {
+                    // Trip title — tappable expand/collapse
+                    if let trip = viewModel.trip {
+                        Button {
+                            withAnimation(.easeInOut(duration: 0.2)) {
+                                isTitleExpanded.toggle()
+                            }
+                        } label: {
+                            Text(trip.title)
+                                .font(.title3.weight(.semibold))
+                                .lineLimit(isTitleExpanded ? nil : 2)
+                                .multilineTextAlignment(.leading)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.horizontal, 20)
+                                .padding(.vertical, 10)
+                        }
+                        .buttonStyle(.plain)
+                    }
+
                     DayRibbonView(
                         days: filteredDays,
                         selectedIndex: $vm.selectedDayIndex
@@ -121,24 +140,28 @@ struct TripTimelineView: View {
         .plainBackButton()
         .toolbar {
             ToolbarItem(placement: .principal) {
-                if let trip = viewModel.trip {
+                if viewModel.trip != nil {
+                    Text("trip.detail.title")
+                        .font(.headline)
+                    /* Timezone subtitle — commented out for now
                     VStack(spacing: 2) {
-                        Text(trip.title)
+                        Text("trip.detail.title")
                             .font(.headline)
-                            .lineLimit(1)
-                        if !appState.isSyncConnected && appState.hasSynced {
-                            Text(String(localized: "state.offline"))
-                                .font(.caption2)
-                                .foregroundStyle(ColorTokens.pendingTint)
-                        } else {
+                        HStack(spacing: 4) {
                             let tz = TimeZone(identifier: trip.displayTimezone) ?? .current
-                            let abbr = tz.abbreviation() ?? ""
+                            let abbr = tz.localizedName(for: .shortGeneric, locale: .current) ?? tz.abbreviation() ?? ""
                             let city = trip.displayTimezone.components(separatedBy: "/").last?.replacingOccurrences(of: "_", with: " ") ?? trip.displayTimezone
                             Text("\(abbr) · \(city)")
                                 .font(.caption2)
                                 .foregroundStyle(.secondary)
+                            if !appState.isSyncConnected && appState.hasSynced {
+                                Image(systemName: "icloud.slash")
+                                    .font(.caption2)
+                                    .foregroundStyle(ColorTokens.pendingTint)
+                            }
                         }
                     }
+                    */
                 } else {
                     ProgressView()
                         .controlSize(.small)
@@ -148,10 +171,10 @@ struct TripTimelineView: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     HStack(spacing: 4) {
                         Button {
-                            router.push(.tripMembers(tripId: tripId, members: viewModel.members, inviteLink: viewModel.trip?.inviteLink))
+                            router.push(.tripMedia(tripId: tripId))
                         } label: {
-                            Image(systemName: "person.2")
-                                .font(.body)
+                            Image(systemName: "photo.on.rectangle.angled")
+                                .font(.body.weight(.semibold))
                                 .foregroundStyle(Color(.label))
                         }
                         .buttonStyle(.plain)
@@ -164,10 +187,10 @@ struct TripTimelineView: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     HStack(spacing: 4) {
                         Button {
-                            router.push(.tripMembers(tripId: tripId, members: viewModel.members, inviteLink: viewModel.trip?.inviteLink))
+                            router.push(.tripMedia(tripId: tripId))
                         } label: {
-                            Image(systemName: "person.2")
-                                .font(.body)
+                            Image(systemName: "photo.on.rectangle.angled")
+                                .font(.body.weight(.semibold))
                                 .foregroundStyle(Color(.label))
                         }
                         .buttonStyle(.plain)
@@ -177,6 +200,7 @@ struct TripTimelineView: View {
                 }
             }
         }
+        /* Archive alert — commented out for now
         .alert(
             String(localized: "trip.archive.title"),
             isPresented: $showingArchiveAlert
@@ -184,14 +208,19 @@ struct TripTimelineView: View {
             Button(String(localized: "common.cancel"), role: .cancel) {}
             Button(String(localized: "trip.archive.button"), role: .destructive) {
                 Task {
+                    let start = ContinuousClock.now
                     try? await TripRepository().archiveTrip(tripId: tripId)
-                    try? await Task.sleep(for: .milliseconds(500))
+                    let elapsed = ContinuousClock.now - start
+                    if elapsed < .milliseconds(500) {
+                        try? await Task.sleep(for: .milliseconds(500) - elapsed)
+                    }
                     router.popToRoot()
                 }
             }
         } message: {
             Text("trip.archive.description")
         }
+        */
         .alert(
             String(localized: "trip.delete.title"),
             isPresented: $showingDeleteAlert
@@ -240,6 +269,10 @@ struct TripTimelineView: View {
             )
         }
         .task(id: tripId) {
+            // Let the push animation finish before starting heavy DB work.
+            // Without this, fetching trip + generating days blocks the main
+            // thread and freezes the slide animation midway.
+            try? await Task.sleep(for: .milliseconds(350))
             if let userId = appState.currentUserId {
                 viewModel.load(tripId: tripId, userId: userId)
             }
@@ -256,7 +289,13 @@ struct TripTimelineView: View {
             Button {
                 router.push(.tripSummary(tripId: tripId))
             } label: {
-                Label(String(localized: "summary.title"), systemImage: "receipt")
+                Label(String(localized: "trip.menu.bills"), systemImage: "receipt")
+            }
+
+            Button {
+                router.push(.tripMembers(tripId: tripId, members: viewModel.members, inviteLink: viewModel.trip?.inviteLink))
+            } label: {
+                Label(String(localized: "trip.members.title"), systemImage: "person.2")
             }
 
             if isOwner {
@@ -267,13 +306,18 @@ struct TripTimelineView: View {
                 }
             }
 
+            /* Archive/unarchive menu items — commented out for now
             Divider()
 
             if viewModel.trip?.archived == true {
                 Button {
                     Task {
+                        let start = ContinuousClock.now
                         try? await TripRepository().unarchiveTrip(tripId: tripId)
-                        try? await Task.sleep(for: .milliseconds(500))
+                        let elapsed = ContinuousClock.now - start
+                        if elapsed < .milliseconds(500) {
+                            try? await Task.sleep(for: .milliseconds(500) - elapsed)
+                        }
                         if let userId = appState.currentUserId {
                             viewModel.load(tripId: tripId, userId: userId)
                         }
@@ -292,6 +336,9 @@ struct TripTimelineView: View {
                     Label(String(localized: "trip.archive.button"), systemImage: "archivebox")
                 }
             }
+            */
+
+            Divider()
 
             if isOwner {
                 Button(role: .destructive) {

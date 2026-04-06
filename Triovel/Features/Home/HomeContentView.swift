@@ -62,23 +62,27 @@ struct HomeContentView: View {
                     }
                 }
                 .sharedBackgroundVisibility(.hidden)
+                /* Archived trips button — commented out for now
                 ToolbarItem(placement: .topBarTrailing) {
                     Button { router.push(.archivedTrips) } label: {
                         Image(systemName: "archivebox").font(.body.weight(.semibold)).foregroundStyle(Color(.label))
                     }
                 }
                 .sharedBackgroundVisibility(.hidden)
+                */
             } else {
                 ToolbarItem(placement: .topBarLeading) {
                     Button { router.push(.settings) } label: {
                         Image(systemName: "person.circle").font(.body.weight(.semibold)).foregroundStyle(Color(.label))
                     }
                 }
+                /* Archived trips button — commented out for now
                 ToolbarItem(placement: .topBarTrailing) {
                     Button { router.push(.archivedTrips) } label: {
                         Image(systemName: "archivebox").font(.body.weight(.semibold)).foregroundStyle(Color(.label))
                     }
                 }
+                */
             }
         }
         .sheet(isPresented: $showingNewTrip) {

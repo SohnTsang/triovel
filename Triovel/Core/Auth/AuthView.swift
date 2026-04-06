@@ -12,6 +12,8 @@ struct AuthView: View {
     @State private var isSignUp = false
     @State private var isLoading = false
     @State private var errorMessage: String?
+    @State private var showResetPassword = false
+    @State private var resetEmailSent = false
     @FocusState private var focusedField: AuthField?
 
     private enum AuthField: Hashable {
@@ -39,7 +41,7 @@ struct AuthView: View {
                     SignInWithAppleButton(.signIn) { request in
                         request.requestedScopes = [.fullName, .email]
                     } onCompletion: { _ in }
-                    .signInWithAppleButtonStyle(.black)
+                    .signInWithAppleButtonStyle(.white)
                     .frame(height: 50)
                     .clipShape(RoundedRectangle(cornerRadius: 14))
                     .padding(.horizontal, 32)
@@ -81,6 +83,15 @@ struct AuthView: View {
         .onAppear {
             setupAppleCoordinator()
         }
+        .sheet(isPresented: $showResetPassword) {
+            ResetPasswordSheet(authService: authService) { sent in
+                if sent {
+                    resetEmailSent = true
+                }
+            }
+            .presentationDetents([.medium])
+            .presentationDragIndicator(.visible)
+        }
     }
 
     // MARK: - Email Form
@@ -112,11 +123,35 @@ struct AuthView: View {
                     .transition(.opacity.combined(with: .move(edge: .top)))
             }
 
+            // Forgot password — sign-in mode only
+            if !isSignUp {
+                HStack {
+                    Spacer()
+                    Button {
+                        showResetPassword = true
+                        errorMessage = nil
+                    } label: {
+                        Text("auth.forgot.password")
+                            .font(.caption)
+                            .foregroundStyle(Color.accentColor)
+                    }
+                }
+            }
+
             // Error message
             if let error = errorMessage {
                 Text(error)
                     .font(.caption)
                     .foregroundStyle(.red)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .transition(.opacity)
+            }
+
+            // Reset email sent confirmation
+            if resetEmailSent {
+                Text("auth.reset.sent")
+                    .font(.caption)
+                    .foregroundStyle(.green)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .transition(.opacity)
             }
@@ -149,6 +184,7 @@ struct AuthView: View {
                     isSignUp.toggle()
                     confirmPassword = ""
                     errorMessage = nil
+                    resetEmailSent = false
                 }
             } label: {
                 Text(isSignUp
@@ -235,9 +271,103 @@ struct AuthView: View {
     }
 }
 
+// MARK: - Reset Password Sheet
+
+private struct ResetPasswordSheet: View {
+    let authService: AuthService
+    let onSent: (Bool) -> Void
+
+    @Environment(\.dismiss) private var dismiss
+    @State private var resetEmail = ""
+    @State private var isLoading = false
+    @State private var errorMessage: String?
+    @State private var sent = false
+    @FocusState private var emailFocused: Bool
+
+    var body: some View {
+        VStack(spacing: 24) {
+            Text("auth.reset.title")
+                .font(.title2.weight(.semibold))
+                .padding(.top, 24)
+
+            Text("auth.reset.subtitle")
+                .font(.body)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 32)
+
+            TextField("auth.email.placeholder", text: $resetEmail)
+                .textContentType(.emailAddress)
+                .keyboardType(.emailAddress)
+                .autocorrectionDisabled()
+                .textInputAutocapitalization(.never)
+                .focused($emailFocused)
+                .authField(isFocused: emailFocused)
+                .padding(.horizontal, 32)
+
+            if let error = errorMessage {
+                Text(error)
+                    .font(.caption)
+                    .foregroundStyle(.red)
+                    .padding(.horizontal, 32)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+
+            if sent {
+                Text("auth.reset.sent")
+                    .font(.caption)
+                    .foregroundStyle(.green)
+                    .padding(.horizontal, 32)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+
+            Button {
+                sendReset()
+            } label: {
+                Group {
+                    if isLoading {
+                        ProgressView()
+                            .tint(.white)
+                    } else {
+                        Text("auth.reset.send")
+                    }
+                }
+                .frame(maxWidth: .infinity)
+                .frame(height: 44)
+            }
+            .buttonStyle(.borderedProminent)
+            .buttonBorderShape(.roundedRectangle(radius: 12))
+            .disabled(resetEmail.isEmpty || isLoading || sent)
+            .padding(.horizontal, 32)
+
+            Spacer()
+        }
+        .onAppear {
+            emailFocused = true
+        }
+    }
+
+    private func sendReset() {
+        Task {
+            isLoading = true
+            errorMessage = nil
+            do {
+                try await authService.resetPassword(email: resetEmail)
+                sent = true
+                onSent(true)
+            } catch let authError as AuthError {
+                errorMessage = authError.errorDescription
+            } catch {
+                errorMessage = String(localized: "auth.error.network")
+            }
+            isLoading = false
+        }
+    }
+}
+
 // MARK: - Auth Field Style
 
-private struct AuthFieldModifier: ViewModifier {
+struct AuthFieldModifier: ViewModifier {
     let isFocused: Bool
 
     func body(content: Content) -> some View {
@@ -256,7 +386,7 @@ private struct AuthFieldModifier: ViewModifier {
     }
 }
 
-private extension View {
+extension View {
     func authField(isFocused: Bool) -> some View {
         modifier(AuthFieldModifier(isFocused: isFocused))
     }

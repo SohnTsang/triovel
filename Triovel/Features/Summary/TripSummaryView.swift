@@ -455,9 +455,13 @@ struct TripSummaryView: View {
     private func archiveTrip() {
         isArchiving = true
         Task {
+            let start = ContinuousClock.now
             do {
                 try await TripRepository().archiveTrip(tripId: tripId)
-                try? await Task.sleep(for: .milliseconds(500))
+                let elapsed = ContinuousClock.now - start
+                if elapsed < .milliseconds(500) {
+                    try? await Task.sleep(for: .milliseconds(500) - elapsed)
+                }
                 router.popToRoot()
             } catch {
                 print("[Summary] ❌ Archive failed: \(error)")
@@ -487,9 +491,13 @@ struct TripSummaryView: View {
     private func unarchiveTrip() {
         isArchiving = true
         Task {
+            let start = ContinuousClock.now
             do {
                 try await TripRepository().unarchiveTrip(tripId: tripId)
-                try? await Task.sleep(for: .milliseconds(500))
+                let elapsed = ContinuousClock.now - start
+                if elapsed < .milliseconds(500) {
+                    try? await Task.sleep(for: .milliseconds(500) - elapsed)
+                }
                 // Reload to pick up the change
                 if let userId = appState.currentUserId {
                     viewModel.load(tripId: tripId, userId: userId)

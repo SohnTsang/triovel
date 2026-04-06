@@ -9,12 +9,29 @@ struct BlockCardView: View {
     let block: Block
     var creatorName: String?
     var tripDisplayTimezone: String = ""
+    var dayDate: Date? = nil
     var syncState: SyncState = .synced
 
     private var hasEndTime: Bool { block.endAt != nil }
+    /* Local timezone display — commented out for now, re-enable later
     private var hasLocalTz: Bool {
         guard let tz = block.localTimezone, !tz.isEmpty else { return false }
         return tz != tripDisplayTimezone
+    }
+    */
+
+    /// Block started before this day (spans in from previous day)
+    private var isSpanningIn: Bool {
+        guard let dayDate else { return false }
+        return block.startAt < dayDate
+    }
+
+    /// Block ends after this day (spans out to next day)
+    private var isSpanningOut: Bool {
+        guard let dayDate, let endAt = block.endAt else { return false }
+        let cal = Calendar.current
+        let nextDay = cal.date(byAdding: .day, value: 1, to: dayDate) ?? dayDate
+        return endAt > nextDay
     }
 
     var body: some View {
@@ -82,22 +99,45 @@ struct BlockCardView: View {
                     .font(.caption2.weight(.semibold))
                     .foregroundStyle(.secondary)
                     .padding(.top, 12)
+            } else if isSpanningIn {
+                // Continuation from previous day: line → end time
+                RoundedRectangle(cornerRadius: 1)
+                    .fill(Color(.systemGray4))
+                    .frame(width: 2)
+                    .frame(minHeight: 14)
+                    .padding(.top, 12)
+                    .padding(.bottom, 3)
+
+                if let endAt = block.endAt {
+                    Text(endAt, format: .dateTime.hour().minute())
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.primary)
+
+                    /* Local timezone display — commented out for now, re-enable later
+                    if hasLocalTz {
+                        Text(localTimeOnly(endAt))
+                            .font(.system(size: 10))
+                            .foregroundStyle(.secondary)
+                            .padding(.top, 1)
+                    }
+                    */
+                }
             } else {
-                // Start time (trip timezone)
+                // Normal: start time (+ optional line + end time)
                 Text(block.startAt, format: .dateTime.hour().minute())
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(.primary)
                     .padding(.top, 12)
 
-                // Local start time — just time, no abbreviation
+                /* Local timezone display — commented out for now, re-enable later
                 if hasLocalTz {
                     Text(localTimeOnly(block.startAt))
                         .font(.system(size: 10))
                         .foregroundStyle(.secondary)
                         .padding(.top, 1)
                 }
+                */
 
-                // Vertical line
                 if hasEndTime {
                     RoundedRectangle(cornerRadius: 1)
                         .fill(Color(.systemGray4))
@@ -106,18 +146,23 @@ struct BlockCardView: View {
                         .padding(.vertical, 3)
                 }
 
-                // End time
                 if let endAt = block.endAt {
-                    Text(endAt, format: .dateTime.hour().minute())
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(.primary)
+                    if isSpanningOut {
+                        // Spans to next day: show line trailing off, no end time
+                        // (end time shows on the next day)
+                    } else {
+                        Text(endAt, format: .dateTime.hour().minute())
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(.primary)
 
-                    // Local end time
-                    if hasLocalTz {
-                        Text(localTimeOnly(endAt))
-                            .font(.system(size: 10))
-                            .foregroundStyle(.secondary)
-                            .padding(.top, 1)
+                        /* Local timezone display — commented out for now, re-enable later
+                        if hasLocalTz {
+                            Text(localTimeOnly(endAt))
+                                .font(.system(size: 10))
+                                .foregroundStyle(.secondary)
+                                .padding(.top, 1)
+                        }
+                        */
                     }
                 }
             }

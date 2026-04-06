@@ -10,6 +10,8 @@ struct BlockDetailView: View {
     @State private var showingPaymentEntry = false
     @State private var showingDeleteBlock = false
     @State private var isDeletingBlock = false
+    @State private var showingEditSheet = false
+    @State private var showingDocumentPicker = false
     @Environment(Router.self) private var router
 
     var body: some View {
@@ -91,6 +93,23 @@ struct BlockDetailView: View {
                 )
             }
         }
+        .sheet(isPresented: $showingEditSheet) {
+            if let block = viewModel.block {
+                EditBlockSheet(
+                    block: block,
+                    tripDisplayTimezone: viewModel.tripDisplayTimezone,
+                    tripStartDate: viewModel.tripStartDate,
+                    tripEndDate: viewModel.tripEndDate
+                ) { fields in
+                    await viewModel.applyEditFields(fields)
+                }
+            }
+        }
+        .sheet(isPresented: $showingDocumentPicker) {
+            DocumentPickerView { url, fileName, fileType in
+                viewModel.addDocument(url: url, fileName: fileName, fileType: fileType)
+            }
+        }
         .alert(
             String(localized: "block.delete.title"),
             isPresented: $showingDeleteBlock
@@ -142,16 +161,17 @@ struct BlockDetailView: View {
             block: block,
             canEdit: viewModel.canEditHeader,
             tripDisplayTimezone: viewModel.tripDisplayTimezone,
-            isSaving: viewModel.isSavingHeader,
             billSummary: viewModel.billSummary,
-            isEditing: $vm.isEditingHeader,
-            editTitle: $vm.editTitle,
-            editLocation: $vm.editLocation,
-            editDescription: $vm.editDescription,
-            editStartAt: $vm.editStartAt,
-            editEndAt: $vm.editEndAt,
-            editLocalTimezone: $vm.editLocalTimezone,
-            onSave: { viewModel.saveHeaderEdits() }
+            onEditTap: { showingEditSheet = true }
+        )
+
+        // Documents section (compact cards)
+        DocumentSectionView(
+            documents: viewModel.documents,
+            currentUserId: appState.currentUserId,
+            tripId: block.tripId,
+            onDelete: { viewModel.deleteDocument($0) },
+            onRetry: { viewModel.retryDocumentUpload($0) }
         )
 
         Divider()
@@ -235,17 +255,15 @@ struct BlockDetailView: View {
                 Label(String(localized: "bill.add.button"), systemImage: "banknote")
             }
 
+            Button {
+                showingDocumentPicker = true
+            } label: {
+                Label(String(localized: "document.add.button"), systemImage: "doc.badge.plus")
+            }
+
             if viewModel.canEditHeader {
                 Button {
-                    if let block = viewModel.block {
-                        viewModel.editTitle = block.title
-                        viewModel.editLocation = block.locationText ?? ""
-                        viewModel.editDescription = block.description ?? ""
-                        viewModel.editStartAt = block.startAt
-                        viewModel.editEndAt = block.endAt
-                        viewModel.editLocalTimezone = block.localTimezone
-                        viewModel.isEditingHeader = true
-                    }
+                    showingEditSheet = true
                 } label: {
                     Label(String(localized: "block.edit.title"), systemImage: "pencil")
                 }

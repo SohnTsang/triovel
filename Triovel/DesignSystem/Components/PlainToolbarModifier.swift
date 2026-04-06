@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 /// Hides the system back button (which has Liquid Glass on iOS 26)
 /// and replaces it with a plain chevron matching the app's clean style.
@@ -21,6 +22,7 @@ struct PlainBackButton: ViewModifier {
                     }
                 }
             }
+            .background(SwipeBackGestureEnabler())
     }
 
     private var backButton: some View {
@@ -30,6 +32,28 @@ struct PlainBackButton: ViewModifier {
             Image(systemName: "chevron.left")
                 .font(.body.weight(.semibold))
                 .foregroundStyle(Color(.label))
+        }
+    }
+}
+
+/// Re-enables the interactive pop (swipe-back) gesture that SwiftUI
+/// disables when `.navigationBarBackButtonHidden(true)` is set.
+private struct SwipeBackGestureEnabler: UIViewControllerRepresentable {
+    func makeUIViewController(context: Context) -> UIViewController {
+        SwipeBackController()
+    }
+
+    func updateUIViewController(_ uiViewController: UIViewController, context: Context) {}
+
+    private final class SwipeBackController: UIViewController {
+        override func viewDidAppear(_ animated: Bool) {
+            super.viewDidAppear(animated)
+            // Walk up to the nearest UINavigationController and
+            // re-enable its interactivePopGestureRecognizer.
+            if let nav = navigationController {
+                nav.interactivePopGestureRecognizer?.isEnabled = true
+                nav.interactivePopGestureRecognizer?.delegate = nil
+            }
         }
     }
 }

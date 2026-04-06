@@ -9,6 +9,7 @@ final class BlockRepository: @unchecked Sendable {
     // MARK: - Create Block (local-first)
 
     func createBlock(
+        id: String? = nil,
         tripId: String,
         title: String,
         context: BlockContext,
@@ -18,7 +19,7 @@ final class BlockRepository: @unchecked Sendable {
         localTimezone: String? = nil,
         createdBy: String
     ) async throws -> Block {
-        let blockId = UUID().uuidString.lowercased()
+        let blockId = id ?? UUID().uuidString.lowercased()
         let isoStartAt = Self.isoString(from: startAt)
         let isoEndAt = endAt.map { Self.isoString(from: $0) }
         let now = Self.isoString(from: Date())

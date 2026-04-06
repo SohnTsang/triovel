@@ -55,6 +55,7 @@
 		BA1F33CC2E8A41BB99001122 /* PlainToolbarModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA1F33CC2E8A41BB88001122 /* PlainToolbarModifier.swift */; };
 		BCA5F68AB871C504A2526985 /* TripSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DB17EE1B5470619A4A394AE /* TripSetupView.swift */; };
 		C2FCF58455F03A9A65277428 /* DateExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DDCC435E21D2512F84EA1C8 /* DateExtensions.swift */; };
+		TZLBF001 /* TimezoneList.swift in Sources */ = {isa = PBXBuildFile; fileRef = TZLFR001 /* TimezoneList.swift */; };
 		C6885B2B8BCD24E949390E54 /* ArchivedTripsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0F18C424A110CFFFCA1254D /* ArchivedTripsView.swift */; };
 		C6A992454BE1898E05D049A1 /* TripTimelineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 269F7767C8A4CF66716D6105 /* TripTimelineView.swift */; };
 		C6AB49A8E53470BEF8D8EB4A /* AddMomentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5686014005BE7251760C98F3 /* AddMomentView.swift */; };
@@ -71,7 +72,14 @@
 		E3FC084F3B55DA0CC0685646 /* HomeContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B2D4F71149C6B8544141A8C /* HomeContentView.swift */; };
 		E9AE73965485EECDF30A4643 /* Payment.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9C218D2F661A161061EC46B /* Payment.swift */; };
 		EBA05C9595465B1448441DAC /* TripMembersView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C459CDEFF6D60634C288E360 /* TripMembersView.swift */; };
+		TMGBF001 /* TripMediaView.swift in Sources */ = {isa = PBXBuildFile; fileRef = TMGFR001 /* TripMediaView.swift */; };
 		EE72C626B58EC3566BFEB125 /* BlockDetailHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72EC929A2DF4723A3383AC0D /* BlockDetailHeaderView.swift */; };
+		TZPKBF01 /* TimezonePickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = TZPKFR01 /* TimezonePickerView.swift */; };
+		EBSHBF01 /* EditBlockSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBSHFR01 /* EditBlockSheet.swift */; };
+		BDOCBF01 /* BlockDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDOCFR01 /* BlockDocument.swift */; };
+		BDOCBF02 /* BlockDocumentRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDOCFR02 /* BlockDocumentRepository.swift */; };
+		BDOCBF03 /* DocumentFileManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDOCFR03 /* DocumentFileManager.swift */; };
+		BDOCBF04 /* DocumentSectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDOCFR04 /* DocumentSectionView.swift */; };
 		EF216AB5A51B71483A566E21 /* ProfileHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D37FA5E2AF68AA27D92708E /* ProfileHeaderView.swift */; };
 		P3BF0001 /* MediaFileManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = P3FR0001 /* MediaFileManager.swift */; };
 		P3BF0002 /* MediaCompressor.swift in Sources */ = {isa = PBXBuildFile; fileRef = P3FR0002 /* MediaCompressor.swift */; };
@@ -101,6 +109,7 @@
 		046B24F1977F74C981837C7E /* BillEntryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BillEntryView.swift; sourceTree = "<group>"; };
 		0659C2FC5017EE92AD8B2119 /* EmailVerificationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmailVerificationView.swift; sourceTree = "<group>"; };
 		0DDCC435E21D2512F84EA1C8 /* DateExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateExtensions.swift; sourceTree = "<group>"; };
+		TZLFR001 /* TimezoneList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimezoneList.swift; sourceTree = "<group>"; };
 		128876BA9CB203F0B32BD069 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		1F84F5FB2579E85C4BD0863E /* AuthView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthView.swift; sourceTree = "<group>"; };
 		23F430BD077061F269968B7B /* SyncStateIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncStateIndicator.swift; sourceTree = "<group>"; };
@@ -128,6 +137,12 @@
 		6DBC312E03FF04F34E340413 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		6FD9045EF708D43EB57ED36E /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		72EC929A2DF4723A3383AC0D /* BlockDetailHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockDetailHeaderView.swift; sourceTree = "<group>"; };
+		TZPKFR01 /* TimezonePickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimezonePickerView.swift; sourceTree = "<group>"; };
+		EBSHFR01 /* EditBlockSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditBlockSheet.swift; sourceTree = "<group>"; };
+		BDOCFR01 /* BlockDocument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockDocument.swift; sourceTree = "<group>"; };
+		BDOCFR02 /* BlockDocumentRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockDocumentRepository.swift; sourceTree = "<group>"; };
+		BDOCFR03 /* DocumentFileManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentFileManager.swift; sourceTree = "<group>"; };
+		BDOCFR04 /* DocumentSectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentSectionView.swift; sourceTree = "<group>"; };
 		7507D9FC3C3E65332CC48E66 /* FullScreenMediaViewer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FullScreenMediaViewer.swift; sourceTree = "<group>"; };
 		7551EEDD76A7BD21A1C50460 /* Post.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Post.swift; sourceTree = "<group>"; };
 		81C874FF9C71DB8DAAD1121D /* Trip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Trip.swift; sourceTree = "<group>"; };
@@ -148,6 +163,7 @@
 		BF0AB4F9147A31F6C31E9197 /* HomeEmptyStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeEmptyStateView.swift; sourceTree = "<group>"; };
 		BFD5CEB34A1587FDEF0F98EA /* Bill.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Bill.swift; sourceTree = "<group>"; };
 		C459CDEFF6D60634C288E360 /* TripMembersView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TripMembersView.swift; sourceTree = "<group>"; };
+		TMGFR001 /* TripMediaView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TripMediaView.swift; sourceTree = "<group>"; };
 		C4D9BF81260A890F98551F37 /* EditTripView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EditTripView.swift; sourceTree = "<group>"; };
 		C6A827B2C1B904D67FAB604D /* BillShare.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BillShare.swift; sourceTree = "<group>"; };
 		CA6D67E9A2F09AFBF1DADBE7 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
@@ -254,6 +270,9 @@
 			isa = PBXGroup;
 			children = (
 				72EC929A2DF4723A3383AC0D /* BlockDetailHeaderView.swift */,
+				TZPKFR01 /* TimezonePickerView.swift */,
+				BDOCFR04 /* DocumentSectionView.swift */,
+				EBSHFR01 /* EditBlockSheet.swift */,
 				FF32096E140C4392D2BA1DC2 /* BlockDetailView.swift */,
 				BB12DAB167C02F467EACCCB0 /* BlockDetailViewModel.swift */,
 				P3FR0006 /* CameraPickerView.swift */,
@@ -323,6 +342,7 @@
 				BFD5CEB34A1587FDEF0F98EA /* Bill.swift */,
 				C6A827B2C1B904D67FAB604D /* BillShare.swift */,
 				419AFE4DF400582FC595B4F3 /* Block.swift */,
+				BDOCFR01 /* BlockDocument.swift */,
 				A9C218D2F661A161061EC46B /* Payment.swift */,
 				7551EEDD76A7BD21A1C50460 /* Post.swift */,
 				595582A9F7359CD124EB2B37 /* PostMedia.swift */,
@@ -370,6 +390,7 @@
 			isa = PBXGroup;
 			children = (
 				0DDCC435E21D2512F84EA1C8 /* DateExtensions.swift */,
+				TZLFR001 /* TimezoneList.swift */,
 			);
 			path = Utilities;
 			sourceTree = "<group>";
@@ -384,6 +405,7 @@
 				2C3495591E10CB2A6AB17552 /* Settings */,
 				DF5BF8FB202CC81A724D7BC9 /* Summary */,
 				8CE54BACEB5593304CF8D46D /* Timeline */,
+				TMGGRP01 /* TripMedia */,
 				F064EC598BAB141C56EA4BFB /* TripMembers */,
 				40E29904BF34A5E92B6FA581 /* TripSetup */,
 			);
@@ -412,6 +434,7 @@
 				P4FR0003 /* BalanceCalculator.swift */,
 				P5FR0001 /* BetaAnalytics.swift */,
 				P4FR0001 /* BillRepository.swift */,
+				BDOCFR02 /* BlockDocumentRepository.swift */,
 				B2DB1DF20856703F1CF41D12 /* BlockRepository.swift */,
 				P4FR0002 /* PaymentRepository.swift */,
 				P3FR0005 /* PostMediaRepository.swift */,
@@ -469,6 +492,14 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		TMGGRP01 /* TripMedia */ = {
+			isa = PBXGroup;
+			children = (
+				TMGFR001 /* TripMediaView.swift */,
+			);
+			path = TripMedia;
+			sourceTree = "<group>";
+		};
 		F064EC598BAB141C56EA4BFB /* TripMembers */ = {
 			isa = PBXGroup;
 			children = (
@@ -480,6 +511,7 @@
 		P3GR0001 /* MediaQueue */ = {
 			isa = PBXGroup;
 			children = (
+				BDOCFR03 /* DocumentFileManager.swift */,
 				P3FR0002 /* MediaCompressor.swift */,
 				P3FR0003 /* MediaCostController.swift */,
 				P3FR0001 /* MediaFileManager.swift */,
@@ -608,6 +640,7 @@
 				BA1F33CC2E8A41BB99001122 /* PlainToolbarModifier.swift in Sources */,
 				BCA5F68AB871C504A2526985 /* TripSetupView.swift in Sources */,
 				C2FCF58455F03A9A65277428 /* DateExtensions.swift in Sources */,
+				TZLBF001 /* TimezoneList.swift in Sources */,
 				C6885B2B8BCD24E949390E54 /* ArchivedTripsView.swift in Sources */,
 				C6A992454BE1898E05D049A1 /* TripTimelineView.swift in Sources */,
 				C6AB49A8E53470BEF8D8EB4A /* AddMomentView.swift in Sources */,
@@ -623,7 +656,14 @@
 				E3FC084F3B55DA0CC0685646 /* HomeContentView.swift in Sources */,
 				E9AE73965485EECDF30A4643 /* Payment.swift in Sources */,
 				EBA05C9595465B1448441DAC /* TripMembersView.swift in Sources */,
+				TMGBF001 /* TripMediaView.swift in Sources */,
 				EE72C626B58EC3566BFEB125 /* BlockDetailHeaderView.swift in Sources */,
+				TZPKBF01 /* TimezonePickerView.swift in Sources */,
+				EBSHBF01 /* EditBlockSheet.swift in Sources */,
+				BDOCBF01 /* BlockDocument.swift in Sources */,
+				BDOCBF02 /* BlockDocumentRepository.swift in Sources */,
+				BDOCBF03 /* DocumentFileManager.swift in Sources */,
+				BDOCBF04 /* DocumentSectionView.swift in Sources */,
 				122ED21F181CA6F1A6439FE7 /* PostCardView.swift in Sources */,
 				AC2E22D78BF07ABA8DBFAEA0 /* PostComposerView.swift in Sources */,
 				890C4202FF9F332F9F6B10E8 /* PostRepository.swift in Sources */,

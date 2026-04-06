@@ -9,7 +9,7 @@ final class TripTimelineViewModel {
     private(set) var trip: Trip?
     private(set) var days: [TimelineDay] = []
     private(set) var members: [TripMemberDisplay] = []
-    private(set) var isLoading = false
+    private(set) var isLoading = true
     var selectedDayIndex: Int = 0
     var activeFilter: TimelineFilter = .all
     var selectedPersonId: String?
@@ -182,14 +182,22 @@ final class TripTimelineViewModel {
 
             let dayStart = cal.startOfDay(for: date)
             let dayEnd = cal.date(byAdding: .day, value: 1, to: dayStart) ?? dayStart
+            // A block belongs to this day if:
+            // - it starts on this day, OR
+            // - it spans midnight and its endAt falls into this day
             let dayBlocks = allBlocks.filter { block in
-                block.startAt >= dayStart && block.startAt < dayEnd
-                && !pendingBlockIds.contains(block.id)
+                guard !pendingBlockIds.contains(block.id) else { return false }
+                let startsOnDay = block.startAt >= dayStart && block.startAt < dayEnd
+                let spansIntoDay = block.startAt < dayStart
+                    && block.endAt != nil
+                    && block.endAt! > dayStart
+                return startsOnDay || spansIntoDay
             }.sorted { a, b in
                 let aIsTBD = isMidnight(a.startAt, in: cal) && a.endAt == nil
                 let bIsTBD = isMidnight(b.startAt, in: cal) && b.endAt == nil
                 // TBD blocks sort after timed blocks
                 if aIsTBD != bIsTBD { return !aIsTBD }
+                // Blocks sort by startAt. Both on this day = normal compare.
                 return a.startAt < b.startAt
             }
 
@@ -246,7 +254,7 @@ struct TimelineDay: Identifiable {
         .sorted { a, b in
             // TBD slots sort after timed slots
             if a.isTBD != b.isTBD { return !a.isTBD }
-            return a.time < b.time
+            return a.timeKey < b.timeKey
         }
     }
 }

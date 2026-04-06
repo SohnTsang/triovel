@@ -13,15 +13,6 @@ final class BlockDetailViewModel {
     private(set) var isLoading = false
     var errorMessage: String?
 
-    // Edit state
-    var isEditingHeader = false
-    var editTitle = ""
-    var editLocation = ""
-    var editDescription = ""
-    var editStartAt = Date()
-    var editEndAt: Date?
-    var editLocalTimezone: String?
-
     // Posts
     private var allPosts: [Post] = []
     private(set) var isLoadingPosts = false
@@ -56,11 +47,17 @@ final class BlockDetailViewModel {
     private(set) var tripPayments: [Payment] = []
     private let paymentRepository = PaymentRepository()
 
+    // Documents
+    private(set) var documents: [BlockDocument] = []
+    private(set) var deletingDocId: String?
+    private let documentRepository = BlockDocumentRepository()
+
     @ObservationIgnored private var loadTask: Task<Void, Never>?
     @ObservationIgnored private var sendTask: Task<Void, Never>?
     @ObservationIgnored private var postWatchTask: Task<Void, Never>?
     @ObservationIgnored private var mediaWatchTask: Task<Void, Never>?
     @ObservationIgnored private var billWatchTask: Task<Void, Never>?
+    @ObservationIgnored private var docWatchTask: Task<Void, Never>?
 
     deinit {
         loadTask?.cancel()
@@ -68,6 +65,7 @@ final class BlockDetailViewModel {
         postWatchTask?.cancel()
         mediaWatchTask?.cancel()
         billWatchTask?.cancel()
+        docWatchTask?.cancel()
     }
 
     /// Only block creator or trip owner can edit header.
@@ -100,6 +98,8 @@ final class BlockDetailViewModel {
             self.tripOwnerId = trip.createdBy
             self.tripBaseCurrency = trip.baseCurrency
             self.tripDisplayTimezone = trip.displayTimezone
+            self.tripStartDate = trip.startDate
+            self.tripEndDate = trip.endDate
             self.tripPayments = (try? await self.paymentRepository.fetchPaymentsForTrip(tripId: fetchedBlock.tripId)) ?? []
 
             await loadMemberNames(tripId: fetchedBlock.tripId)
@@ -141,6 +141,7 @@ final class BlockDetailViewModel {
         // Start media watch alongside posts
         startWatchingMedia(blockId: blockId)
         startWatchingBills(blockId: blockId)
+        startWatchingDocuments(blockId: blockId)
 
         postWatchTask?.cancel()
         postWatchTask = Task { [weak self] in
@@ -187,6 +188,7 @@ final class BlockDetailViewModel {
         sendTask?.cancel()
         sendTask = Task { [weak self] in
             guard let self else { return }
+            let start = ContinuousClock.now
 
             do {
                 // Write to DB immediately (offline-safe, survives app kill)
@@ -215,7 +217,10 @@ final class BlockDetailViewModel {
                 }
 
                 // 500ms minimum spinner, then reveal
-                try? await Task.sleep(for: .milliseconds(500))
+                let elapsed = ContinuousClock.now - start
+                if elapsed < .milliseconds(500) {
+                    try? await Task.sleep(for: .milliseconds(500) - elapsed)
+                }
                 self.pendingPostIds.remove(post.id)
             } catch {
                 print("[BlockDetail] ❌ sendPost failed: \(error)")
@@ -292,6 +297,7 @@ final class BlockDetailViewModel {
 
         Task { [weak self] in
             guard let self else { return }
+            let start = ContinuousClock.now
 
             do {
                 // 1. Fetch media before deleting
@@ -327,7 +333,10 @@ final class BlockDetailViewModel {
             // 500ms minimum spinner on the card, then it disappears
             // (the watch already removed it from allPosts, but deletingPostId
             // kept the spinner showing — now we clear it)
-            try? await Task.sleep(for: .milliseconds(500))
+            let elapsed = ContinuousClock.now - start
+            if elapsed < .milliseconds(500) {
+                try? await Task.sleep(for: .milliseconds(500) - elapsed)
+            }
             self.deletingPostId = nil
         }
     }
@@ -406,6 +415,112 @@ final class BlockDetailViewModel {
         }
     }
 
+    // MARK: - Documents
+
+    private func startWatchingDocuments(blockId: String) {
+        docWatchTask?.cancel()
+        docWatchTask = Task { [weak self] in
+            guard let self else { return }
+            do {
+                let stream = try self.documentRepository.watchDocuments(blockId: blockId)
+                for try await docs in stream {
+                    guard !Task.isCancelled else { break }
+                    self.documents = docs
+                }
+            } catch {
+                if !(error is CancellationError) {
+                    print("[BlockDetail] ❌ Document watch error: \(error)")
+                }
+            }
+        }
+    }
+
+    func addDocument(url: URL, fileName: String, fileType: DocumentFileType) {
+        guard let block, let userId = currentUserId else { return }
+
+        Task { [weak self] in
+            guard let self else { return }
+
+            // 1. Pre-generate ID so import goes to the right directory
+            let docId = UUID().uuidString.lowercased()
+
+            // 2. Import file to local storage first (validates size)
+            let fileSize: Int
+            do {
+                fileSize = try await DocumentFileManager.shared.importFile(
+                    from: url, docId: docId, fileName: fileName
+                )
+            } catch let error as DocumentError {
+                self.errorMessage = error.errorDescription
+                return
+            } catch {
+                self.errorMessage = String(localized: "document.error.generic")
+                return
+            }
+
+            // 3. Create DB record (appears in UI immediately via watch)
+            let doc: BlockDocument
+            do {
+                doc = try await self.documentRepository.createDocument(
+                    id: docId,
+                    blockId: block.id,
+                    userId: userId,
+                    fileName: fileName,
+                    fileType: fileType,
+                    fileSize: fileSize
+                )
+            } catch {
+                print("[BlockDetail] ❌ createDocument failed: \(error)")
+                await DocumentFileManager.shared.deleteLocalFiles(docId: docId)
+                self.errorMessage = String(localized: "document.error.generic")
+                return
+            }
+
+            // 4. Upload (non-blocking — card shows "uploading" status)
+            do {
+                try await DocumentFileManager.shared.upload(
+                    docId: doc.id, fileName: fileName, tripId: block.tripId
+                )
+            } catch {
+                // Upload failed — card stays with "failed" status + retry button.
+                // Don't delete the record — user can retry later or it uploads
+                // when back online.
+                print("[BlockDetail] ⚠️ Upload failed, will retry: \(error)")
+            }
+        }
+    }
+
+    func deleteDocument(_ doc: BlockDocument) {
+        deletingDocId = doc.id
+
+        Task { [weak self] in
+            guard let self else { return }
+            let start = ContinuousClock.now
+            do {
+                try await self.documentRepository.deleteDocument(docId: doc.id)
+                await DocumentFileManager.shared.deleteDocument(
+                    docId: doc.id, storagePath: doc.storagePath
+                )
+            } catch {
+                print("[BlockDetail] ❌ deleteDocument failed: \(error)")
+            }
+            let elapsed = ContinuousClock.now - start
+            if elapsed < .milliseconds(500) {
+                try? await Task.sleep(for: .milliseconds(500) - elapsed)
+            }
+            self.deletingDocId = nil
+        }
+    }
+
+    func retryDocumentUpload(_ doc: BlockDocument) {
+        guard let block else { return }
+        Task {
+            await DocumentFileManager.shared.retryUpload(
+                docId: doc.id, fileName: doc.fileName, tripId: block.tripId
+            )
+        }
+    }
+
     /// Bill total summary for header badge (e.g. "¥12,000")
     var billSummary: String? {
         guard !bills.isEmpty else { return nil }
@@ -431,6 +546,8 @@ final class BlockDetailViewModel {
 
     /// Trip display timezone — set during load from the trip record.
     private(set) var tripDisplayTimezone: String = TimeZone.current.identifier
+    private(set) var tripStartDate: Date = Date()
+    private(set) var tripEndDate: Date = Date()
 
     /// Bill share displays for the detail view.
     func billShareDisplays(for billId: String) -> [BillShareDisplay] {
@@ -452,6 +569,7 @@ final class BlockDetailViewModel {
 
         Task { [weak self] in
             guard let self else { return }
+            let start = ContinuousClock.now
             do {
                 // Write immediately (offline-safe)
                 try await self.billRepository.deleteBill(billId: bill.id)
@@ -460,7 +578,10 @@ final class BlockDetailViewModel {
             }
 
             // 500ms minimum spinner on card
-            try? await Task.sleep(for: .milliseconds(500))
+            let elapsed = ContinuousClock.now - start
+            if elapsed < .milliseconds(500) {
+                try? await Task.sleep(for: .milliseconds(500) - elapsed)
+            }
             self.deletingBillId = nil
         }
     }
@@ -494,47 +615,44 @@ final class BlockDetailViewModel {
 
     private(set) var isSavingHeader = false
 
-    func saveHeaderEdits() {
+    /// Called from EditBlockSheet with the new field values.
+    /// Async so the sheet can await completion before dismissing.
+    func applyEditFields(_ fields: EditBlockFields) async {
         guard let block else { return }
-        let trimmedTitle = editTitle.trimmingCharacters(in: .whitespaces)
-        guard !trimmedTitle.isEmpty else { return }
 
-        let newLocation = editLocation.trimmingCharacters(in: .whitespaces)
-        let newDescription = editDescription.trimmingCharacters(in: .whitespacesAndNewlines)
-        let timeChanged = abs(editStartAt.timeIntervalSince(block.startAt)) > 60
-        let endAtChanged = editEndAt != block.endAt
-        let localTzChanged = editLocalTimezone != block.localTimezone
+        let timeChanged = abs(fields.startAt.timeIntervalSince(block.startAt)) > 60
+        let endAtChanged = fields.endAt != block.endAt
+        let localTzChanged = fields.localTimezone != block.localTimezone
         isSavingHeader = true
+        let start = ContinuousClock.now
 
-        Task { [weak self] in
-            guard let self else { return }
+        do {
+            try await blockRepository.updateBlockHeader(
+                blockId: block.id,
+                title: fields.title != block.title ? fields.title : nil,
+                locationText: fields.location != (block.locationText ?? "") ? fields.location : nil,
+                description: fields.description != (block.description ?? "") ? fields.description : nil,
+                startAt: timeChanged ? fields.startAt : nil,
+                endAt: endAtChanged ? .some(fields.endAt) : nil,
+                localTimezone: localTzChanged ? .some(fields.localTimezone) : nil
+            )
 
-            do {
-                try await self.blockRepository.updateBlockHeader(
-                    blockId: block.id,
-                    title: trimmedTitle != block.title ? trimmedTitle : nil,
-                    locationText: newLocation != (block.locationText ?? "") ? newLocation : nil,
-                    description: newDescription != (block.description ?? "") ? newDescription : nil,
-                    startAt: timeChanged ? self.editStartAt : nil,
-                    endAt: endAtChanged ? .some(self.editEndAt) : nil,
-                    localTimezone: localTzChanged ? .some(self.editLocalTimezone) : nil
-                )
-
-                try? await Task.sleep(for: .milliseconds(500))
-
-                self.block?.title = trimmedTitle
-                self.block?.locationText = newLocation.isEmpty ? nil : newLocation
-                self.block?.description = newDescription.isEmpty ? nil : newDescription
-                if timeChanged { self.block?.startAt = self.editStartAt }
-                if endAtChanged { self.block?.endAt = self.editEndAt }
-                if localTzChanged { self.block?.localTimezone = self.editLocalTimezone }
-                self.isEditingHeader = false
-            } catch {
-                self.errorMessage = String(localized: "block.detail.error.save")
+            let elapsed = ContinuousClock.now - start
+            if elapsed < .milliseconds(500) {
+                try? await Task.sleep(for: .milliseconds(500) - elapsed)
             }
 
-            self.isSavingHeader = false
+            self.block?.title = fields.title
+            self.block?.locationText = fields.location.isEmpty ? nil : fields.location
+            self.block?.description = fields.description.isEmpty ? nil : fields.description
+            if timeChanged { self.block?.startAt = fields.startAt }
+            if endAtChanged { self.block?.endAt = fields.endAt }
+            if localTzChanged { self.block?.localTimezone = fields.localTimezone }
+        } catch {
+            self.errorMessage = String(localized: "block.detail.error.save")
         }
+
+        isSavingHeader = false
     }
 }
 

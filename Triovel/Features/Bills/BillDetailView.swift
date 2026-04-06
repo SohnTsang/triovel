@@ -71,9 +71,13 @@ struct BillDetailView: View {
                 Button(String(localized: "common.cancel"), role: .cancel) {}
                 Button(String(localized: "common.delete"), role: .destructive) {
                     isDeleting = true
+                    let start = ContinuousClock.now
                     onDelete?()
                     Task {
-                        try? await Task.sleep(for: .milliseconds(500))
+                        let elapsed = ContinuousClock.now - start
+                        if elapsed < .milliseconds(500) {
+                            try? await Task.sleep(for: .milliseconds(500) - elapsed)
+                        }
                         dismiss()
                     }
                 }

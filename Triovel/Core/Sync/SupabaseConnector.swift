@@ -9,11 +9,17 @@ final class SupabaseConnector: PowerSyncBackendConnectorProtocol {
     // MARK: - Credentials
 
     func fetchCredentials() async throws -> PowerSyncCredentials? {
-        let session = try await SupabaseConfig.client.auth.session
-        return PowerSyncCredentials(
-            endpoint: PowerSyncConfig.powersyncURL,
-            token: session.accessToken
-        )
+        do {
+            let session = try await SupabaseConfig.client.auth.session
+            print("[Sync] ✓ Credentials fetched (token expires: \(Date(timeIntervalSince1970: session.expiresAt)))")
+            return PowerSyncCredentials(
+                endpoint: PowerSyncConfig.powersyncURL,
+                token: session.accessToken
+            )
+        } catch {
+            print("[Sync] ❌ fetchCredentials failed: \(error)")
+            throw error
+        }
     }
 
     // MARK: - Upload
@@ -130,6 +136,7 @@ private struct TypedCrudData: Encodable {
         "blocks": ["untimed_rank"],
         "bills": ["amount"],
         "bill_shares": ["share_amount"],
+        "block_documents": ["file_size"],
         "payments": ["amount"],
     ]
 }

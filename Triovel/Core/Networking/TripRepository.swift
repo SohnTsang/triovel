@@ -59,37 +59,71 @@ final class TripRepository: @unchecked Sendable {
     func joinTrip(inviteCode: String, userId: String) async throws -> String {
         print("[TripRepo] JOIN trip with code: \(inviteCode)")
 
-        let rows: [TripIdRow] = try await client
-            .from("trips")
-            .select("id")
-            .eq("invite_link", value: inviteCode)
-            .execute()
-            .value
-
-        guard let tripId = rows.first?.id else {
-            throw TripRepositoryError.tripNotFound
+        // Use RPC function that runs as SECURITY DEFINER —
+        // bypasses RLS so non-members can look up trips by invite code.
+        // The function also inserts the trip_member row server-side (idempotent).
+        let tripId: String
+        do {
+            let response: String = try await client
+                .rpc("join_trip_by_invite", params: ["p_invite_code": inviteCode])
+                .execute()
+                .value
+            // RPC returns a quoted UUID string — strip quotes
+            tripId = response.trimmingCharacters(in: CharacterSet(charactersIn: "\""))
+        } catch {
+            let msg = String(describing: error).lowercased()
+            if msg.contains("trip not found") || msg.contains("p0002") {
+                throw TripRepositoryError.tripNotFound
+            }
+            throw error
         }
 
-        let existing: [MemberIdRow] = try await client
-            .from("trip_members")
-            .select("id")
-            .eq("trip_id", value: tripId)
-            .eq("user_id", value: userId)
-            .execute()
-            .value
+        // Also write to local PowerSync DB so the trip appears on
+        // home screen immediately without waiting for a sync round-trip.
+        let localExists = try await db.getOptional(
+            sql: "SELECT id FROM trip_members WHERE trip_id = ? AND user_id = ?",
+            parameters: [tripId, userId],
+            mapper: { try $0.getString(name: "id") }
+        )
 
-        if existing.isEmpty {
-            let params = JoinTripParams(trip_id: tripId, user_id: userId, role: "member")
-            try await client
-                .from("trip_members")
-                .insert(params)
-                .execute()
-            print("[TripRepo] Joined trip: \(tripId)")
+        if localExists == nil {
+            let memberId = UUID().uuidString.lowercased()
+            let now = Self.isoString(from: Date())
+            try await db.execute(
+                sql: """
+                    INSERT OR IGNORE INTO trip_members (id, trip_id, user_id, role, joined_at)
+                    VALUES (?, ?, ?, 'member', ?)
+                    """,
+                parameters: [memberId, tripId, userId, now]
+            )
+            print("[TripRepo] Joined trip locally: \(tripId)")
         } else {
-            print("[TripRepo] Already a member of trip: \(tripId)")
+            print("[TripRepo] Already a member locally: \(tripId)")
         }
 
         return tripId
+    }
+
+    // MARK: - Leave Trip
+
+    /// Remove the current user from a trip. Deletes the trip_members row locally
+    /// (PowerSync syncs the delete to Supabase). Owners cannot leave.
+    func leaveTrip(tripId: String, userId: String) async throws {
+        // Safety: verify user is not the owner
+        let isOwner = try await db.getOptional(
+            sql: "SELECT id FROM trip_members WHERE trip_id = ? AND user_id = ? AND role = 'owner'",
+            parameters: [tripId, userId],
+            mapper: { try $0.getString(name: "id") }
+        )
+        if isOwner != nil {
+            throw TripRepositoryError.cannotLeaveAsOwner
+        }
+
+        try await db.execute(
+            sql: "DELETE FROM trip_members WHERE trip_id = ? AND user_id = ?",
+            parameters: [tripId, userId]
+        )
+        print("[TripRepo] Left trip: \(tripId)")
     }
 
     // MARK: - Ensure Invite Link
@@ -390,11 +424,13 @@ final class TripRepository: @unchecked Sendable {
 enum TripRepositoryError: LocalizedError {
     case createFailed
     case tripNotFound
+    case cannotLeaveAsOwner
 
     var errorDescription: String? {
         switch self {
         case .createFailed: return "Failed to create trip."
         case .tripNotFound: return "No trip found with that invite code."
+        case .cannotLeaveAsOwner: return "Trip organizer cannot leave the trip."
         }
     }
 }

@@ -89,6 +89,12 @@ final class AuthService {
                 password: password
             )
 
+            // Supabase returns a fake user with empty identities when the email
+            // already exists (anti-enumeration). Detect this explicitly.
+            if let identities = response.user.identities, identities.isEmpty {
+                throw AuthError.emailTaken
+            }
+
             let user = response.user
             let isConfirmed = user.emailConfirmedAt != nil || user.confirmedAt != nil
 
@@ -101,6 +107,9 @@ final class AuthService {
 
             // Email not confirmed — verification required
             return SignUpResult(email: email, needsVerification: true)
+        } catch let authError as AuthError {
+            // Re-throw our own classified errors (e.g. .emailTaken from above)
+            throw authError
         } catch {
             throw classifySignUpError(error)
         }
@@ -120,6 +129,25 @@ final class AuthService {
             self.currentUser = session.user
         } catch {
             throw classifySignInError(error)
+        }
+    }
+
+    // MARK: - Password Reset
+
+    /// Send a password reset email via Supabase Auth.
+    func resetPassword(email: String) async throws {
+        isLoading = true
+        defer { isLoading = false }
+
+        do {
+            try await client.auth.resetPasswordForEmail(email)
+        } catch {
+            let message = error.localizedDescription.lowercased()
+            if message.contains("network") || message.contains("connection") || message.contains("offline") {
+                throw AuthError.networkError
+            }
+            // Supabase sends the email regardless of whether the account exists
+            // (anti-enumeration), so we don't throw for "not found" — just succeed silently.
         }
     }
 
@@ -152,28 +180,22 @@ final class AuthService {
     // MARK: - Delete Account
 
     /// Permanently delete the current user's account.
-    /// 1. Delete user from Supabase Auth (cascades to public.users via FK)
-    /// 2. Supabase cascade handles: trip_members, posts, bills, payments
-    /// 3. Caller is responsible for clearing local DB + cache after this returns
+    /// Uses the `delete_own_account` RPC which safely:
+    /// 1. Transfers ownership of shared trips to the earliest joined member
+    /// 2. Deletes solo trips (no other members)
+    /// 3. Leaves all other trips (keeps shared posts/blocks/bills)
+    /// 4. Deletes private posts
+    /// 5. Anonymizes user record to "Deleted User"
+    /// 6. Deletes auth record (prevents future login)
+    /// Caller is responsible for clearing local DB + cache after this returns.
     func deleteAccount() async throws {
-        guard let user = currentUser else { throw AuthError.networkError }
+        guard currentUser != nil else { throw AuthError.networkError }
 
-        // Supabase Admin API: delete the authenticated user
-        // Uses the user's own JWT — requires Supabase to have
-        // "Users can delete their own account" enabled in Auth settings
         do {
-            // Try the Supabase auth admin delete endpoint
-            try await client.auth.admin.deleteUser(id: user.id)
+            try await client.rpc("delete_own_account").execute()
         } catch {
-            // Fallback: sign out + let server-side cleanup handle it
-            // Some Supabase configs require an Edge Function for self-deletion
-            print("[Auth] Admin delete failed, attempting RPC fallback: \(error)")
-            do {
-                try await client.rpc("delete_own_account").execute()
-            } catch {
-                print("[Auth] RPC fallback also failed: \(error)")
-                throw AuthError.networkError
-            }
+            print("[Auth] ❌ Account deletion failed: \(error)")
+            throw AuthError.networkError
         }
 
         clearLocalState()

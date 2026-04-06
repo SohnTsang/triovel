@@ -107,6 +107,7 @@ struct TripSetupView: View {
         errorMessage = nil
 
         Task {
+            let start = ContinuousClock.now
             do {
                 // Write to DB immediately (offline-safe)
                 print("[TripSetup] Creating trip: \(trimmedTitle), userId=\(userId)")
@@ -121,7 +122,10 @@ struct TripSetupView: View {
                 print("[TripSetup] Trip created: \(tripId)")
 
                 // 500ms minimum spinner, then navigate
-                try? await Task.sleep(for: .milliseconds(500))
+                let elapsed = ContinuousClock.now - start
+                if elapsed < .milliseconds(500) {
+                    try? await Task.sleep(for: .milliseconds(500) - elapsed)
+                }
                 dismiss()
                 try? await Task.sleep(for: .milliseconds(300))
                 onTripCreated?(tripId)

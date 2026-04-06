@@ -23,6 +23,7 @@ struct DaySectionView: View {
                 TimeSlotView(
                     slot: slot,
                     tripDisplayTimezone: tripDisplayTimezone,
+                    dayDate: day.date,
                     creatorNameForBlock: creatorNameForBlock,
                     onBlockTap: onBlockTap
                 )
@@ -46,6 +47,7 @@ struct DaySectionView: View {
 private struct TimeSlotView: View {
     let slot: TimeSlot
     var tripDisplayTimezone: String = ""
+    var dayDate: Date
     var creatorNameForBlock: ((Block) -> String?)?
     let onBlockTap: (Block) -> Void
 
@@ -55,7 +57,8 @@ private struct TimeSlotView: View {
                 BlockCardView(
                     block: block,
                     creatorName: creatorNameForBlock?(block),
-                    tripDisplayTimezone: tripDisplayTimezone
+                    tripDisplayTimezone: tripDisplayTimezone,
+                    dayDate: dayDate
                 )
                 .contentShape(Rectangle())
                 .onTapGesture {

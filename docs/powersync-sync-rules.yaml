@@ -53,5 +53,9 @@ streams:
     auto_subscribe: true
     query: SELECT * FROM post_media
 
+  block_documents:
+    auto_subscribe: true
+    query: SELECT * FROM block_documents
+
 config:
   edition: 3

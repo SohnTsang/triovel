@@ -127,6 +127,22 @@ enum AppSchema {
             ]
         ),
         Table(
+            name: "block_documents",
+            columns: [
+                .text("block_id"),
+                .text("user_id"),
+                .text("file_name"),
+                .text("file_type"),
+                .text("storage_path"),
+                .text("upload_status"),
+                .integer("file_size"),
+                .text("created_at"),
+            ],
+            indexes: [
+                Index.ascending(name: "idx_bd_block", column: "block_id"),
+            ]
+        ),
+        Table(
             name: "payments",
             columns: [
                 .text("trip_id"),

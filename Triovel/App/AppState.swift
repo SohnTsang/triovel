@@ -139,9 +139,18 @@ final class AppState {
     // MARK: - Sync Lifecycle
 
     /// Reconnect sync if disconnected (called when app returns to foreground).
+    /// Refreshes the auth token first so PowerSync gets a valid JWT.
     func ensureSyncConnected() async {
         guard authStatus == .signedIn, !isSyncConnected else { return }
         print("[Sync] Reconnecting on foreground...")
+        do {
+            // Refresh token before reconnecting — stale JWTs are the #1 cause
+            // of PowerSync staying offline despite having internet.
+            try await authService.refreshSession()
+            print("[Sync] ✓ Token refreshed")
+        } catch {
+            print("[Sync] ⚠️ Token refresh failed (will try connect anyway): \(error)")
+        }
         do {
             try await SyncManager.shared.connect(currentUserId: currentUserId)
             print("[Sync] ✓ Foreground reconnect succeeded")
@@ -173,9 +182,8 @@ final class AppState {
     private func startWatchingSyncStatus() {
         syncStatusTask?.cancel()
         syncStatusTask = Task { [weak self] in
-            var wasConnected = true
             var reconnectAttempts = 0
-            let maxReconnectAttempts = 3
+            let maxReconnectAttempts = 5
             for await status in SyncManager.shared.db.currentStatus.asFlow() {
                 guard let self, !Task.isCancelled else { break }
                 self.isSyncConnected = status.connected
@@ -187,14 +195,21 @@ final class AppState {
                 if status.connected {
                     // Connection restored — reset retry counter
                     reconnectAttempts = 0
-                } else if wasConnected && self.authStatus == .signedIn && reconnectAttempts < maxReconnectAttempts {
-                    // Connection dropped — auto-reconnect with backoff
+                } else if !status.connecting && self.authStatus == .signedIn && reconnectAttempts < maxReconnectAttempts {
+                    // Connection dropped (not just in the process of connecting).
                     reconnectAttempts += 1
-                    let delay = reconnectAttempts * 3 // 3s, 6s, 9s
+                    let delay = min(reconnectAttempts * 3, 15) // 3s, 6s, 9s, 12s, 15s
                     print("[Sync] ⚠️ Connection lost, reconnecting in \(delay)s (attempt \(reconnectAttempts)/\(maxReconnectAttempts))...")
                     Task {
                         try? await Task.sleep(for: .seconds(delay))
                         guard !Task.isCancelled else { return }
+                        // Refresh token before reconnecting — expired JWTs cause
+                        // silent credential failures in SupabaseConnector.
+                        do {
+                            try await self.authService.refreshSession()
+                        } catch {
+                            print("[Sync] ⚠️ Token refresh failed: \(error)")
+                        }
                         do {
                             try await SyncManager.shared.connect(currentUserId: self.currentUserId)
                             print("[Sync] ✓ Auto-reconnected")
@@ -203,7 +218,6 @@ final class AppState {
                         }
                     }
                 }
-                wasConnected = status.connected
             }
         }
     }

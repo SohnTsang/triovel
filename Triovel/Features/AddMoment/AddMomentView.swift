@@ -73,7 +73,6 @@ struct AddMomentView: View {
                             DatePicker(
                                 String(localized: "block.add.end.time"),
                                 selection: $endTime,
-                                in: startTime...,
                                 displayedComponents: .hourAndMinute
                             )
                             .padding(.horizontal)
@@ -162,12 +161,7 @@ struct AddMomentView: View {
                 }
                 titleFocused = true
             }
-            .onChange(of: startTime) { _, newStart in
-                // Keep end time valid
-                if hasEndTime && endTime < newStart {
-                    endTime = Calendar.current.date(byAdding: .hour, value: 1, to: newStart) ?? newStart
-                }
-            }
+            .onChange(of: startTime) { _, _ in }
         }
         .presentationDetents(sizeClass == .regular ? [.medium, .large] : [.medium, .large])
     }
@@ -180,20 +174,41 @@ struct AddMomentView: View {
         let startAt: Date
         let endAt: Date?
         if !hasTime {
-            // Time not set: use start of the day
-            startAt = Calendar.current.startOfDay(for: dayDate ?? Date())
+            // Time not set: use start of the day in trip timezone
+            var cal = Calendar.current
+            cal.timeZone = TimeZone(identifier: displayTimezone) ?? .current
+            startAt = cal.startOfDay(for: dayDate ?? Date())
             endAt = nil
         } else {
             startAt = buildDateTime(from: startTime)
-            endAt = hasEndTime ? buildDateTime(from: endTime) : nil
+            if hasEndTime {
+                var end = buildDateTime(from: endTime)
+                // Cross-midnight: end time before start time means next day
+                if end <= startAt {
+                    var cal = Calendar.current
+                    cal.timeZone = TimeZone(identifier: displayTimezone) ?? .current
+                    end = cal.date(byAdding: .day, value: 1, to: end) ?? end
+                }
+                endAt = end
+            } else {
+                endAt = nil
+            }
         }
 
         isSaving = true
         errorMessage = nil
 
+        // Pre-generate the block ID so we can hide it from the timeline
+        // BEFORE the DB write. The reactive watchBlocks stream picks up
+        // new rows instantly — hiding after the write is too late.
+        let blockId = UUID().uuidString.lowercased()
+        timelineViewModel?.hideBlockUntilReady(blockId)
+
         Task {
+            let start = ContinuousClock.now
             do {
                 let block = try await blockRepository.createBlock(
+                    id: blockId,
                     tripId: tripId,
                     title: trimmedTitle,
                     context: context,
@@ -203,14 +218,17 @@ struct AddMomentView: View {
                     createdBy: userId
                 )
 
-                await MainActor.run { timelineViewModel?.hideBlockUntilReady(block.id) }
-                try? await Task.sleep(for: .milliseconds(500))
-                await MainActor.run { timelineViewModel?.revealBlock(block.id) }
+                let elapsed = ContinuousClock.now - start
+                if elapsed < .milliseconds(500) {
+                    try? await Task.sleep(for: .milliseconds(500) - elapsed)
+                }
+                timelineViewModel?.revealBlock(block.id)
                 dismiss()
                 try? await Task.sleep(for: .milliseconds(300))
                 onBlockCreated?(block.id)
             } catch {
                 print("[AddMoment] ❌ Block creation failed: \(error)")
+                timelineViewModel?.revealBlock(blockId)
                 errorMessage = String(localized: "block.add.error")
                 isSaving = false
             }
@@ -218,7 +236,12 @@ struct AddMomentView: View {
     }
 
     private func buildDateTime(from time: Date) -> Date {
-        let cal = Calendar.current
+        // Use the trip's display timezone for date math so the block
+        // lands on the correct day. Calendar.current (device TZ) can
+        // shift the date by a day when device and trip timezones differ.
+        var cal = Calendar.current
+        cal.timeZone = TimeZone(identifier: displayTimezone) ?? .current
+
         let components = cal.dateComponents([.hour, .minute], from: time)
 
         if let dayDate {

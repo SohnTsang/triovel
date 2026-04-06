@@ -170,6 +170,7 @@ struct BillEntryView: View {
         errorMessage = nil
 
         Task {
+            let start = ContinuousClock.now
             do {
                 _ = try await billRepository.createBill(
                     blockId: blockId,
@@ -180,7 +181,10 @@ struct BillEntryView: View {
                     memberIds: Array(includedMemberIds)
                 )
 
-                try? await Task.sleep(for: .milliseconds(500))
+                let elapsed = ContinuousClock.now - start
+                if elapsed < .milliseconds(500) {
+                    try? await Task.sleep(for: .milliseconds(500) - elapsed)
+                }
                 dismiss()
                 onBillCreated?()
             } catch {

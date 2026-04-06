@@ -9,7 +9,10 @@ struct SettingsView: View {
     @State private var isDeletingAccount = false
     @State private var deleteError: String?
     @State private var safariURL: URL?
+    @State private var displayName = ""
+    @State private var isSavingName = false
     @AppStorage("appearanceMode") private var appearanceMode: AppearanceMode = .system
+    @FocusState private var nameFocused: Bool
 
     private var authService: AuthService { appState.authService }
 
@@ -17,7 +20,47 @@ struct SettingsView: View {
         List {
             // Profile section
             Section {
-                ProfileHeaderView(user: authService.currentUser)
+                HStack(spacing: 16) {
+                    Circle()
+                        .fill(Color(.systemGray4))
+                        .frame(width: 64, height: 64)
+                        .overlay {
+                            Image(systemName: "person.fill")
+                                .font(.title2)
+                                .foregroundStyle(.white)
+                        }
+
+                    VStack(alignment: .leading, spacing: 4) {
+                        HStack(spacing: 6) {
+                            TextField(String(localized: "settings.display.name.placeholder"), text: $displayName)
+                                .font(.headline)
+                                .focused($nameFocused)
+                                .submitLabel(.done)
+                                .onChange(of: displayName) { _, v in
+                                    if v.count > 50 { displayName = String(v.prefix(50)) }
+                                }
+                                .onSubmit { saveDisplayName() }
+
+                            if isSavingName {
+                                ProgressView()
+                                    .controlSize(.small)
+                            } else {
+                                Image(systemName: "pencil")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+
+                        Text(authService.currentUser?.email ?? String(localized: "settings.no.email"))
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                            .truncationMode(.middle)
+                    }
+                }
+                .padding(.vertical, 4)
+                .contentShape(Rectangle())
+                .onTapGesture { nameFocused = true }
             }
 
             // Account info
@@ -72,8 +115,14 @@ struct SettingsView: View {
                 }
             }
         }
+        .scrollDismissesKeyboard(.interactively)
         .navigationTitle(String(localized: "settings.title"))
         .plainBackButton()
+        .onChange(of: nameFocused) { _, focused in
+            if !focused && !isSavingName {
+                saveDisplayName()
+            }
+        }
         .alert(
             String(localized: "settings.sign.out.confirm"),
             isPresented: $showingSignOutConfirmation
@@ -105,6 +154,51 @@ struct SettingsView: View {
         .sheet(item: $safariURL) { url in
             SafariView(url: url)
                 .ignoresSafeArea()
+        }
+        .task {
+            await loadDisplayName()
+        }
+    }
+
+    private func loadDisplayName() async {
+        guard let userId = appState.currentUserId else { return }
+        do {
+            let name: String? = try await SyncManager.shared.db.getOptional(
+                sql: "SELECT display_name FROM users WHERE id = ?",
+                parameters: [userId],
+                mapper: { try $0.getString(name: "display_name") }
+            )
+            displayName = name ?? ""
+        } catch {
+            // Fall back to auth metadata
+            if let metadata = authService.currentUser?.userMetadata,
+               let name = metadata["full_name"]?.value as? String {
+                displayName = name
+            }
+        }
+    }
+
+    private func saveDisplayName() {
+        let trimmed = displayName.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty, let userId = appState.currentUserId else { return }
+        isSavingName = true
+        nameFocused = false
+
+        Task {
+            let start = ContinuousClock.now
+            do {
+                try await SyncManager.shared.db.execute(
+                    sql: "UPDATE users SET display_name = ? WHERE id = ?",
+                    parameters: [trimmed, userId]
+                )
+            } catch {
+                print("[Settings] ❌ Update display name failed: \(error)")
+            }
+            let elapsed = ContinuousClock.now - start
+            if elapsed < .milliseconds(500) {
+                try? await Task.sleep(for: .milliseconds(500) - elapsed)
+            }
+            isSavingName = false
         }
     }
 

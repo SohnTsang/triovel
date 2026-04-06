@@ -235,15 +235,20 @@ struct PostCardView: View {
         let removedIds = mediaToRemove
 
         Task {
-            // 500ms loading first — UI stays unchanged during this time
-            try? await Task.sleep(for: .milliseconds(500))
+            let start = ContinuousClock.now
 
-            // NOW write to DB — UI updates after sheet dismisses
+            // Write to DB
             if textChanged {
                 onEdit?(trimmed)
             }
             for mediaId in removedIds {
                 onRemoveMedia?(mediaId)
+            }
+
+            // 500ms minimum loading, then dismiss
+            let elapsed = ContinuousClock.now - start
+            if elapsed < .milliseconds(500) {
+                try? await Task.sleep(for: .milliseconds(500) - elapsed)
             }
 
             isSavingEdit = false

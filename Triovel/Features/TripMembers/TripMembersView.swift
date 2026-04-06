@@ -5,13 +5,27 @@ struct TripMembersView: View {
     let members: [TripMemberDisplay]
     let inviteLink: String?
 
+    @Environment(AppState.self) private var appState
+    @Environment(Router.self) private var router
+
     @State private var inviteCode: String?
     @State private var isGeneratingLink = false
     @State private var showingCopied = false
     @State private var showingShareSheet = false
+    @State private var showingLeaveAlert = false
+    @State private var isLeaving = false
     @State private var errorMessage: String?
 
     private let tripRepository = TripRepository()
+
+    private var currentUserRole: TripMember.Role? {
+        guard let userId = appState.currentUserId else { return nil }
+        return members.first(where: { $0.userId == userId })?.role
+    }
+
+    private var isOwner: Bool {
+        currentUserRole == .owner
+    }
 
     /// Full shareable URL that opens the app or redirects to App Store.
     private var shareURL: String? {
@@ -73,9 +87,38 @@ struct TripMembersView: View {
             } footer: {
                 Text("trip.members.share.footer")
             }
+
+            // Leave trip — only for non-owners
+            if !isOwner {
+                Section {
+                    Button(role: .destructive) {
+                        showingLeaveAlert = true
+                    } label: {
+                        HStack {
+                            Spacer()
+                            if isLeaving {
+                                ProgressView()
+                                    .controlSize(.small)
+                            } else {
+                                Text("trip.members.leave")
+                            }
+                            Spacer()
+                        }
+                    }
+                    .disabled(isLeaving)
+                }
+            }
         }
         .navigationTitle(String(localized: "trip.members.title"))
         .plainBackButton()
+        .alert(String(localized: "trip.members.leave.title"), isPresented: $showingLeaveAlert) {
+            Button(String(localized: "trip.members.leave.confirm"), role: .destructive) {
+                leaveTrip()
+            }
+            Button(String(localized: "common.cancel"), role: .cancel) {}
+        } message: {
+            Text("trip.members.leave.message")
+        }
         .overlay {
             if showingCopied {
                 copiedToast
@@ -99,6 +142,31 @@ struct TripMembersView: View {
         .task {
             // Pre-load invite code
             inviteCode = inviteLink
+        }
+    }
+
+    // MARK: - Leave Trip
+
+    private func leaveTrip() {
+        guard let userId = appState.currentUserId else { return }
+        isLeaving = true
+        errorMessage = nil
+
+        Task {
+            let start = ContinuousClock.now
+            do {
+                try await tripRepository.leaveTrip(tripId: tripId, userId: userId)
+                let elapsed = ContinuousClock.now - start
+                if elapsed < .milliseconds(500) {
+                    try? await Task.sleep(for: .milliseconds(500) - elapsed)
+                }
+                // Navigate back to home — trip is gone from the list
+                router.popToRoot()
+            } catch {
+                print("[Members] ❌ Leave trip failed: \(error)")
+                errorMessage = String(localized: "trip.members.leave.error")
+            }
+            isLeaving = false
         }
     }
 

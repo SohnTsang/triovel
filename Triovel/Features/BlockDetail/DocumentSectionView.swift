@@ -1,0 +1,189 @@
+import SwiftUI
+import QuickLook
+import UniformTypeIdentifiers
+
+/// Compact document list shown in block detail. Each document is one row.
+/// Tap to preview (QuickLook). Long-press to delete (own documents only).
+struct DocumentSectionView: View {
+    let documents: [BlockDocument]
+    let currentUserId: String?
+    let tripId: String
+    var onDelete: ((BlockDocument) -> Void)?
+    var onRetry: ((BlockDocument) -> Void)?
+
+    @State private var previewURL: URL?
+    @State private var isLoadingPreview = false
+    @State private var loadingDocId: String?
+    @State private var deleteTarget: BlockDocument?
+
+    var body: some View {
+        if !documents.isEmpty {
+            VStack(alignment: .leading, spacing: 0) {
+                ForEach(documents) { doc in
+                    documentRow(doc)
+                    if doc.id != documents.last?.id {
+                        Divider()
+                            .padding(.leading, 40)
+                    }
+                }
+            }
+            .background(Color(.secondarySystemBackground))
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(Color(.systemGray5), lineWidth: 1)
+            )
+            .padding(.horizontal)
+            .padding(.top, 8)
+            .alert(String(localized: "document.delete.title"), isPresented: .init(
+                get: { deleteTarget != nil },
+                set: { if !$0 { deleteTarget = nil } }
+            )) {
+                Button(String(localized: "common.cancel"), role: .cancel) { deleteTarget = nil }
+                Button(String(localized: "common.delete"), role: .destructive) {
+                    if let doc = deleteTarget {
+                        onDelete?(doc)
+                        deleteTarget = nil
+                    }
+                }
+            } message: {
+                Text("document.delete.message")
+            }
+            .quickLookPreview($previewURL)
+        }
+    }
+
+    // MARK: - Row
+
+    @ViewBuilder
+    private func documentRow(_ doc: BlockDocument) -> some View {
+        HStack(spacing: 10) {
+            // File type icon
+            Image(systemName: doc.fileType == .pdf ? "doc.fill" : "photo.fill")
+                .font(.subheadline)
+                .foregroundStyle(doc.fileType == .pdf ? Color.red : Color.blue)
+                .frame(width: 24)
+
+            // File name + size
+            VStack(alignment: .leading, spacing: 1) {
+                Text(doc.fileName)
+                    .font(.subheadline)
+                    .lineLimit(1)
+                    .truncationMode(.middle)
+
+                if let size = doc.formattedSize {
+                    Text(size)
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                }
+            }
+
+            Spacer()
+
+            // Upload state
+            switch doc.uploadStatus {
+            case .queued, .uploading:
+                ProgressView()
+                    .controlSize(.small)
+            case .failed:
+                Button {
+                    onRetry?(doc)
+                } label: {
+                    Image(systemName: "arrow.clockwise")
+                        .font(.caption)
+                        .foregroundStyle(Color.red)
+                }
+                .buttonStyle(.plain)
+            case .uploaded:
+                EmptyView()
+            }
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+        .contentShape(Rectangle())
+        .onTapGesture {
+            if doc.uploadStatus == .failed {
+                onRetry?(doc)
+            } else {
+                openPreview(doc)
+            }
+        }
+        .contextMenu {
+            if doc.userId == currentUserId {
+                Button(role: .destructive) {
+                    deleteTarget = doc
+                } label: {
+                    Label(String(localized: "common.delete"), systemImage: "trash")
+                }
+            }
+        }
+    }
+
+    // MARK: - Preview
+
+    private func openPreview(_ doc: BlockDocument) {
+        guard !isLoadingPreview else { return }
+
+        // Try local file first
+        let docsDir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        let localFile = docsDir.appendingPathComponent("Documents/\(doc.id)/\(doc.fileName)")
+        if FileManager.default.fileExists(atPath: localFile.path) {
+            previewURL = localFile
+            return
+        }
+
+        // Download from remote
+        guard let storagePath = doc.storagePath else { return }
+        isLoadingPreview = true
+        loadingDocId = doc.id
+
+        Task {
+            do {
+                let url = try await DocumentFileManager.shared.download(
+                    docId: doc.id,
+                    fileName: doc.fileName,
+                    storagePath: storagePath
+                )
+                previewURL = url
+            } catch {
+                print("[DocSection] ❌ Preview download failed: \(error)")
+            }
+            isLoadingPreview = false
+            loadingDocId = nil
+        }
+    }
+}
+
+// MARK: - Document Picker (UIKit wrapper)
+
+struct DocumentPickerView: UIViewControllerRepresentable {
+    let onPick: (URL, String, DocumentFileType) -> Void
+
+    func makeUIViewController(context: Context) -> UIDocumentPickerViewController {
+        let types: [UTType] = [.pdf, .jpeg, .png, .heic]
+        let picker = UIDocumentPickerViewController(forOpeningContentTypes: types, asCopy: true)
+        picker.allowsMultipleSelection = false
+        picker.delegate = context.coordinator
+        return picker
+    }
+
+    func updateUIViewController(_ controller: UIDocumentPickerViewController, context: Context) {}
+
+    func makeCoordinator() -> Coordinator { Coordinator(onPick: onPick) }
+
+    final class Coordinator: NSObject, UIDocumentPickerDelegate {
+        let onPick: (URL, String, DocumentFileType) -> Void
+
+        init(onPick: @escaping (URL, String, DocumentFileType) -> Void) {
+            self.onPick = onPick
+        }
+
+        func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
+            guard let url = urls.first else { return }
+            let fileName = url.lastPathComponent
+            let ext = url.pathExtension.lowercased()
+            let fileType: DocumentFileType = ext == "pdf" ? .pdf : .image
+            onPick(url, fileName, fileType)
+        }
+    }
+}
