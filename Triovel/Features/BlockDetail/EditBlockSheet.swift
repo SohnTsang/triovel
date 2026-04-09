@@ -15,6 +15,7 @@ struct EditBlockSheet: View {
     @State private var title: String
     @State private var location: String
     @State private var description: String
+    @State private var context: BlockContext
     @State private var startAt: Date
     @State private var hasEndTime: Bool
     @State private var endTime: Date
@@ -40,6 +41,7 @@ struct EditBlockSheet: View {
         _title = State(initialValue: block.title)
         _location = State(initialValue: block.locationText ?? "")
         _description = State(initialValue: block.description ?? "")
+        _context = State(initialValue: block.context)
         _startAt = State(initialValue: block.startAt)
         _hasEndTime = State(initialValue: block.endAt != nil)
         _endTime = State(initialValue: block.endAt ?? Calendar.current.date(byAdding: .hour, value: 1, to: block.startAt) ?? block.startAt)
@@ -70,6 +72,16 @@ struct EditBlockSheet: View {
                         }
                 }
 
+                // Context
+                Section {
+                    Picker("", selection: $context) {
+                        Text("block.add.context.group").tag(BlockContext.group)
+                        Text("block.add.context.personal").tag(BlockContext.personal)
+                    }
+                    .pickerStyle(.segmented)
+                    .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+                }
+
                 // Date & Time
                 Section {
                     // Date row
@@ -95,6 +107,7 @@ struct EditBlockSheet: View {
                         DatePicker("", selection: $startAt, in: tripStartDate...tripEndDate, displayedComponents: .date)
                             .datePickerStyle(.graphical)
                             .labelsHidden()
+                            .environment(\.timeZone, TimeZone(identifier: block.displayTimezone) ?? .current)
                     }
 
                     // Start time row
@@ -110,7 +123,7 @@ struct EditBlockSheet: View {
                             Label(String(localized: "block.edit.start.time"), systemImage: "clock")
                                 .foregroundStyle(.primary)
                             Spacer()
-                            Text(startAt, format: .dateTime.hour().minute())
+                            TimeText(startAt, in: block.displayTimezone)
                                 .foregroundStyle(showStartTimePicker ? Color.accentColor : .secondary)
                         }
                     }
@@ -122,9 +135,10 @@ struct EditBlockSheet: View {
                             .labelsHidden()
                             .frame(height: 150)
                             .clipped()
+                            .environment(\.timeZone, TimeZone(identifier: block.displayTimezone) ?? .current)
                     }
 
-                    // End time row
+                    // End date + time row
                     if hasEndTime {
                         HStack {
                             Button {
@@ -139,7 +153,7 @@ struct EditBlockSheet: View {
                                     Label(String(localized: "block.edit.end.time"), systemImage: "clock.badge.checkmark")
                                         .foregroundStyle(.primary)
                                     Spacer()
-                                    Text(endTime, format: .dateTime.hour().minute())
+                                    Text(endTime.formatted(.dateTime.month(.abbreviated).day()) + " " + endTime.timeString(in: TimeZone(identifier: block.displayTimezone) ?? .current))
                                         .foregroundStyle(showEndTimePicker ? Color.accentColor : .secondary)
                                 }
                             }
@@ -159,11 +173,12 @@ struct EditBlockSheet: View {
                         }
 
                         if showEndTimePicker {
-                            DatePicker("", selection: $endTime, displayedComponents: .hourAndMinute)
+                            DatePicker("", selection: $endTime, in: startAt..., displayedComponents: [.date, .hourAndMinute])
                                 .datePickerStyle(.wheel)
                                 .labelsHidden()
                                 .frame(height: 150)
                                 .clipped()
+                                .environment(\.timeZone, TimeZone(identifier: block.displayTimezone) ?? .current)
                         }
                     } else {
                         Button {
@@ -275,20 +290,13 @@ struct EditBlockSheet: View {
     }
 
     private func save() {
-        var resolvedEndAt: Date? = nil
-        if hasEndTime {
-            var end = endTime
-            // Cross-midnight: end time before start time means next day
-            if end <= startAt {
-                end = Calendar.current.date(byAdding: .day, value: 1, to: end) ?? end
-            }
-            resolvedEndAt = end
-        }
+        let resolvedEndAt: Date? = hasEndTime ? endTime : nil
 
         let fields = EditBlockFields(
             title: title.trimmingCharacters(in: .whitespaces),
             location: location.trimmingCharacters(in: .whitespaces),
             description: description.trimmingCharacters(in: .whitespacesAndNewlines),
+            context: context,
             startAt: startAt,
             endAt: resolvedEndAt,
             localTimezone: localTimezone
@@ -306,6 +314,7 @@ struct EditBlockFields {
     let title: String
     let location: String
     let description: String
+    let context: BlockContext
     let startAt: Date
     let endAt: Date?
     let localTimezone: String?

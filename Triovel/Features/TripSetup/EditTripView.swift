@@ -85,6 +85,7 @@ struct EditTripView: View {
                     }
                 }
 
+                /* Timezone picker — commented out for now
                 Section {
                     Picker(String(localized: "trip.edit.timezone"), selection: $displayTimezone) {
                         ForEach(TimezoneList.all) { tz in
@@ -95,6 +96,7 @@ struct EditTripView: View {
                     Text("trip.edit.timezone.helper")
                         .font(.caption)
                 }
+                */
 
                 if let error = errorMessage {
                     Section {

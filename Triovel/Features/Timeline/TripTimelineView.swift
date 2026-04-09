@@ -169,34 +169,12 @@ struct TripTimelineView: View {
             }
             if #available(iOS 26, *) {
                 ToolbarItem(placement: .topBarTrailing) {
-                    HStack(spacing: 4) {
-                        Button {
-                            router.push(.tripMedia(tripId: tripId))
-                        } label: {
-                            Image(systemName: "photo.on.rectangle.angled")
-                                .font(.body.weight(.semibold))
-                                .foregroundStyle(Color(.label))
-                        }
-                        .buttonStyle(.plain)
-
-                        tripMenu
-                    }
+                    toolbarTrailingButtons
                 }
                 .sharedBackgroundVisibility(.hidden)
             } else {
                 ToolbarItem(placement: .topBarTrailing) {
-                    HStack(spacing: 4) {
-                        Button {
-                            router.push(.tripMedia(tripId: tripId))
-                        } label: {
-                            Image(systemName: "photo.on.rectangle.angled")
-                                .font(.body.weight(.semibold))
-                                .foregroundStyle(Color(.label))
-                        }
-                        .buttonStyle(.plain)
-
-                        tripMenu
-                    }
+                    toolbarTrailingButtons
                 }
             }
         }
@@ -261,7 +239,7 @@ struct TripTimelineView: View {
                 tripId: tripId,
                 defaultDay: dayIndex + 1,
                 dayDate: dayDate,
-                displayTimezone: viewModel.trip?.displayTimezone ?? TimeZone.current.identifier,
+                displayTimezone: TimeZone.current.identifier,
                 onBlockCreated: { blockId in
                     router.push(.blockDetail(blockId: blockId))
                 },
@@ -282,76 +260,56 @@ struct TripTimelineView: View {
         }
     }
 
-    // MARK: - Trip Menu
+    // MARK: - Toolbar Buttons
 
-    private var tripMenu: some View {
-        Menu {
-            Button {
-                router.push(.tripSummary(tripId: tripId))
-            } label: {
-                Label(String(localized: "trip.menu.bills"), systemImage: "receipt")
-            }
-
+    private var toolbarTrailingButtons: some View {
+        HStack(spacing: 12) {
             Button {
                 router.push(.tripMembers(tripId: tripId, members: viewModel.members, inviteLink: viewModel.trip?.inviteLink))
             } label: {
-                Label(String(localized: "trip.members.title"), systemImage: "person.2")
+                Image(systemName: "person.badge.plus")
+                    .font(.body.weight(.semibold))
+                    .foregroundStyle(Color(.label))
+                    .padding(.bottom, -4)
             }
+            .buttonStyle(.plain)
 
-            if isOwner {
-                Button {
-                    showingEditTrip = true
-                } label: {
-                    Label(String(localized: "trip.edit.title"), systemImage: "pencil")
-                }
-            }
-
-            /* Archive/unarchive menu items — commented out for now
-            Divider()
-
-            if viewModel.trip?.archived == true {
-                Button {
-                    Task {
-                        let start = ContinuousClock.now
-                        try? await TripRepository().unarchiveTrip(tripId: tripId)
-                        let elapsed = ContinuousClock.now - start
-                        if elapsed < .milliseconds(500) {
-                            try? await Task.sleep(for: .milliseconds(500) - elapsed)
-                        }
-                        if let userId = appState.currentUserId {
-                            viewModel.load(tripId: tripId, userId: userId)
-                        }
-                        toastMessage = String(localized: "trip.unarchived.toast")
-                        withAnimation(.easeInOut(duration: 0.2)) { showToast = true }
-                        try? await Task.sleep(for: .seconds(2))
-                        withAnimation(.easeInOut(duration: 0.2)) { showToast = false }
-                    }
-                } label: {
-                    Label(String(localized: "trip.unarchive.button"), systemImage: "arrow.uturn.backward")
-                }
-            } else {
-                Button(role: .destructive) {
-                    showingArchiveAlert = true
-                } label: {
-                    Label(String(localized: "trip.archive.button"), systemImage: "archivebox")
-                }
-            }
-            */
-
-            Divider()
-
-            if isOwner {
-                Button(role: .destructive) {
-                    showingDeleteAlert = true
-                } label: {
-                    Label(String(localized: "trip.delete.button"), systemImage: "trash")
-                }
-            }
-        } label: {
-            Image(systemName: "ellipsis.circle")
-                .font(.body.weight(.semibold))
-                .foregroundStyle(Color(.label))
+            tripMenu
         }
+        .animation(nil, value: true)
+    }
+
+    // MARK: - Trip Menu
+
+    private var tripMenu: some View {
+        UIKitMenuButton(
+            icon: "ellipsis.circle",
+            actions: tripMenuActions
+        )
+        .frame(width: 28, height: 28)
+    }
+
+    private var tripMenuActions: [UIKitMenuButton.MenuAction] {
+        var actions: [UIKitMenuButton.MenuAction] = [
+            .init(String(localized: "trip.menu.bills"), image: "banknote") {
+                router.push(.tripSummary(tripId: tripId))
+            },
+            .init(String(localized: "trip.media.title"), image: "photo.on.rectangle.angled") {
+                router.push(.tripMedia(tripId: tripId))
+            },
+        ]
+
+        actions.append(.init(String(localized: "trip.edit.title"), image: "pencil") {
+            showingEditTrip = true
+        })
+
+        if isOwner {
+            actions.append(.init(String(localized: "trip.delete.button"), image: "trash", isDestructive: true) {
+                showingDeleteAlert = true
+            })
+        }
+
+        return actions
     }
 
     // MARK: - Delete Trip

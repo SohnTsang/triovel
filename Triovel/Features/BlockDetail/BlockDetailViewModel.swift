@@ -3,6 +3,7 @@ import Observation
 import PowerSync
 import Supabase
 
+
 /// ViewModel for BlockDetailView. Reads block + posts from local SQLite,
 /// determines edit permissions, handles header edits, and manages post CRUD.
 /// Posts are watched reactively — new posts appear instantly after local write.
@@ -69,9 +70,9 @@ final class BlockDetailViewModel {
     }
 
     /// Only block creator or trip owner can edit header.
+    /// Any trip member can edit/delete blocks — not just creator/owner.
     var canEditHeader: Bool {
-        guard let userId = currentUserId, let block else { return false }
-        return block.createdBy == userId || tripOwnerId == userId
+        currentUserId != nil && block != nil
     }
 
     // MARK: - Load
@@ -421,25 +422,41 @@ final class BlockDetailViewModel {
         docWatchTask?.cancel()
         docWatchTask = Task { [weak self] in
             guard let self else { return }
+            await self.fetchDocuments(blockId: blockId)
+        }
+    }
+
+    func fetchDocuments(blockId: String) async {
+        do {
+            let docs: [BlockDocument] = try await SupabaseConfig.client
+                .from("block_documents")
+                .select()
+                .eq("block_id", value: blockId)
+                .order("created_at", ascending: true)
+                .execute()
+                .value
+            self.documents = docs
+            print("[BlockDetail] Documents loaded: \(docs.count)")
+        } catch {
+            // Fallback to local DB if network fails
             do {
-                let stream = try self.documentRepository.watchDocuments(blockId: blockId)
-                for try await docs in stream {
-                    guard !Task.isCancelled else { break }
-                    self.documents = docs
-                }
+                self.documents = try await documentRepository.fetchDocuments(blockId: blockId)
+                print("[BlockDetail] Documents loaded from local: \(self.documents.count)")
             } catch {
-                if !(error is CancellationError) {
-                    print("[BlockDetail] ❌ Document watch error: \(error)")
-                }
+                print("[BlockDetail] ❌ Document fetch failed: \(error)")
             }
         }
     }
 
+    private var isAddingDocument = false
+
     func addDocument(url: URL, fileName: String, fileType: DocumentFileType) {
-        guard let block, let userId = currentUserId else { return }
+        guard let block, let userId = currentUserId, !isAddingDocument else { return }
+        isAddingDocument = true
 
         Task { [weak self] in
             guard let self else { return }
+            defer { self.isAddingDocument = false }
 
             // 1. Pre-generate ID so import goes to the right directory
             let docId = UUID().uuidString.lowercased()
@@ -458,7 +475,7 @@ final class BlockDetailViewModel {
                 return
             }
 
-            // 3. Create DB record (appears in UI immediately via watch)
+            // 3. Create DB record
             let doc: BlockDocument
             do {
                 doc = try await self.documentRepository.createDocument(
@@ -476,16 +493,23 @@ final class BlockDetailViewModel {
                 return
             }
 
-            // 4. Upload (non-blocking — card shows "uploading" status)
+            // 4. Show in UI immediately
+            self.documents.append(doc)
+
+            // 5. Upload
             do {
                 try await DocumentFileManager.shared.upload(
                     docId: doc.id, fileName: fileName, tripId: block.tripId
                 )
+                // 6. Update local doc status to uploaded so spinner stops
+                if let index = self.documents.firstIndex(where: { $0.id == doc.id }) {
+                    self.documents[index].uploadStatus = .uploaded
+                }
             } catch {
-                // Upload failed — card stays with "failed" status + retry button.
-                // Don't delete the record — user can retry later or it uploads
-                // when back online.
                 print("[BlockDetail] ⚠️ Upload failed, will retry: \(error)")
+                if let index = self.documents.firstIndex(where: { $0.id == doc.id }) {
+                    self.documents[index].uploadStatus = .failed
+                }
             }
         }
     }
@@ -497,10 +521,17 @@ final class BlockDetailViewModel {
             guard let self else { return }
             let start = ContinuousClock.now
             do {
-                try await self.documentRepository.deleteDocument(docId: doc.id)
+                // Delete from Supabase directly
+                try await SupabaseConfig.client
+                    .from("block_documents")
+                    .delete()
+                    .eq("id", value: doc.id)
+                    .execute()
                 await DocumentFileManager.shared.deleteDocument(
                     docId: doc.id, storagePath: doc.storagePath
                 )
+                // Remove from local list immediately
+                self.documents.removeAll { $0.id == doc.id }
             } catch {
                 print("[BlockDetail] ❌ deleteDocument failed: \(error)")
             }
@@ -623,6 +654,7 @@ final class BlockDetailViewModel {
         let timeChanged = abs(fields.startAt.timeIntervalSince(block.startAt)) > 60
         let endAtChanged = fields.endAt != block.endAt
         let localTzChanged = fields.localTimezone != block.localTimezone
+        let contextChanged = fields.context != block.context
         isSavingHeader = true
         let start = ContinuousClock.now
 
@@ -630,6 +662,7 @@ final class BlockDetailViewModel {
             try await blockRepository.updateBlockHeader(
                 blockId: block.id,
                 title: fields.title != block.title ? fields.title : nil,
+                context: contextChanged ? fields.context : nil,
                 locationText: fields.location != (block.locationText ?? "") ? fields.location : nil,
                 description: fields.description != (block.description ?? "") ? fields.description : nil,
                 startAt: timeChanged ? fields.startAt : nil,
@@ -645,6 +678,7 @@ final class BlockDetailViewModel {
             self.block?.title = fields.title
             self.block?.locationText = fields.location.isEmpty ? nil : fields.location
             self.block?.description = fields.description.isEmpty ? nil : fields.description
+            if contextChanged { self.block?.context = fields.context }
             if timeChanged { self.block?.startAt = fields.startAt }
             if endAtChanged { self.block?.endAt = fields.endAt }
             if localTzChanged { self.block?.localTimezone = fields.localTimezone }

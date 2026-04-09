@@ -27,9 +27,13 @@ struct TripCardView: View {
             }
         }
         .padding(10)
-        .background(Color(.secondarySystemBackground))
+        .background { RoundedRectangle(cornerRadius: 14).fill(ColorTokens.cardBackground) }
         .clipShape(RoundedRectangle(cornerRadius: 14))
-        .shadow(color: .black.opacity(0.06), radius: 6, x: 0, y: 2)
+        .overlay(
+            RoundedRectangle(cornerRadius: 14)
+                .stroke(Color(.systemGray4), lineWidth: 0.5)
+        )
+        .shadow(color: .black.opacity(0.06), radius: 2, x: 0, y: 2)
     }
 
     @ViewBuilder

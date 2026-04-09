@@ -236,7 +236,13 @@ struct TimelineDay: Identifiable {
         formatter.dateFormat = "HH:mm"
 
         for block in blocks {
-            let key = formatter.string(from: block.startAt)
+            let key: String
+            if block.startAt < date, let endAt = block.endAt {
+                // Spanning in from previous day — use end time as the sort key
+                key = formatter.string(from: endAt)
+            } else {
+                key = formatter.string(from: block.startAt)
+            }
             slots[key, default: []].append(block)
         }
 

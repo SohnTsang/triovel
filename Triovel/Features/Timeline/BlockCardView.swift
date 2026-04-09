@@ -66,21 +66,24 @@ struct BlockCardView: View {
             .padding(.trailing, 14)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(
-            block.context == .personal
-                ? ColorTokens.personalBackground
-                : Color(.secondarySystemBackground)
-        )
+        .background {
+            if block.context == .personal {
+                RoundedRectangle(cornerRadius: 12).fill(ColorTokens.personalBackground)
+            } else {
+                RoundedRectangle(cornerRadius: 12).fill(ColorTokens.cardBackground)
+            }
+        }
         .clipShape(RoundedRectangle(cornerRadius: 12))
         .overlay(
             RoundedRectangle(cornerRadius: 12)
                 .stroke(
                     block.context == .personal
                         ? ColorTokens.personalBorder
-                        : Color(.systemGray5),
-                    lineWidth: 1
+                        : Color(.systemGray4),
+                    lineWidth: 0.5
                 )
         )
+        .shadow(color: .black.opacity(0.06), radius: 2, x: 0, y: 2)
     }
 
     // MARK: - Time Column
@@ -109,7 +112,7 @@ struct BlockCardView: View {
                     .padding(.bottom, 3)
 
                 if let endAt = block.endAt {
-                    Text(endAt, format: .dateTime.hour().minute())
+                    TimeText(endAt, in: block.displayTimezone)
                         .font(.caption.weight(.semibold))
                         .foregroundStyle(.primary)
 
@@ -124,7 +127,7 @@ struct BlockCardView: View {
                 }
             } else {
                 // Normal: start time (+ optional line + end time)
-                Text(block.startAt, format: .dateTime.hour().minute())
+                TimeText(block.startAt, in: block.displayTimezone)
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(.primary)
                     .padding(.top, 12)
@@ -151,7 +154,7 @@ struct BlockCardView: View {
                         // Spans to next day: show line trailing off, no end time
                         // (end time shows on the next day)
                     } else {
-                        Text(endAt, format: .dateTime.hour().minute())
+                        TimeText(endAt, in: block.displayTimezone)
                             .font(.caption.weight(.semibold))
                             .foregroundStyle(.primary)
 

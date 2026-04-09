@@ -53,36 +53,26 @@ struct HomeContentView: View {
             }
             .padding(24)
         }
-        .navigationTitle(String(localized: "home.title"))
+        .navigationBarTitleDisplayMode(.inline)
         .toolbar {
+            ToolbarItem(placement: .principal) {
+                Text("Triovel")
+                    .font(.custom("Pacifico-Regular", size: 22))
+                    .foregroundStyle(Color.accentColor)
+            }
             if #available(iOS 26, *) {
-                ToolbarItem(placement: .topBarLeading) {
+                ToolbarItem(placement: .topBarTrailing) {
                     Button { router.push(.settings) } label: {
                         Image(systemName: "person.circle").font(.body.weight(.semibold)).foregroundStyle(Color(.label))
                     }
                 }
                 .sharedBackgroundVisibility(.hidden)
-                /* Archived trips button — commented out for now
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button { router.push(.archivedTrips) } label: {
-                        Image(systemName: "archivebox").font(.body.weight(.semibold)).foregroundStyle(Color(.label))
-                    }
-                }
-                .sharedBackgroundVisibility(.hidden)
-                */
             } else {
-                ToolbarItem(placement: .topBarLeading) {
+                ToolbarItem(placement: .topBarTrailing) {
                     Button { router.push(.settings) } label: {
                         Image(systemName: "person.circle").font(.body.weight(.semibold)).foregroundStyle(Color(.label))
                     }
                 }
-                /* Archived trips button — commented out for now
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button { router.push(.archivedTrips) } label: {
-                        Image(systemName: "archivebox").font(.body.weight(.semibold)).foregroundStyle(Color(.label))
-                    }
-                }
-                */
             }
         }
         .sheet(isPresented: $showingNewTrip) {

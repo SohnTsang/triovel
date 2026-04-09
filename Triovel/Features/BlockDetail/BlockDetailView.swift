@@ -1,4 +1,5 @@
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct BlockDetailView: View {
     let blockId: String
@@ -12,6 +13,11 @@ struct BlockDetailView: View {
     @State private var isDeletingBlock = false
     @State private var showingEditSheet = false
     @State private var showingDocumentPicker = false
+    @State private var selectedStreamTab: StreamTab = .posts
+
+    private enum StreamTab {
+        case posts, bills, documents
+    }
     @Environment(Router.self) private var router
 
     var body: some View {
@@ -105,9 +111,20 @@ struct BlockDetailView: View {
                 }
             }
         }
-        .sheet(isPresented: $showingDocumentPicker) {
-            DocumentPickerView { url, fileName, fileType in
+        .fileImporter(
+            isPresented: $showingDocumentPicker,
+            allowedContentTypes: [.pdf, .jpeg, .png, .heic],
+            allowsMultipleSelection: false
+        ) { result in
+            switch result {
+            case .success(let urls):
+                guard let url = urls.first else { return }
+                let fileName = url.lastPathComponent
+                let ext = url.pathExtension.lowercased()
+                let fileType: DocumentFileType = ext == "pdf" ? .pdf : .image
                 viewModel.addDocument(url: url, fileName: fileName, fileType: fileType)
+            case .failure(let error):
+                print("[BlockDetail] ❌ File import failed: \(error)")
             }
         }
         .alert(
@@ -157,78 +174,59 @@ struct BlockDetailView: View {
     @ViewBuilder
     private func blockContent(_ block: Block) -> some View {
         @Bindable var vm = viewModel
-        BlockDetailHeaderView(
-            block: block,
-            canEdit: viewModel.canEditHeader,
-            tripDisplayTimezone: viewModel.tripDisplayTimezone,
-            billSummary: viewModel.billSummary,
-            onEditTap: { showingEditSheet = true }
-        )
 
-        // Documents section (compact cards)
-        DocumentSectionView(
-            documents: viewModel.documents,
-            currentUserId: appState.currentUserId,
-            tripId: block.tripId,
-            onDelete: { viewModel.deleteDocument($0) },
-            onRetry: { viewModel.retryDocumentUpload($0) }
-        )
-
-        Divider()
-
-        // Unified chronological stream
         ScrollViewReader { proxy in
             ScrollView {
-                LazyVStack(spacing: 12) {
-                    if viewModel.isLoadingPosts {
-                        PostSkeletonView()
-                    } else if viewModel.posts.isEmpty && viewModel.failedDrafts.isEmpty {
-                        emptyPostsState
-                    } else {
-                        // Real posts
-                        ForEach(viewModel.posts) { post in
-                            PostCardView(
-                                post: post,
-                                authorName: viewModel.authorName(for: post),
-                                isOwn: viewModel.isOwnPost(post),
-                                media: viewModel.mediaItems(for: post.id),
-                                isDeleting: viewModel.deletingPostId == post.id,
-                                onDelete: { viewModel.deletePost(post) },
-                                onRetry: nil,
-                                onMediaRetry: { mediaId in viewModel.retryMediaUpload(mediaId: mediaId) },
-                                onEdit: { newBody in viewModel.editPost(post, newBody: newBody) },
-                                onRemoveMedia: { mediaId in viewModel.deleteMedia(mediaId: mediaId, post: post) }
-                            )
-                            .id(post.id)
-                        }
+                VStack(spacing: 0) {
+                    BlockDetailHeaderView(
+                        block: block,
+                        canEdit: viewModel.canEditHeader,
+                        tripDisplayTimezone: viewModel.tripDisplayTimezone,
+                        billSummary: viewModel.billSummary,
+                        onEditTap: { showingEditSheet = true }
+                    )
 
-                        // Bills
-                        ForEach(viewModel.bills) { bill in
-                            BillCardView(
-                                bill: bill,
-                                payerName: viewModel.payerName(for: bill),
-                                shareCount: viewModel.billShareCounts[bill.id] ?? 0,
-                                isDeleting: viewModel.deletingBillId == bill.id,
-                                onTap: { selectedBill = bill }
-                            )
-                            .id("bill-\(bill.id)")
-                        }
+                    Divider()
 
-                        // Failed drafts
-                        ForEach(viewModel.failedDrafts) { draft in
-                            FailedPostCardView(
-                                bodyText: draft.body,
-                                onRetry: { viewModel.retryDraft(draft) },
-                                onDiscard: { viewModel.discardDraft(draft) }
-                            )
+                    // Tab bar
+                    HStack {
+                        Button {
+                            withAnimation(.easeInOut(duration: 0.15)) {
+                                selectedStreamTab = .posts
+                            }
+                        } label: {
+                            streamTabIcon("text.bubble", tab: .posts, count: viewModel.posts.count)
+                        }
+                        .buttonStyle(.plain)
+
+                        Spacer()
+
+                        HStack(spacing: 12) {
+                            streamTabIcon("doc.text", tab: .documents, count: viewModel.documents.count)
+                            streamTabIcon("banknote", tab: .bills, count: viewModel.bills.count)
                         }
                     }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 6)
+
+                    // Stream content
+                    VStack(spacing: 12) {
+                        switch selectedStreamTab {
+                        case .posts:
+                            postsContent
+                        case .bills:
+                            billsContent
+                        case .documents:
+                            documentsContent(block)
+                        }
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.top, 4)
+                    .padding(.bottom, 16)
                 }
-                .padding(16)
             }
             .onChange(of: viewModel.posts.count) { _, _ in
-                // Scroll to newest post
-                if let last = viewModel.posts.last {
+                if selectedStreamTab == .posts, let last = viewModel.posts.last {
                     withAnimation(.easeOut(duration: 0.2)) {
                         proxy.scrollTo(last.id, anchor: .bottom)
                     }
@@ -236,51 +234,164 @@ struct BlockDetailView: View {
             }
         }
 
-        // Composer
-        PostComposerView(
-            onSend: { body, visibility, mediaItems in
-                viewModel.sendPost(body: body, visibility: visibility, mediaItems: mediaItems)
-            },
-            isSending: viewModel.isSendingPost
-        )
+        // Composer — only visible on posts tab
+        if selectedStreamTab == .posts {
+            PostComposerView(
+                onSend: { body, visibility, mediaItems in
+                    viewModel.sendPost(body: body, visibility: visibility, mediaItems: mediaItems)
+                },
+                isSending: viewModel.isSendingPost
+            )
+        }
+    }
+
+    // MARK: - Stream Tab Icon
+
+    @ViewBuilder
+    private func streamTabIcon(_ icon: String, tab: StreamTab, count: Int) -> some View {
+        Button {
+            withAnimation(.easeInOut(duration: 0.15)) {
+                selectedStreamTab = selectedStreamTab == tab ? .posts : tab
+            }
+        } label: {
+            ZStack(alignment: .topTrailing) {
+                Image(systemName: icon)
+                    .font(.subheadline)
+                    .foregroundStyle(selectedStreamTab == tab ? Color.accentColor : .secondary)
+                    .frame(width: 32, height: 32)
+                    .overlay(
+                        Circle()
+                            .stroke(selectedStreamTab == tab ? Color.accentColor : Color(.systemGray4), lineWidth: 1.5)
+                    )
+
+                if count > 0 {
+                    Text("\(count)")
+                        .font(.system(size: 9, weight: .bold))
+                        .foregroundStyle(.white)
+                        .frame(minWidth: 14, minHeight: 14)
+                        .background(Color.accentColor, in: Circle())
+                        .offset(x: 4, y: -4)
+                }
+            }
+        }
+        .buttonStyle(.plain)
+    }
+
+    // MARK: - Stream Content (inline, no nested ScrollView)
+
+    @ViewBuilder
+    private var postsContent: some View {
+        if viewModel.isLoadingPosts {
+            PostSkeletonView()
+        } else if viewModel.posts.isEmpty && viewModel.failedDrafts.isEmpty {
+            emptyPostsState
+        } else {
+            ForEach(viewModel.posts) { post in
+                PostCardView(
+                    post: post,
+                    authorName: viewModel.authorName(for: post),
+                    isOwn: viewModel.isOwnPost(post),
+                    media: viewModel.mediaItems(for: post.id),
+                    isDeleting: viewModel.deletingPostId == post.id,
+                    onDelete: { viewModel.deletePost(post) },
+                    onRetry: nil,
+                    onMediaRetry: { mediaId in viewModel.retryMediaUpload(mediaId: mediaId) },
+                    onEdit: { newBody in viewModel.editPost(post, newBody: newBody) },
+                    onRemoveMedia: { mediaId in viewModel.deleteMedia(mediaId: mediaId, post: post) }
+                )
+                .id(post.id)
+            }
+
+            ForEach(viewModel.failedDrafts) { draft in
+                FailedPostCardView(
+                    bodyText: draft.body,
+                    onRetry: { viewModel.retryDraft(draft) },
+                    onDiscard: { viewModel.discardDraft(draft) }
+                )
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var billsContent: some View {
+        if viewModel.bills.isEmpty {
+            VStack(spacing: 12) {
+                Spacer().frame(height: 40)
+                Image(systemName: "banknote")
+                    .font(.system(size: 32))
+                    .foregroundStyle(.tertiary)
+                Text("block.stream.bills.empty")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+            .frame(maxWidth: .infinity)
+        } else {
+            ForEach(viewModel.bills) { bill in
+                BillCardView(
+                    bill: bill,
+                    payerName: viewModel.payerName(for: bill),
+                    shareCount: viewModel.billShareCounts[bill.id] ?? 0,
+                    isDeleting: viewModel.deletingBillId == bill.id,
+                    onTap: { selectedBill = bill }
+                )
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func documentsContent(_ block: Block) -> some View {
+        if viewModel.documents.isEmpty {
+            VStack(spacing: 12) {
+                Spacer().frame(height: 40)
+                Image(systemName: "doc.text")
+                    .font(.system(size: 32))
+                    .foregroundStyle(.tertiary)
+                Text("block.stream.docs.empty")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+            .frame(maxWidth: .infinity)
+        } else {
+            DocumentSectionView(
+                documents: viewModel.documents,
+                currentUserId: appState.currentUserId,
+                tripId: block.tripId,
+                onDelete: { viewModel.deleteDocument($0) },
+                onRetry: { viewModel.retryDocumentUpload($0) }
+            )
+        }
     }
 
     // MARK: - Menu
 
     private var blockMenuButton: some View {
-        Menu {
-            Button {
+        UIKitMenuButton(
+            icon: "ellipsis.circle",
+            actions: blockMenuActions
+        )
+        .frame(width: 28, height: 28)
+    }
+
+    private var blockMenuActions: [UIKitMenuButton.MenuAction] {
+        var actions: [UIKitMenuButton.MenuAction] = [
+            .init(String(localized: "bill.add.button"), image: "banknote") {
                 showingBillEntry = true
-            } label: {
-                Label(String(localized: "bill.add.button"), systemImage: "banknote")
-            }
-
-            Button {
+            },
+            .init(String(localized: "document.add.button"), image: "doc.badge.plus") {
                 showingDocumentPicker = true
-            } label: {
-                Label(String(localized: "document.add.button"), systemImage: "doc.badge.plus")
-            }
+            },
+        ]
 
-            if viewModel.canEditHeader {
-                Button {
-                    showingEditSheet = true
-                } label: {
-                    Label(String(localized: "block.edit.title"), systemImage: "pencil")
-                }
-
-                Divider()
-
-                Button(role: .destructive) {
-                    showingDeleteBlock = true
-                } label: {
-                    Label(String(localized: "block.delete.button"), systemImage: "trash")
-                }
-            }
-        } label: {
-            Image(systemName: "ellipsis.circle")
-                .font(.body.weight(.semibold))
-                .foregroundStyle(Color(.label))
+        if viewModel.canEditHeader {
+            actions.append(.init(String(localized: "block.edit.title"), image: "pencil") {
+                showingEditSheet = true
+            })
+            actions.append(.init(String(localized: "block.delete.button"), image: "trash", isDestructive: true) {
+                showingDeleteBlock = true
+            })
         }
+
+        return actions
     }
 
     // MARK: - Empty State

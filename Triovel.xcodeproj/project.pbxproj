@@ -18,7 +18,7 @@
 		18A16C75C86F34908868A9FA /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FD9045EF708D43EB57ED36E /* HomeView.swift */; };
 		196252E38E1C17111E683C29 /* CachedMediaView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9578D6AD9E1FB9D4BB8EFDE4 /* CachedMediaView.swift */; };
 		1971879261248A7A61904A4F /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = D989E8D899B44A723BCE0072 /* Supabase */; };
-		22EEB4706AB07F00406FFEB8 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D041FDB8AE49805E56BF8F72 /* LaunchScreen.storyboard */; };
+		22EEB4706AB07F00406FFEB8 /* Launch.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D041FDB8AE49805E56BF8F72 /* Launch.storyboard */; };
 		2B08B4D58D0D98A39FBCB536 /* EditTripView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4D9BF81260A890F98551F37 /* EditTripView.swift */; };
 		2E06EF45109FE830A1A95FF7 /* ColorTokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44D47CF8E79B0BCDAFAA1088 /* ColorTokens.swift */; };
 		2F3CCB17876C5D4828C866E4 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A01F56928DFCE630027E76A /* RootView.swift */; };
@@ -38,6 +38,9 @@
 		76C5BCD62F614AE418563899 /* PostMedia.swift in Sources */ = {isa = PBXBuildFile; fileRef = 595582A9F7359CD124EB2B37 /* PostMedia.swift */; };
 		77FFB96D7FCEF361F1561049 /* Bill.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFD5CEB34A1587FDEF0F98EA /* Bill.swift */; };
 		7AB84AC4DC6B0A59B113F751 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 4F3133CB82A42C2405ECFE76 /* Localizable.xcstrings */; };
+		PFNTBF01 /* Pacifico-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = PFNTFR01 /* Pacifico-Regular.ttf */; };
+		SWDLBF01 /* SwipeToDeleteRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = SWDLFR01 /* SwipeToDeleteRow.swift */; };
+		PFNTBF02 /* Sacramento-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = PFNTFR02 /* Sacramento-Regular.ttf */; };
 		80A7F397BDC85CD8E1AFB9B7 /* AuthView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F84F5FB2579E85C4BD0863E /* AuthView.swift */; };
 		86DED270FA017E87976BA58F /* BlockCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1774356B3E6EA3F7E792264 /* BlockCardView.swift */; };
 		888D8D1B3E22F6EC06511BB6 /* AppleSignInCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63FD4F177E2CDBFCF8FA32C6 /* AppleSignInCoordinator.swift */; };
@@ -53,6 +56,7 @@
 		AFF128FE034012F02AE30141 /* AuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C2A3F0A9A57518F0486DF0E /* AuthService.swift */; };
 		B92FBBD4D84D44F754559724 /* SyncStateIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23F430BD077061F269968B7B /* SyncStateIndicator.swift */; };
 		BA1F33CC2E8A41BB99001122 /* PlainToolbarModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA1F33CC2E8A41BB88001122 /* PlainToolbarModifier.swift */; };
+		UKMNBF01 /* UIKitMenuButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = UKMNFR01 /* UIKitMenuButton.swift */; };
 		BCA5F68AB871C504A2526985 /* TripSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DB17EE1B5470619A4A394AE /* TripSetupView.swift */; };
 		C2FCF58455F03A9A65277428 /* DateExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DDCC435E21D2512F84EA1C8 /* DateExtensions.swift */; };
 		TZLBF001 /* TimezoneList.swift in Sources */ = {isa = PBXBuildFile; fileRef = TZLFR001 /* TimezoneList.swift */; };
@@ -128,6 +132,9 @@
 		4D37FA5E2AF68AA27D92708E /* ProfileHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileHeaderView.swift; sourceTree = "<group>"; };
 		4DB17EE1B5470619A4A394AE /* TripSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TripSetupView.swift; sourceTree = "<group>"; };
 		4F3133CB82A42C2405ECFE76 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
+		PFNTFR01 /* Pacifico-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Pacifico-Regular.ttf"; sourceTree = "<group>"; };
+		SWDLFR01 /* SwipeToDeleteRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwipeToDeleteRow.swift; sourceTree = "<group>"; };
+		PFNTFR02 /* Sacramento-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Sacramento-Regular.ttf"; sourceTree = "<group>"; };
 		5686014005BE7251760C98F3 /* AddMomentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddMomentView.swift; sourceTree = "<group>"; };
 		595582A9F7359CD124EB2B37 /* PostMedia.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostMedia.swift; sourceTree = "<group>"; };
 		613286437E7803B096A54666 /* DaySectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DaySectionView.swift; sourceTree = "<group>"; };
@@ -159,6 +166,7 @@
 		A9C218D2F661A161061EC46B /* Payment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Payment.swift; sourceTree = "<group>"; };
 		B2DB1DF20856703F1CF41D12 /* BlockRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockRepository.swift; sourceTree = "<group>"; };
 		BA1F33CC2E8A41BB88001122 /* PlainToolbarModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlainToolbarModifier.swift; sourceTree = "<group>"; };
+		UKMNFR01 /* UIKitMenuButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIKitMenuButton.swift; sourceTree = "<group>"; };
 		BB12DAB167C02F467EACCCB0 /* BlockDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockDetailViewModel.swift; sourceTree = "<group>"; };
 		BF0AB4F9147A31F6C31E9197 /* HomeEmptyStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeEmptyStateView.swift; sourceTree = "<group>"; };
 		BFD5CEB34A1587FDEF0F98EA /* Bill.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Bill.swift; sourceTree = "<group>"; };
@@ -169,7 +177,7 @@
 		CA6D67E9A2F09AFBF1DADBE7 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
 		CBDB80DFD28A136D219A517F /* ImageCache.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ImageCache.swift; sourceTree = "<group>"; };
 		CE1BFBA28488B4E60630B4B5 /* FilterBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilterBarView.swift; sourceTree = "<group>"; };
-		D041FDB8AE49805E56BF8F72 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
+		D041FDB8AE49805E56BF8F72 /* Launch.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Launch.storyboard; sourceTree = "<group>"; };
 		DFFCD16C6F30BA7A4A7F7DC8 /* Triovel.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Triovel.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E5D4A3803446EBC49544A0CF /* Router.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Router.swift; sourceTree = "<group>"; };
 		EA20D7B2A7F98941FEF0647B /* SignInMethodRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInMethodRow.swift; sourceTree = "<group>"; };
@@ -247,6 +255,8 @@
 			children = (
 				948EA56D9B57B8FDA5AA3313 /* ContextChip.swift */,
 				BA1F33CC2E8A41BB88001122 /* PlainToolbarModifier.swift */,
+				SWDLFR01 /* SwipeToDeleteRow.swift */,
+				UKMNFR01 /* UIKitMenuButton.swift */,
 				23F430BD077061F269968B7B /* SyncStateIndicator.swift */,
 				9578D6AD9E1FB9D4BB8EFDE4 /* CachedMediaView.swift */,
 			);
@@ -357,10 +367,20 @@
 			isa = PBXGroup;
 			children = (
 				8D7172619DB15AD08404D409 /* Assets.xcassets */,
-				D041FDB8AE49805E56BF8F72 /* LaunchScreen.storyboard */,
+				PFNTGR01 /* Fonts */,
+				D041FDB8AE49805E56BF8F72 /* Launch.storyboard */,
 				4F3133CB82A42C2405ECFE76 /* Localizable.xcstrings */,
 			);
 			path = Resources;
+			sourceTree = "<group>";
+		};
+		PFNTGR01 /* Fonts */ = {
+			isa = PBXGroup;
+			children = (
+				PFNTFR01 /* Pacifico-Regular.ttf */,
+				PFNTFR02 /* Sacramento-Regular.ttf */,
+			);
+			path = Fonts;
 			sourceTree = "<group>";
 		};
 		88F6051D365956F1766DE80E /* DesignSystem */ = {
@@ -592,8 +612,10 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				22EEB4706AB07F00406FFEB8 /* LaunchScreen.storyboard in Resources */,
+				22EEB4706AB07F00406FFEB8 /* Launch.storyboard in Resources */,
 				7AB84AC4DC6B0A59B113F751 /* Localizable.xcstrings in Resources */,
+				PFNTBF01 /* Pacifico-Regular.ttf in Resources */,
+				PFNTBF02 /* Sacramento-Regular.ttf in Resources */,
 				A74D3F0F546C24E1AD1BFE96 /* Assets.xcassets in Resources */,
 				DD3025B0C3EBDC789D04A9FE /* PrivacyInfo.xcprivacy in Resources */,
 			);
@@ -638,6 +660,8 @@
 				AFF128FE034012F02AE30141 /* AuthService.swift in Sources */,
 				B92FBBD4D84D44F754559724 /* SyncStateIndicator.swift in Sources */,
 				BA1F33CC2E8A41BB99001122 /* PlainToolbarModifier.swift in Sources */,
+				SWDLBF01 /* SwipeToDeleteRow.swift in Sources */,
+				UKMNBF01 /* UIKitMenuButton.swift in Sources */,
 				BCA5F68AB871C504A2526985 /* TripSetupView.swift in Sources */,
 				C2FCF58455F03A9A65277428 /* DateExtensions.swift in Sources */,
 				TZLBF001 /* TimezoneList.swift in Sources */,

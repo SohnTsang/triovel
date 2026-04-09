@@ -8,10 +8,12 @@ struct TripSummaryView: View {
     @Environment(AppState.self) private var appState
     @State private var viewModel = TripSummaryViewModel()
     @State private var showingPaymentSheet = false
+    @State private var selectedBill: Bill?
     @State private var showingArchiveConfirmation = false
     @State private var showingDeleteConfirmation = false
     @State private var isArchiving = false
     @State private var isDeletingTrip = false
+    @State private var isDeletingPayment = false
     @Environment(Router.self) private var router
 
     private var isOwner: Bool {
@@ -27,46 +29,33 @@ struct TripSummaryView: View {
             } else if viewModel.currencyBalances.isEmpty && viewModel.totalBillCount == 0 {
                 emptyState
             } else {
-                VStack(spacing: 24) {
-                    // Trip header
+                VStack(spacing: 0) {
                     tripHeader
+                    sheetDivider
 
-                    // My balance overview
-                    myBalanceCard
+                    // Your balance
+                    sectionLabel("summary.section.my.balance")
+                    yourStatusCard
+                    sheetDivider.padding(.top, 6)
 
-                    // Who owes who — single title, all currencies below
-                    if !viewModel.currencyBalances.isEmpty {
-                        VStack(alignment: .leading, spacing: 12) {
-                            Text("summary.section.balances")
-                                .font(.subheadline.weight(.semibold))
-                                .foregroundStyle(.secondary)
-                                .padding(.horizontal)
-
-                            ForEach(viewModel.currencyBalances) { balance in
-                                currencySection(balance)
-                            }
-                        }
+                    // Who owes who
+                    if viewModel.currencyBalances.contains(where: { !$0.debts.isEmpty }) {
+                        sectionLabel("summary.section.who.owes")
+                        settleUpCard
+                        sheetDivider.padding(.top, 6)
                     }
 
-                    // Payment history — single title, all payments below
+                    // Payments + record payback
+                    sectionLabel("summary.payment.history")
                     if !viewModel.payments.isEmpty {
-                        VStack(alignment: .leading, spacing: 12) {
-                            Text("summary.payment.history")
-                                .font(.subheadline.weight(.semibold))
-                                .foregroundStyle(.secondary)
-                                .padding(.horizontal)
-
-                            paymentHistoryCard
-                        }
+                        paymentHistoryCard
                     }
-
-                    // Record Payment button
                     Button {
                         showingPaymentSheet = true
                     } label: {
                         HStack(spacing: 8) {
                             Image(systemName: "plus.circle.fill")
-                            Text("summary.record.payment")
+                            Text("summary.record.payback")
                         }
                         .font(.body.weight(.semibold))
                         .foregroundStyle(.white)
@@ -74,16 +63,23 @@ struct TripSummaryView: View {
                         .padding(.vertical, 14)
                         .background(Color.accentColor, in: RoundedRectangle(cornerRadius: 14))
                     }
-                    .padding(.horizontal)
+                    .padding(.horizontal, 20)
+                    .padding(.top, 12)
+                    sheetDivider.padding(.top, 16)
 
-                    // Archive section
-                    archiveSection
-                        .padding(.bottom, 30)
+                    // All bills
+                    if !viewModel.billsWithActivity.isEmpty {
+                        sectionLabel("summary.section.bills")
+                        allBillsCard
+                    }
+
+                    Spacer().frame(height: 40)
                 }
             }
         }
         .navigationTitle(String(localized: "summary.title"))
         .plainBackButton()
+        /* Archive alert — commented out for now
         .alert(
             String(localized: "trip.archive.title"),
             isPresented: $showingArchiveConfirmation
@@ -95,6 +91,7 @@ struct TripSummaryView: View {
         } message: {
             Text("trip.archive.description")
         }
+        */
         .alert(
             String(localized: "trip.delete.title"),
             isPresented: $showingDeleteConfirmation
@@ -107,7 +104,7 @@ struct TripSummaryView: View {
             Text("trip.delete.description")
         }
         .overlay {
-            if isDeletingTrip {
+            if isDeletingTrip || isDeletingPayment {
                 Color.black.opacity(0.3).ignoresSafeArea()
                     .overlay { ProgressView().controlSize(.large).tint(.white) }
             }
@@ -118,7 +115,21 @@ struct TripSummaryView: View {
                 members: viewModel.members,
                 baseCurrency: viewModel.trip?.baseCurrency ?? "USD",
                 currentUserId: appState.currentUserId ?? "",
-                onPaymentCreated: { }
+                onPaymentCreated: {
+                    if let userId = appState.currentUserId {
+                        await viewModel.reload(tripId: tripId, userId: userId)
+                    }
+                }
+            )
+        }
+        .sheet(item: $selectedBill) { bill in
+            let activity = viewModel.billsWithActivity.first(where: { $0.bill.id == bill.id })
+            BillDetailView(
+                bill: bill,
+                payerName: viewModel.memberName(for: bill.payerId),
+                shares: viewModel.billShareDisplays(for: bill.id),
+                currentUserId: appState.currentUserId ?? "",
+                blockTitle: activity?.activityName
             )
         }
         .task {
@@ -156,251 +167,225 @@ struct TripSummaryView: View {
         .padding(.top, 80)
     }
 
+    // MARK: - Cashflow Style Components
+
+    /// Section label — small caps, left aligned
+    private func sectionLabel(_ key: LocalizedStringKey) -> some View {
+        Text(key)
+            .font(.subheadline.weight(.semibold))
+            .foregroundStyle(.secondary)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 20)
+            .padding(.top, 20)
+            .padding(.bottom, 2)
+    }
+
+    /// Thin divider line across full width
+    private var sheetDivider: some View {
+        Rectangle()
+            .fill(Color(.separator))
+            .frame(height: 0.5)
+            .padding(.horizontal, 20)
+    }
+
+    /// A row: label on left, amount on right
+    private func ledgerRow(_ label: String, amount: String, color: Color = .primary, bold: Bool = false) -> some View {
+        HStack {
+            Text(label)
+                .font(bold ? .subheadline.weight(.semibold) : .subheadline)
+            Spacer()
+            Text(amount)
+                .font(bold ? .subheadline.weight(.bold) : .subheadline.weight(.medium))
+                .foregroundStyle(color)
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 10)
+    }
+
+    /// A row with subtitle
+    private func ledgerRowWithDetail(_ label: String, detail: String, amount: String, color: Color = .primary) -> some View {
+        HStack(alignment: .top) {
+            VStack(alignment: .leading, spacing: 3) {
+                Text(label)
+                    .font(.subheadline)
+                Text(detail)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            Spacer()
+            Text(amount)
+                .font(.subheadline.weight(.medium))
+                .foregroundStyle(color)
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 10)
+    }
+
     // MARK: - Trip Header
 
     private var tripHeader: some View {
-        VStack(spacing: 6) {
+        VStack(spacing: 4) {
             if let trip = viewModel.trip {
                 Text(trip.title)
-                    .font(.title2.weight(.bold))
+                    .font(.headline)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal)
 
                 Text("\(trip.startDate, format: .dateTime.month(.abbreviated).day()) – \(trip.endDate, format: .dateTime.month(.abbreviated).day().year())")
-                    .font(.subheadline)
+                    .font(.caption)
                     .foregroundStyle(.secondary)
-            }
 
-            // Total expenses
-            HStack(spacing: 16) {
-                ForEach(viewModel.totalExpensesByCurrency, id: \.currency) { item in
-                    VStack(spacing: 2) {
+                HStack(spacing: 8) {
+                    ForEach(viewModel.totalExpensesByCurrency, id: \.currency) { item in
                         Text(item.total.formattedCurrency(item.currency))
-                            .font(.title3.weight(.bold))
-                        Text("summary.total.spent")
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
+                            .font(.title2.weight(.bold))
                     }
                 }
-            }
-            .padding(.top, 8)
+                .padding(.top, 4)
 
-            Text("summary.bill.count \(viewModel.totalBillCount)")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                .padding(.top, 2)
+                Text("summary.bill.count \(viewModel.totalBillCount)")
+                    .font(.caption)
+                    .foregroundStyle(.tertiary)
+            }
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 20)
-        .padding(.top, 8)
+        .padding(.top, 16)
+        .padding(.bottom, 8)
     }
 
-    // MARK: - My Balance Card
+    // MARK: - Your Balance
 
-    private var myBalanceCard: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("summary.my.balance")
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(.secondary)
-                .padding(.horizontal)
+    private var yourStatusCard: some View {
+        let debts = viewModel.myDebts(userId: appState.currentUserId ?? "")
 
-            let nonZero = viewModel.currencyBalances.compactMap { balance -> (Int, String)? in
-                guard let my = balance.userBalances.first(where: { $0.userId == appState.currentUserId }),
-                      my.amount != 0 else { return nil }
-                return (my.amount, balance.currency)
-            }
-
-            // Card
-            VStack(alignment: .leading, spacing: 6) {
-                if nonZero.isEmpty {
-                    HStack(spacing: 6) {
-                        Image(systemName: "checkmark.circle.fill")
-                            .foregroundStyle(.green)
-                        Text("summary.all.settled")
-                            .font(.body.weight(.medium))
-                            .foregroundStyle(.primary)
-                    }
-                } else {
-                    ForEach(nonZero, id: \.1) { amount, currency in
-                        HStack(spacing: 6) {
-                            if amount > 0 {
-                                Text("summary.you.are.owed")
-                                    .font(.subheadline)
-                                    .foregroundStyle(.secondary)
-                                Text(amount.formattedCurrency(currency))
-                                    .font(.title3.weight(.bold))
-                                    .foregroundStyle(.green)
-                            } else {
-                                Text("summary.you.owe")
-                                    .font(.subheadline)
-                                    .foregroundStyle(.secondary)
-                                Text((-amount).formattedCurrency(currency))
-                                    .font(.title3.weight(.bold))
-                                    .foregroundStyle(.red)
-                            }
-                        }
+        return VStack(spacing: 0) {
+            if debts.isEmpty {
+                ledgerRow(String(localized: "summary.all.settled"), amount: "✓", color: .green, bold: true)
+            } else {
+                ForEach(Array(debts.enumerated()), id: \.offset) { index, debt in
+                    if debt.youOwe {
+                        ledgerRow(
+                            "You owe \(debt.name)",
+                            amount: debt.amount.formattedCurrency(debt.currency),
+                            color: .red,
+                            bold: true
+                        )
+                    } else {
+                        ledgerRow(
+                            "\(debt.name) owes you",
+                            amount: debt.amount.formattedCurrency(debt.currency),
+                            color: .green,
+                            bold: true
+                        )
                     }
                 }
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(16)
-            .background(Color(.systemBackground))
-            .clipShape(RoundedRectangle(cornerRadius: 16))
-            .shadow(color: .black.opacity(0.06), radius: 3, y: 1)
-            .padding(.horizontal)
         }
     }
 
-    // MARK: - Currency Section
+    // MARK: - Who Owes Who
 
-    private func currencySection(_ balance: BalanceCalculator.CurrencyBalance) -> some View {
-        VStack(alignment: .leading, spacing: 0) {
-            // Currency label
-            Text(balance.currency)
-                .font(.footnote.weight(.semibold))
-                .foregroundStyle(.secondary)
-                .padding(.horizontal)
-                .padding(.bottom, 4)
+    private var settleUpCard: some View {
+        let allDebts = viewModel.currencyBalances.flatMap(\.debts)
 
-            VStack(spacing: 0) {
-                // Member balances
-                ForEach(Array(balance.userBalances.enumerated()), id: \.element.id) { index, userBalance in
-                    HStack(spacing: 12) {
-                        Circle()
-                            .fill(userBalance.userId == appState.currentUserId
-                                  ? Color.accentColor.opacity(0.15)
-                                  : Color(.systemGray5))
-                            .frame(width: 32, height: 32)
-                            .overlay {
-                                Text(memberInitials(viewModel.memberName(for: userBalance.userId)))
-                                    .font(.caption2.weight(.semibold))
-                                    .foregroundStyle(userBalance.userId == appState.currentUserId
-                                                     ? Color.accentColor : .secondary)
-                            }
-
-                        Text(viewModel.memberName(for: userBalance.userId))
-                            .font(.subheadline)
-                            .lineLimit(1)
-
-                        Spacer()
-
-                        if userBalance.amount > 0 {
-                            Text("+\(userBalance.amount.formattedCurrency(balance.currency))")
-                                .font(.subheadline.weight(.medium))
-                                .foregroundStyle(.green)
-                        } else if userBalance.amount < 0 {
-                            Text(userBalance.amount.formattedCurrency(balance.currency))
-                                .font(.subheadline.weight(.medium))
-                                .foregroundStyle(.red)
-                        } else {
-                            Text("summary.settled")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 10)
-
-                    if index < balance.userBalances.count - 1 {
-                        Divider().padding(.leading, 58)
-                    }
-                }
-
-                // Settlements
-                if !balance.debts.isEmpty {
-                    Divider()
-
-                    VStack(spacing: 0) {
-                        ForEach(Array(balance.debts.enumerated()), id: \.element.id) { index, debt in
-                            HStack(spacing: 10) {
-                                Image(systemName: "arrow.right.circle.fill")
-                                    .font(.body)
-                                    .foregroundStyle(.orange)
-
-                                VStack(alignment: .leading, spacing: 1) {
-                                    Text(viewModel.memberName(for: debt.fromUserId))
-                                        .font(.subheadline.weight(.medium))
-                                    HStack(spacing: 3) {
-                                        Text("summary.pays")
-                                            .font(.caption2)
-                                            .foregroundStyle(.secondary)
-                                        Text(viewModel.memberName(for: debt.toUserId))
-                                            .font(.caption2.weight(.medium))
-                                            .foregroundStyle(.secondary)
-                                    }
-                                }
-
-                                Spacer()
-
-                                Text(debt.amount.formattedCurrency(debt.currency))
-                                    .font(.subheadline.weight(.bold))
-                                    .foregroundStyle(.orange)
-                            }
-                            .padding(.horizontal, 14)
-                            .padding(.vertical, 10)
-
-                            if index < balance.debts.count - 1 {
-                                Divider().padding(.leading, 44)
-                            }
-                        }
-                    }
-                    .background(Color.orange.opacity(0.03))
-                }
+        return VStack(spacing: 0) {
+            ForEach(allDebts) { debt in
+                ledgerRow(
+                    "\(viewModel.memberName(for: debt.fromUserId)) owes \(viewModel.memberName(for: debt.toUserId))",
+                    amount: debt.amount.formattedCurrency(debt.currency),
+                    color: .orange
+                )
             }
-            .background(Color(.systemBackground))
-            .clipShape(RoundedRectangle(cornerRadius: 14))
-            .shadow(color: .black.opacity(0.06), radius: 3, y: 1)
-            .padding(.horizontal)
         }
     }
 
     // MARK: - Payment History
 
     private var paymentHistoryCard: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            VStack(spacing: 0) {
-                ForEach(Array(viewModel.payments.enumerated()), id: \.element.id) { index, payment in
-                    HStack(spacing: 10) {
-                        Image(systemName: "checkmark.circle.fill")
-                            .font(.body)
-                            .foregroundStyle(.blue)
+        VStack(spacing: 0) {
+            ForEach(viewModel.payments) { payment in
+                SwipeToDeleteRow {
+                    ledgerRowWithDetail(
+                        "\(viewModel.memberName(for: payment.payerId)) paid \(viewModel.memberName(for: payment.receiverId))",
+                        detail: payment.createdAt.formatted(.dateTime.month(.abbreviated).day()),
+                        amount: payment.amount.formattedCurrency(payment.currency),
+                        color: .blue
+                    )
+                } onDelete: {
+                    deletePayment(payment)
+                }
+            }
+        }
+    }
 
-                        VStack(alignment: .leading, spacing: 2) {
-                            HStack(spacing: 4) {
-                                Text(viewModel.memberName(for: payment.payerId))
-                                    .font(.subheadline.weight(.medium))
-                                Image(systemName: "arrow.right")
-                                    .font(.caption2)
-                                    .foregroundStyle(.secondary)
-                                Text(viewModel.memberName(for: payment.receiverId))
-                                    .font(.subheadline.weight(.medium))
-                            }
-                            if let note = payment.note, !note.isEmpty {
-                                Text(note)
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                            }
-                            Text(payment.createdAt, format: .dateTime.month(.abbreviated).day().hour().minute())
-                                .font(.caption2)
+    private func deletePayment(_ payment: Payment) {
+        isDeletingPayment = true
+        Task {
+            let start = ContinuousClock.now
+            do {
+                try await PaymentRepository().deletePayment(paymentId: payment.id)
+            } catch {
+                print("[Summary] ❌ Delete payment failed: \(error)")
+            }
+            let elapsed = ContinuousClock.now - start
+            if elapsed < .milliseconds(500) {
+                try? await Task.sleep(for: .milliseconds(500) - elapsed)
+            }
+            // Reload data BEFORE removing overlay so the UI updates behind it
+            if let userId = appState.currentUserId {
+                await viewModel.reload(tripId: tripId, userId: userId)
+            }
+            isDeletingPayment = false
+        }
+    }
+
+    // MARK: - All Bills
+
+    private var allBillsCard: some View {
+        VStack(spacing: 0) {
+            ForEach(viewModel.billsWithActivity) { item in
+                Button {
+                    selectedBill = item.bill
+                } label: {
+                    HStack(alignment: .top) {
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text(item.activityName)
+                                .font(.subheadline)
+                                .foregroundStyle(.primary)
+                            Text("\(viewModel.memberName(for: item.bill.payerId)) paid · \(item.shareCount) people")
+                                .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
-
                         Spacer()
-
-                        Text(payment.amount.formattedCurrency(payment.currency))
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(.blue)
+                        Text(item.bill.amount.formattedCurrency(item.bill.currency))
+                            .font(.subheadline.weight(.medium))
+                            .foregroundStyle(.primary)
+                        Image(systemName: "chevron.right")
+                            .font(.caption2.weight(.semibold))
+                            .foregroundStyle(.tertiary)
+                            .padding(.top, 2)
                     }
-                    .padding(.horizontal, 14)
+                    .padding(.horizontal, 20)
                     .padding(.vertical, 10)
+                }
+                .buttonStyle(.plain)
+                sheetDivider
+            }
 
-                    if index < viewModel.payments.count - 1 {
-                        Divider().padding(.leading, 44)
+            // Total row
+            HStack {
+                Text("summary.total.spent")
+                    .font(.subheadline.weight(.bold))
+                Spacer()
+                HStack(spacing: 8) {
+                    ForEach(viewModel.totalExpensesByCurrency, id: \.currency) { item in
+                        Text(item.total.formattedCurrency(item.currency))
+                            .font(.subheadline.weight(.bold))
                     }
                 }
             }
-            .background(Color(.systemBackground))
-            .clipShape(RoundedRectangle(cornerRadius: 14))
-            .shadow(color: .black.opacity(0.06), radius: 3, y: 1)
-            .padding(.horizontal)
+            .padding(.horizontal, 20)
+            .padding(.vertical, 8)
         }
     }
 
@@ -518,6 +503,16 @@ struct TripSummaryView: View {
     }
 }
 
+// MARK: - Models
+
+/// Bill with its activity (block) name for display.
+struct BillWithActivity: Identifiable, Sendable {
+    let bill: Bill
+    let activityName: String
+    let shareCount: Int
+    var id: String { bill.id }
+}
+
 // MARK: - ViewModel
 
 @Observable
@@ -528,6 +523,8 @@ final class TripSummaryViewModel {
     private(set) var currencyBalances: [BalanceCalculator.CurrencyBalance] = []
     private(set) var totalExpensesByCurrency: [(currency: String, total: Int)] = []
     private(set) var totalBillCount: Int = 0
+    private(set) var billsWithActivity: [BillWithActivity] = []
+    private(set) var billSharesMap: [String: [BillShare]] = [:]
     private(set) var payments: [Payment] = []
     private(set) var isLoading = false
 
@@ -536,6 +533,7 @@ final class TripSummaryViewModel {
     private let billRepository = BillRepository()
     private let paymentRepository = PaymentRepository()
     private var memberNames: [String: String] = [:]
+    private var blockNames: [String: String] = [:]
     @ObservationIgnored private var watchTask: Task<Void, Never>?
 
     deinit { watchTask?.cancel() }
@@ -556,7 +554,10 @@ final class TripSummaryViewModel {
                 self.members = memberMap[tripId] ?? []
                 for m in self.members { self.memberNames[m.userId] = m.displayName }
 
-                // Only group block bills — personal block bills excluded from summary
+                // Fetch block names for bill → activity mapping
+                let blocks = try await self.blockRepository.fetchBlocks(tripId: tripId)
+                for block in blocks { self.blockNames[block.id] = block.title }
+
                 let billStream = try self.billRepository.watchGroupBillsForTrip(tripId: tripId)
 
                 let elapsed = ContinuousClock.now - start
@@ -578,6 +579,18 @@ final class TripSummaryViewModel {
                         .sorted { $0.currency < $1.currency }
 
                     let shares = try await self.billRepository.fetchAllSharesForTrip(tripId: tripId)
+                    self.billSharesMap = Dictionary(grouping: shares, by: \.billId)
+
+                    // Bills with activity names + share count
+                    self.billsWithActivity = bills.map { bill in
+                        let count = shares.filter { $0.billId == bill.id }.count
+                        return BillWithActivity(
+                            bill: bill,
+                            activityName: self.blockNames[bill.blockId] ?? String(localized: "post.author.unknown"),
+                            shareCount: count
+                        )
+                    }.sorted { $0.bill.createdAt > $1.bill.createdAt }
+
                     let payments = try await self.paymentRepository.fetchPaymentsForTrip(tripId: tripId)
                     self.payments = payments
 
@@ -587,7 +600,7 @@ final class TripSummaryViewModel {
                         payments: payments
                     )
 
-                    print("[Summary] Bills: \(bills.count), Shares: \(shares.count), Payments: \(payments.count), Currencies: \(self.currencyBalances.count)")
+                    print("[Summary] Bills: \(bills.count), Shares: \(shares.count), Payments: \(payments.count)")
                 }
             } catch {
                 if !(error is CancellationError) {
@@ -598,7 +611,69 @@ final class TripSummaryViewModel {
         }
     }
 
+    /// One-shot async reload — returns after data is refreshed.
+    /// Used by delete/add payment to update UI behind the overlay before dismissing it.
+    func reload(tripId: String, userId: String) async {
+        do {
+            let bills = try await billRepository.fetchGroupBillsForTrip(tripId: tripId)
+            self.totalBillCount = bills.count
+
+            var totals: [String: Int] = [:]
+            for bill in bills { totals[bill.currency, default: 0] += bill.amount }
+            self.totalExpensesByCurrency = totals.map { (currency: $0.key, total: $0.value) }
+                .sorted { $0.currency < $1.currency }
+
+            let shares = try await billRepository.fetchAllSharesForTrip(tripId: tripId)
+            self.billSharesMap = Dictionary(grouping: shares, by: \.billId)
+
+            self.billsWithActivity = bills.map { bill in
+                let count = shares.filter { $0.billId == bill.id }.count
+                return BillWithActivity(
+                    bill: bill,
+                    activityName: blockNames[bill.blockId] ?? String(localized: "post.author.unknown"),
+                    shareCount: count
+                )
+            }.sorted { $0.bill.createdAt > $1.bill.createdAt }
+
+            let payments = try await paymentRepository.fetchPaymentsForTrip(tripId: tripId)
+            self.payments = payments
+
+            self.currencyBalances = BalanceCalculator.calculate(
+                bills: bills, shares: shares, payments: payments
+            )
+        } catch {
+            print("[Summary] ❌ Reload error: \(error)")
+        }
+    }
+
     func memberName(for userId: String) -> String {
         memberNames[userId] ?? String(localized: "post.author.unknown")
+    }
+
+    func billShareDisplays(for billId: String) -> [BillShareDisplay] {
+        guard let shares = billSharesMap[billId] else { return [] }
+        return shares.map { share in
+            BillShareDisplay(
+                id: share.id,
+                userId: share.userId,
+                displayName: memberNames[share.userId] ?? String(localized: "post.author.unknown"),
+                shareAmount: share.shareAmount
+            )
+        }
+    }
+
+    /// Get debts involving the current user as human-readable lines.
+    func myDebts(userId: String) -> [(name: String, amount: Int, currency: String, youOwe: Bool)] {
+        var results: [(name: String, amount: Int, currency: String, youOwe: Bool)] = []
+        for balance in currencyBalances {
+            for debt in balance.debts {
+                if debt.fromUserId == userId {
+                    results.append((memberName(for: debt.toUserId), debt.amount, debt.currency, true))
+                } else if debt.toUserId == userId {
+                    results.append((memberName(for: debt.fromUserId), debt.amount, debt.currency, false))
+                }
+            }
+        }
+        return results
     }
 }

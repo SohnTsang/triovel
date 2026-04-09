@@ -117,6 +117,7 @@ struct TripMembersView: View {
             }
             Button(String(localized: "common.cancel"), role: .cancel) {}
         } message: {
+            
             Text("trip.members.leave.message")
         }
         .overlay {

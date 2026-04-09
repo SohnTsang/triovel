@@ -58,13 +58,13 @@ struct BillCardView: View {
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color(.systemBackground))
+        .background { RoundedRectangle(cornerRadius: 14).fill(ColorTokens.billBackground) }
         .clipShape(RoundedRectangle(cornerRadius: 14))
-        .shadow(color: .black.opacity(0.08), radius: 2, y: 1)
         .overlay(
             RoundedRectangle(cornerRadius: 14)
-                .stroke(Color.green.opacity(0.2), lineWidth: 1)
+                .stroke(ColorTokens.billBorder, lineWidth: 0.5)
         )
+        .shadow(color: .black.opacity(0.06), radius: 2, x: 0, y: 2)
         .opacity(isDeleting ? 0.5 : 1.0)
         .overlay {
             if isDeleting {

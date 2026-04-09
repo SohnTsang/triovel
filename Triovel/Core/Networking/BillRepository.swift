@@ -85,6 +85,20 @@ final class BillRepository: @unchecked Sendable {
         )
     }
 
+    /// Fetch only group block bills (one-shot, for reload after payment changes).
+    func fetchGroupBillsForTrip(tripId: String) async throws -> [Bill] {
+        try await db.getAll(
+            sql: """
+                SELECT b.* FROM bills b
+                JOIN blocks bl ON b.block_id = bl.id
+                WHERE b.trip_id = ? AND bl.context = 'group'
+                ORDER BY b.created_at ASC
+                """,
+            parameters: [tripId],
+            mapper: Self.billMapper
+        )
+    }
+
     /// Watch only group block bills (personal block bills excluded from summary).
     func watchGroupBillsForTrip(tripId: String) throws -> AsyncThrowingStream<[Bill], Error> {
         try db.watch(

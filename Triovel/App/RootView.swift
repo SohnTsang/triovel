@@ -8,7 +8,8 @@ struct RootView: View {
         Group {
             switch appState.authStatus {
             case .unknown:
-                ProgressView(String(localized: "state.restoring.session"))
+                Color(.systemBackground)
+                    .ignoresSafeArea()
             case .signedOut:
                 AuthView()
             case .verificationPending(let email):

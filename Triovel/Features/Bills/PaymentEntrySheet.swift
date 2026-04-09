@@ -7,7 +7,7 @@ struct PaymentEntrySheet: View {
     let members: [TripMemberDisplay]
     let baseCurrency: String
     let currentUserId: String
-    var onPaymentCreated: (() -> Void)?
+    var onPaymentCreated: (() async -> Void)?
 
     @Environment(\.dismiss) private var dismiss
 
@@ -21,7 +21,7 @@ struct PaymentEntrySheet: View {
 
     private let paymentRepository = PaymentRepository()
 
-    init(tripId: String, members: [TripMemberDisplay], baseCurrency: String, currentUserId: String, onPaymentCreated: (() -> Void)? = nil) {
+    init(tripId: String, members: [TripMemberDisplay], baseCurrency: String, currentUserId: String, onPaymentCreated: (() async -> Void)? = nil) {
         self.tripId = tripId
         self.members = members
         self.baseCurrency = baseCurrency
@@ -171,8 +171,8 @@ struct PaymentEntrySheet: View {
                 if elapsed < .milliseconds(500) {
                     try? await Task.sleep(for: .milliseconds(500) - elapsed)
                 }
+                await onPaymentCreated?()
                 dismiss()
-                onPaymentCreated?()
             } catch {
                 print("[Payment] ❌ Create failed: \(error)")
                 errorMessage = String(localized: "payment.error.create")

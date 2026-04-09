@@ -8,6 +8,7 @@ struct BillDetailView: View {
     var payments: [Payment] = []
     var members: [TripMemberDisplay] = []
     var currentUserId: String = ""
+    var blockTitle: String? = nil
     var onDelete: (() -> Void)?
     var canDelete: Bool = false
     var onRecordPayment: (() -> Void)?
@@ -23,25 +24,6 @@ struct BillDetailView: View {
                     amountHeader
                     payerSection
                     splitSection
-
-                    // Payment records for this bill's currency
-                    if !relatedPayments.isEmpty {
-                        paymentSection
-                    }
-
-                    // Record Payment button
-                    if shares.contains(where: { $0.userId != bill.payerId }) {
-                        Button {
-                            onRecordPayment?()
-                        } label: {
-                            Label(String(localized: "summary.record.payment"), systemImage: "plus.circle")
-                                .font(.body.weight(.medium))
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 12)
-                                .background(Color.accentColor.opacity(0.1), in: RoundedRectangle(cornerRadius: 12))
-                        }
-                        .padding(.horizontal)
-                    }
 
                     if canDelete {
                         deleteSection
@@ -96,104 +78,69 @@ struct BillDetailView: View {
 
     private var amountHeader: some View {
         VStack(spacing: 6) {
+            if let title = blockTitle {
+                Text(title)
+                    .font(.subheadline.weight(.medium))
+                    .foregroundStyle(.secondary)
+            }
+
             Text(bill.amount.formattedCurrency(bill.currency))
                 .font(.largeTitle.weight(.bold))
 
             Text(formattedDate)
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
+                .font(.caption)
+                .foregroundStyle(.tertiary)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 24)
-        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 16))
-        .padding(.horizontal)
     }
 
     // MARK: - Payer
 
     private var payerSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 4) {
             Text("bill.detail.paid.by")
-                .font(.caption.weight(.medium))
+                .font(.subheadline.weight(.semibold))
                 .foregroundStyle(.secondary)
-                .padding(.horizontal)
+                .padding(.horizontal, 20)
 
-            HStack(spacing: 12) {
-                Circle()
-                    .fill(Color.accentColor.opacity(0.15))
-                    .frame(width: 36, height: 36)
-                    .overlay {
-                        Text(initials(payerName))
-                            .font(.caption.weight(.semibold))
-                            .foregroundStyle(Color.accentColor)
-                    }
-
+            HStack {
                 Text(payerName)
-                    .font(.body.weight(.medium))
-
+                    .font(.subheadline)
                 Spacer()
-
                 Text(bill.amount.formattedCurrency(bill.currency))
-                    .font(.body.weight(.semibold))
-                    .foregroundStyle(.green)
+                    .font(.subheadline.weight(.medium))
             }
-            .padding(14)
-            .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 12))
-            .padding(.horizontal)
+            .padding(.horizontal, 20)
+            .padding(.vertical, 8)
         }
     }
 
     // MARK: - Split Breakdown
 
     private var splitSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 4) {
             Text("bill.detail.split")
-                .font(.caption.weight(.medium))
+                .font(.subheadline.weight(.semibold))
                 .foregroundStyle(.secondary)
-                .padding(.horizontal)
+                .padding(.horizontal, 20)
 
-            VStack(spacing: 0) {
-                ForEach(Array(shares.enumerated()), id: \.element.id) { index, share in
-                    HStack(spacing: 12) {
-                        Circle()
-                            .fill(Color(.systemGray4))
-                            .frame(width: 32, height: 32)
-                            .overlay {
-                                Text(initials(share.displayName))
-                                    .font(.caption2.weight(.medium))
-                                    .foregroundStyle(.white)
-                            }
+            Rectangle()
+                .fill(Color(.separator))
+                .frame(height: 0.5)
+                .padding(.horizontal, 20)
 
-                        Text(share.displayName)
-                            .font(.subheadline)
-
-                        Spacer()
-
-                        VStack(alignment: .trailing, spacing: 1) {
-                            Text(share.shareAmount.formattedCurrency(bill.currency))
-                                .font(.subheadline.weight(.medium))
-
-                            if share.userId == bill.payerId {
-                                Text("bill.detail.paid")
-                                    .font(.caption2)
-                                    .foregroundStyle(.green)
-                            } else {
-                                Text("bill.detail.owes")
-                                    .font(.caption2)
-                                    .foregroundStyle(.red)
-                            }
-                        }
-                    }
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 10)
-
-                    if index < shares.count - 1 {
-                        Divider().padding(.leading, 58)
-                    }
+            ForEach(shares) { share in
+                HStack {
+                    Text(share.displayName)
+                        .font(.subheadline)
+                    Spacer()
+                    Text(share.shareAmount.formattedCurrency(bill.currency))
+                        .font(.subheadline.weight(.medium))
                 }
+                .padding(.horizontal, 20)
+                .padding(.vertical, 8)
             }
-            .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 12))
-            .padding(.horizontal)
         }
     }
 
@@ -247,7 +194,10 @@ struct BillDetailView: View {
                     }
                 }
             }
-            .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 12))
+            .background { RoundedRectangle(cornerRadius: 12).fill(ColorTokens.billBackground) }
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .overlay(RoundedRectangle(cornerRadius: 12).stroke(ColorTokens.billBorder, lineWidth: 0.5))
+            .shadow(color: .black.opacity(0.06), radius: 2, x: 0, y: 2)
             .padding(.horizontal)
         }
     }

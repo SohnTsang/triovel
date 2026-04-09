@@ -102,6 +102,7 @@ final class BlockRepository: @unchecked Sendable {
     func updateBlockHeader(
         blockId: String,
         title: String? = nil,
+        context: BlockContext? = nil,
         locationText: String? = nil,
         description: String? = nil,
         startAt: Date? = nil,
@@ -114,6 +115,10 @@ final class BlockRepository: @unchecked Sendable {
         if let title {
             setClauses.append("title = ?")
             params.append(title)
+        }
+        if let context {
+            setClauses.append("context = ?")
+            params.append(context.rawValue)
         }
         if let locationText {
             setClauses.append("location_text = ?")

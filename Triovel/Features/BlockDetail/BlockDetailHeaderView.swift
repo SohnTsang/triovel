@@ -39,10 +39,10 @@ struct BlockDetailHeaderView: View {
                         Text("block.card.no.time")
                     } else {
                         HStack(spacing: 4) {
-                            Text(block.startAt, format: .dateTime.hour().minute())
+                            TimeText(block.startAt, in: block.displayTimezone)
                             if let endAt = block.endAt {
                                 Text("–")
-                                Text(endAt, format: .dateTime.hour().minute())
+                                TimeText(endAt, in: block.displayTimezone)
                             }
                         }
                     }

@@ -99,19 +99,24 @@ struct PostCardView: View {
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(
-            post.visibility == .private
-                ? ColorTokens.personalBackground
-                : Color(.systemBackground)
-        )
+        .background {
+            if post.visibility == .private {
+                RoundedRectangle(cornerRadius: 14).fill(ColorTokens.personalBackground)
+            } else {
+                RoundedRectangle(cornerRadius: 14).fill(ColorTokens.cardBackground)
+            }
+        }
         .clipShape(RoundedRectangle(cornerRadius: 14))
-        .shadow(color: .black.opacity(0.08), radius: 2, y: 1)
         .overlay(
-            post.visibility == .private
-                ? RoundedRectangle(cornerRadius: 14)
-                    .strokeBorder(ColorTokens.personalBorder, lineWidth: 1)
-                : nil
+            RoundedRectangle(cornerRadius: 14)
+                .strokeBorder(
+                    post.visibility == .private
+                        ? ColorTokens.personalBorder
+                        : Color(.systemGray4),
+                    lineWidth: 0.5
+                )
         )
+        .shadow(color: .black.opacity(0.06), radius: 2, x: 0, y: 2)
         .opacity(isDeleting ? 0.5 : 1.0)
         .overlay {
             if isDeleting {

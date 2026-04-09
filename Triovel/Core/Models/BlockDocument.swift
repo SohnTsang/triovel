@@ -11,6 +11,18 @@ struct BlockDocument: Identifiable, Codable, Hashable, Sendable {
     var fileSize: Int?
     let createdAt: Date
 
+    enum CodingKeys: String, CodingKey {
+        case id
+        case blockId = "block_id"
+        case userId = "user_id"
+        case fileName = "file_name"
+        case fileType = "file_type"
+        case storagePath = "storage_path"
+        case uploadStatus = "upload_status"
+        case fileSize = "file_size"
+        case createdAt = "created_at"
+    }
+
     /// Human-readable file size: "1.2 MB", "856 KB"
     var formattedSize: String? {
         guard let size = fileSize else { return nil }

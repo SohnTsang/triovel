@@ -22,6 +22,7 @@ struct AddMomentView: View {
     @State private var startTime = Date()
     @State private var hasEndTime = false
     @State private var endTime = Date()
+    @State private var showEndPicker = false
     @State private var isSaving = false
     @State private var errorMessage: String?
 
@@ -29,6 +30,7 @@ struct AddMomentView: View {
 
     var body: some View {
         NavigationStack {
+            ScrollView {
             VStack(spacing: 20) {
                 // Title — large auto-focused input
                 TextField(String(localized: "block.add.placeholder"), text: $title)
@@ -64,19 +66,40 @@ struct AddMomentView: View {
                         selection: $startTime,
                         displayedComponents: .hourAndMinute
                     )
+                    .environment(\.timeZone, TimeZone(identifier: displayTimezone) ?? .current)
                     .padding(.horizontal)
                     .disabled(isSaving)
 
                     // End time (optional)
                     VStack(spacing: 8) {
                         if hasEndTime {
-                            DatePicker(
-                                String(localized: "block.add.end.time"),
-                                selection: $endTime,
-                                displayedComponents: .hourAndMinute
-                            )
+                            Button {
+                                titleFocused = false
+                                withAnimation(.easeInOut(duration: 0.2)) {
+                                    showEndPicker.toggle()
+                                }
+                            } label: {
+                                HStack {
+                                    Text(String(localized: "block.add.end.time"))
+                                        .foregroundStyle(.primary)
+                                    Spacer()
+                                    Text(endTime.formatted(.dateTime.month(.abbreviated).day()) + " " + endTime.timeString(in: TimeZone(identifier: displayTimezone) ?? .current))
+                                        .foregroundStyle(showEndPicker ? Color.accentColor : .secondary)
+                                }
+                            }
+                            .buttonStyle(.plain)
                             .padding(.horizontal)
-                            .disabled(isSaving)
+
+                            if showEndPicker {
+                                DatePicker("", selection: $endTime, in: startTime..., displayedComponents: [.date, .hourAndMinute])
+                                    .datePickerStyle(.wheel)
+                                    .labelsHidden()
+                                    .frame(height: 150)
+                                    .clipped()
+                                    .environment(\.timeZone, TimeZone(identifier: displayTimezone) ?? .current)
+                                    .padding(.horizontal)
+                                    .disabled(isSaving)
+                            }
                         }
 
                         Button {
@@ -103,9 +126,11 @@ struct AddMomentView: View {
                         .padding(.horizontal)
                 }
 
-                Spacer()
             }
             .padding(.top, 24)
+            }
+            .onTapGesture { titleFocused = false }
+            .scrollDismissesKeyboard(.interactively)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .principal) {
@@ -163,7 +188,7 @@ struct AddMomentView: View {
             }
             .onChange(of: startTime) { _, _ in }
         }
-        .presentationDetents(sizeClass == .regular ? [.medium, .large] : [.medium, .large])
+        .presentationDetents([.large])
     }
 
     private func createBlock() {
@@ -181,18 +206,7 @@ struct AddMomentView: View {
             endAt = nil
         } else {
             startAt = buildDateTime(from: startTime)
-            if hasEndTime {
-                var end = buildDateTime(from: endTime)
-                // Cross-midnight: end time before start time means next day
-                if end <= startAt {
-                    var cal = Calendar.current
-                    cal.timeZone = TimeZone(identifier: displayTimezone) ?? .current
-                    end = cal.date(byAdding: .day, value: 1, to: end) ?? end
-                }
-                endAt = end
-            } else {
-                endAt = nil
-            }
+            endAt = hasEndTime ? endTime : nil
         }
 
         isSaving = true

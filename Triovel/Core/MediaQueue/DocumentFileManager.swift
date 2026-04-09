@@ -63,8 +63,11 @@ actor DocumentFileManager {
         try await repository.updateUploadStatus(docId: docId, status: .uploading)
 
         let data = try Data(contentsOf: localFile)
-        let remotePath = "trips/\(tripId)/docs/\(docId)/\(fileName)"
-        let contentType = fileName.lowercased().hasSuffix(".pdf") ? "application/pdf" : "image/jpeg"
+        // Use docId + extension as remote filename to avoid non-ASCII character issues
+        let ext = (fileName as NSString).pathExtension
+        let safeFileName = "\(docId).\(ext)"
+        let remotePath = "trips/\(tripId)/docs/\(docId)/\(safeFileName)"
+        let contentType = ext.lowercased() == "pdf" ? "application/pdf" : "image/jpeg"
 
         do {
             try await client.storage.from("documents").upload(

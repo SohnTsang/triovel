@@ -27,14 +27,14 @@ struct DocumentSectionView: View {
                     }
                 }
             }
-            .background(Color(.secondarySystemBackground))
+            .background { RoundedRectangle(cornerRadius: 12).fill(ColorTokens.cardBackground) }
             .clipShape(RoundedRectangle(cornerRadius: 12))
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
-                    .stroke(Color(.systemGray5), lineWidth: 1)
+                    .stroke(Color(.systemGray4), lineWidth: 0.5)
             )
-            .padding(.horizontal)
-            .padding(.top, 8)
+            .shadow(color: .black.opacity(0.06), radius: 2, x: 0, y: 2)
+            .padding(.top, 4)
             .alert(String(localized: "document.delete.title"), isPresented: .init(
                 get: { deleteTarget != nil },
                 set: { if !$0 { deleteTarget = nil } }
@@ -161,7 +161,7 @@ struct DocumentPickerView: UIViewControllerRepresentable {
 
     func makeUIViewController(context: Context) -> UIDocumentPickerViewController {
         let types: [UTType] = [.pdf, .jpeg, .png, .heic]
-        let picker = UIDocumentPickerViewController(forOpeningContentTypes: types, asCopy: true)
+        let picker = UIDocumentPickerViewController(forOpeningContentTypes: types, asCopy: false)
         picker.allowsMultipleSelection = false
         picker.delegate = context.coordinator
         return picker
