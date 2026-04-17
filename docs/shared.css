@@ -17,6 +17,7 @@
     padding: 0 40px;
     height: 56px;
     background: var(--t-bg);
+    line-height: 1;
 }
 
 .site-logo {
@@ -26,6 +27,7 @@
     color: #3b96a7;
     text-decoration: none;
     letter-spacing: 0;
+    line-height: 1;
 }
 
 @media (max-width: 600px) {
@@ -42,6 +44,7 @@
     font-size: 12px;
     color: var(--t-text-sec);
     text-decoration: none;
+    line-height: 1;
 }
 
 .site-links a:hover {
