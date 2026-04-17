@@ -118,6 +118,36 @@
         .mockup img{
             width:100%;height:auto;display:block;
         }
+        /* ── Invite Section ── */
+        .invite-section{
+            max-width:1080px;margin:0 auto;
+            padding:56px 40px;
+            display:flex;align-items:center;gap:48px;
+            opacity:0;transform:translateY(32px);
+            transition:opacity 0.7s ease,transform 0.7s ease;
+        }
+        .invite-section.visible{opacity:1;transform:translateY(0)}
+        .invite-section .mockup{width:260px}
+        .invite-text{flex:1}
+        .invite-text h2{
+            font-size:clamp(1.6rem,3vw,2.4rem);font-weight:700;
+            letter-spacing:-0.025em;line-height:1.18;margin-bottom:12px;
+        }
+        .invite-text p{
+            font-size:16px;color:#86868b;line-height:1.6;
+        }
+        @media(max-width:960px){
+            .invite-section{
+                flex-direction:column;text-align:center;
+                padding:48px 24px;gap:32px;
+            }
+            .invite-section .mockup{width:220px}
+        }
+        @media(max-width:600px){
+            .invite-section{padding:36px 16px;gap:24px}
+            .invite-section .mockup{width:200px}
+        }
+
         /* ── CTA Section ── */
         .cta-end{
             text-align:center;padding:80px 24px 96px;
@@ -274,6 +304,15 @@
     </div>
 </section>
 
+<!-- ── Invite ── -->
+<section class="invite-section" id="s4">
+    <div class="mockup"><img src="screenshots/04-invite.png" alt="Share invite link with friends"></div>
+    <div class="invite-text">
+        <h2>Share a trip, not a group chat.</h2>
+        <p>One link. Everyone on the same timeline. No more forwarding itineraries, no more "which album was that in."</p>
+    </div>
+</section>
+
 <!-- ── CTA ── -->
 <div class="cta-end">
     <h2>Trips end. The memories shouldn't scatter.</h2>
@@ -320,7 +359,7 @@ document.querySelectorAll('.carousel').forEach(function(c) {
 var observer = new IntersectionObserver(function(entries) {
     entries.forEach(function(e) { if (e.isIntersecting) e.target.classList.add('visible'); });
 }, { threshold: 0.12 });
-document.querySelectorAll('.prob').forEach(function(s) { observer.observe(s); });
+document.querySelectorAll('.prob, .invite-section').forEach(function(s) { observer.observe(s); });
 
 /* ── Invite ── */
 (function() {
