@@ -79,7 +79,7 @@ struct EditBlockSheet: View {
                         Text("block.add.context.personal").tag(BlockContext.personal)
                     }
                     .pickerStyle(.segmented)
-                    .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+                    .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
                 }
 
                 // Date & Time

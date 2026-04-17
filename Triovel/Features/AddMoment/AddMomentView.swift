@@ -14,7 +14,7 @@ struct AddMomentView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.horizontalSizeClass) private var sizeClass
     @Environment(AppState.self) private var appState
-    @FocusState private var titleFocused: Bool
+    @FocusState private var focusedField: Field?
 
     @State private var title: String = ""
     @State private var context: BlockContext = .group
@@ -22,115 +22,147 @@ struct AddMomentView: View {
     @State private var startTime = Date()
     @State private var hasEndTime = false
     @State private var endTime = Date()
-    @State private var showEndPicker = false
     @State private var isSaving = false
     @State private var errorMessage: String?
+
+    @State private var showStartTimePicker = false
+    @State private var showEndTimePicker = false
+
+    private enum Field: Hashable { case title }
 
     private let blockRepository = BlockRepository()
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-            VStack(spacing: 20) {
-                // Title — large auto-focused input
-                TextField(String(localized: "block.add.placeholder"), text: $title)
-                    .font(.title3)
-                    .focused($titleFocused)
-                    .padding(.horizontal)
-                    .disabled(isSaving)
-                    .onChange(of: title) { _, newValue in
-                        if newValue.count > 150 { title = String(newValue.prefix(150)) }
-                    }
-
-                // Context toggle — default Group
-                Picker("Context", selection: $context) {
-                    Text("block.add.context.group").tag(BlockContext.group)
-                    Text("block.add.context.personal").tag(BlockContext.personal)
+            List {
+                // Title
+                Section {
+                    TextField(String(localized: "block.add.placeholder"), text: $title)
+                        .focused($focusedField, equals: .title)
+                        .onTapGesture { collapsePickers() }
+                        .onChange(of: title) { _, newValue in
+                            if newValue.count > 150 { title = String(newValue.prefix(150)) }
+                        }
                 }
-                .pickerStyle(.segmented)
-                .padding(.horizontal)
-                .disabled(isSaving)
 
-                // Time toggle — default ON, OFF means "time not decided"
-                Toggle(String(localized: "block.add.set.time"), isOn: $hasTime)
-                    .padding(.horizontal)
-                    .disabled(isSaving)
-                    .onChange(of: hasTime) { _, on in
-                        if !on { hasEndTime = false }
+                // Context toggle
+                Section {
+                    Picker("", selection: $context) {
+                        Text("block.add.context.group").tag(BlockContext.group)
+                        Text("block.add.context.personal").tag(BlockContext.personal)
                     }
+                    .pickerStyle(.segmented)
+                    .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
+                }
 
-                // Time pickers (shown when time is set)
-                if hasTime {
-                    DatePicker(
-                        String(localized: "block.add.start.time"),
-                        selection: $startTime,
-                        displayedComponents: .hourAndMinute
-                    )
-                    .environment(\.timeZone, TimeZone(identifier: displayTimezone) ?? .current)
-                    .padding(.horizontal)
-                    .disabled(isSaving)
-
-                    // End time (optional)
-                    VStack(spacing: 8) {
-                        if hasEndTime {
-                            Button {
-                                titleFocused = false
-                                withAnimation(.easeInOut(duration: 0.2)) {
-                                    showEndPicker.toggle()
-                                }
-                            } label: {
-                                HStack {
-                                    Text(String(localized: "block.add.end.time"))
-                                        .foregroundStyle(.primary)
-                                    Spacer()
-                                    Text(endTime.formatted(.dateTime.month(.abbreviated).day()) + " " + endTime.timeString(in: TimeZone(identifier: displayTimezone) ?? .current))
-                                        .foregroundStyle(showEndPicker ? Color.accentColor : .secondary)
-                                }
+                // Date & Time
+                Section {
+                    // Time toggle
+                    Toggle(String(localized: "block.add.set.time"), isOn: $hasTime)
+                        .onChange(of: hasTime) { _, on in
+                            if !on {
+                                hasEndTime = false
+                                showStartTimePicker = false
+                                showEndTimePicker = false
                             }
-                            .buttonStyle(.plain)
-                            .padding(.horizontal)
+                        }
 
-                            if showEndPicker {
+                    if hasTime {
+                        // Start time row
+                        Button {
+                            focusedField = nil
+                            withAnimation(.easeInOut(duration: 0.2)) {
+                                showStartTimePicker.toggle()
+                                showEndTimePicker = false
+                            }
+                        } label: {
+                            HStack {
+                                Label(String(localized: "block.add.start.time"), systemImage: "clock")
+                                    .foregroundStyle(.primary)
+                                Spacer()
+                                TimeText(startTime, in: displayTimezone)
+                                    .foregroundStyle(showStartTimePicker ? Color.accentColor : .secondary)
+                            }
+                        }
+                        .buttonStyle(.plain)
+
+                        if showStartTimePicker {
+                            DatePicker("", selection: $startTime, displayedComponents: .hourAndMinute)
+                                .datePickerStyle(.wheel)
+                                .labelsHidden()
+                                .frame(height: 150)
+                                .clipped()
+                                .environment(\.timeZone, TimeZone(identifier: displayTimezone) ?? .current)
+                        }
+
+                        // End time
+                        if hasEndTime {
+                            HStack {
+                                Button {
+                                    focusedField = nil
+                                    withAnimation(.easeInOut(duration: 0.2)) {
+                                        showEndTimePicker.toggle()
+                                        showStartTimePicker = false
+                                    }
+                                } label: {
+                                    HStack {
+                                        Label(String(localized: "block.add.end.time"), systemImage: "clock.badge.checkmark")
+                                            .foregroundStyle(.primary)
+                                        Spacer()
+                                        Text(endTime.formatted(.dateTime.month(.abbreviated).day()) + " " + endTime.timeString(in: TimeZone(identifier: displayTimezone) ?? .current))
+                                            .foregroundStyle(showEndTimePicker ? Color.accentColor : .secondary)
+                                    }
+                                }
+                                .buttonStyle(.plain)
+
+                                Button {
+                                    withAnimation(.easeInOut(duration: 0.2)) {
+                                        hasEndTime = false
+                                        showEndTimePicker = false
+                                    }
+                                } label: {
+                                    Image(systemName: "xmark.circle.fill")
+                                        .font(.body)
+                                        .foregroundStyle(Color(.systemGray3))
+                                }
+                                .buttonStyle(.plain)
+                            }
+
+                            if showEndTimePicker {
                                 DatePicker("", selection: $endTime, in: startTime..., displayedComponents: [.date, .hourAndMinute])
                                     .datePickerStyle(.wheel)
                                     .labelsHidden()
                                     .frame(height: 150)
                                     .clipped()
                                     .environment(\.timeZone, TimeZone(identifier: displayTimezone) ?? .current)
-                                    .padding(.horizontal)
-                                    .disabled(isSaving)
                             }
-                        }
-
-                        Button {
-                            withAnimation(.easeInOut(duration: 0.2)) {
-                                hasEndTime.toggle()
-                                if hasEndTime {
-                                    endTime = Calendar.current.date(byAdding: .hour, value: 1, to: startTime) ?? startTime
+                        } else {
+                            Button {
+                                collapsePickers()
+                                let defaultEnd = Calendar.current.date(byAdding: .hour, value: 1, to: startTime) ?? startTime
+                                endTime = defaultEnd
+                                withAnimation(.easeInOut(duration: 0.2)) {
+                                    hasEndTime = true
                                 }
+                            } label: {
+                                Label(String(localized: "block.add.end.time.add"), systemImage: "plus")
+                                    .foregroundStyle(Color.accentColor)
                             }
-                        } label: {
-                            Text(hasEndTime ? "block.add.end.time.remove" : "block.add.end.time.add")
-                                .font(.subheadline)
-                                .foregroundStyle(Color.accentColor)
                         }
-                        .padding(.horizontal)
-                        .disabled(isSaving)
                     }
                 }
 
                 if let error = errorMessage {
-                    Text(error)
-                        .font(.caption)
-                        .foregroundStyle(.red)
-                        .padding(.horizontal)
+                    Section {
+                        Text(error)
+                            .font(.caption)
+                            .foregroundStyle(.red)
+                    }
                 }
-
             }
-            .padding(.top, 24)
+            .onChange(of: focusedField) { _, field in
+                if field != nil { collapsePickers() }
             }
-            .onTapGesture { titleFocused = false }
-            .scrollDismissesKeyboard(.interactively)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .principal) {
@@ -175,6 +207,7 @@ struct AddMomentView: View {
                 }
             }
             .interactiveDismissDisabled(isSaving)
+            .allowsHitTesting(!isSaving)
             .onAppear {
                 if let date = dayDate {
                     let cal = Calendar.current
@@ -184,11 +217,17 @@ struct AddMomentView: View {
                         startTime = cal.date(bySettingHour: 12, minute: 0, second: 0, of: date) ?? Date()
                     }
                 }
-                titleFocused = true
+                focusedField = .title
             }
-            .onChange(of: startTime) { _, _ in }
         }
         .presentationDetents([.large])
+    }
+
+    private func collapsePickers() {
+        withAnimation(.easeInOut(duration: 0.2)) {
+            showStartTimePicker = false
+            showEndTimePicker = false
+        }
     }
 
     private func createBlock() {
@@ -199,7 +238,6 @@ struct AddMomentView: View {
         let startAt: Date
         let endAt: Date?
         if !hasTime {
-            // Time not set: use start of the day in trip timezone
             var cal = Calendar.current
             cal.timeZone = TimeZone(identifier: displayTimezone) ?? .current
             startAt = cal.startOfDay(for: dayDate ?? Date())
@@ -212,9 +250,6 @@ struct AddMomentView: View {
         isSaving = true
         errorMessage = nil
 
-        // Pre-generate the block ID so we can hide it from the timeline
-        // BEFORE the DB write. The reactive watchBlocks stream picks up
-        // new rows instantly — hiding after the write is too late.
         let blockId = UUID().uuidString.lowercased()
         timelineViewModel?.hideBlockUntilReady(blockId)
 
@@ -250,9 +285,6 @@ struct AddMomentView: View {
     }
 
     private func buildDateTime(from time: Date) -> Date {
-        // Use the trip's display timezone for date math so the block
-        // lands on the correct day. Calendar.current (device TZ) can
-        // shift the date by a day when device and trip timezones differ.
         var cal = Calendar.current
         cal.timeZone = TimeZone(identifier: displayTimezone) ?? .current
 

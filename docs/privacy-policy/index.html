@@ -4,8 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Privacy Policy — Triovel</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../shared.css">
     <style>
+        :root{--t-bg:#ffffff;--t-text:#1c1c1e;--t-text-sec:#86868b;--t-teal:#3b96a7;--t-border:#d2d2d7}
+        @media(prefers-color-scheme:dark){:root{--t-bg:#ffffff;--t-text:#1c1c1e;--t-text-sec:#86868b;--t-teal:#3b96a7;--t-border:#d2d2d7}}
+        .site-header{
+            max-width:1080px;margin:0 auto;
+            padding:0 40px;height:56px;
+        }
+        .site-logo{
+            font-family:'Pacifico',cursive !important;
+            font-size:22px !important;font-weight:400 !important;
+            color:#3b96a7 !important;letter-spacing:0 !important;
+        }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", system-ui, sans-serif;
@@ -16,19 +30,14 @@
             -webkit-font-smoothing: antialiased;
             letter-spacing: 0.1px;
         }
-        @media (prefers-color-scheme: dark) {
-            body { background: #0e0e0e; color: #f2f2f7; }
-            a { color: #5fbfba; }
-        }
-        @media (prefers-color-scheme: dark) {
-        }
         .wrap {
             max-width: 780px;
             margin: 0 auto;
-            padding: 48px 32px 96px;
+            padding: 48px 40px 96px;
         }
         @media (max-width: 600px) {
             .wrap { padding: 32px 20px 64px; }
+            .site-header { padding: 0 20px; }
         }
         h1 {
             font-size: 36px;
@@ -39,7 +48,7 @@
         }
         .meta {
             font-size: 14px;
-            color: #999;
+            color: #86868b;
             margin-bottom: 48px;
         }
         h2 {
@@ -64,10 +73,8 @@
         }
         li { margin-bottom: 8px; }
         strong { color: inherit; font-weight: 600; }
-        a { color: #4a9d9a; text-decoration: none; }
+        a { color: #3b96a7; text-decoration: none; }
         a:hover { text-decoration: underline; }
-        @media (prefers-color-scheme: dark) {
-            }
         .lang { display: none; }
         .lang.active { display: block; }
     </style>

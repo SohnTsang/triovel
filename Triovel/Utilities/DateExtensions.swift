@@ -6,7 +6,7 @@ extension Date {
     /// Use this instead of `.dateTime.hour().minute()` which uses the device timezone.
     func timeString(in timeZone: TimeZone) -> String {
         let formatter = DateFormatter()
-        formatter.dateFormat = "h:mm a"
+        formatter.dateFormat = "HH:mm"
         formatter.timeZone = timeZone
         return formatter.string(from: self)
     }
