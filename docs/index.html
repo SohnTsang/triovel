@@ -3,265 +3,343 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Triovel — Group travel, organized</title>
-    <meta name="description" content="Shared trip timelines, memories, and expense splitting for group travel.">
-    <meta property="og:title" content="Triovel — Group travel, organized">
-    <meta property="og:description" content="Plan the anchors. Capture the reality. Share the trip.">
+    <title>Triovel — Keep your trip together</title>
+    <meta name="description" content="A shared trip memory app. Plan key moments, capture what actually happened, revisit the whole trip later.">
+    <meta property="og:title" content="Triovel — Keep your trip together">
+    <meta property="og:description" content="Plan lightly. Capture easily. Revisit anytime.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="shared.css">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif;
-            background: var(--t-bg);
-            color: var(--t-text);
-            -webkit-font-smoothing: antialiased;
-            overflow-x: hidden;
+        :root{--t-bg:#ffffff;--t-text:#1c1c1e;--t-text-sec:#86868b;--t-teal:#3b96a7;--t-border:#d2d2d7}
+        @media(prefers-color-scheme:dark){:root{--t-bg:#ffffff;--t-text:#1c1c1e;--t-text-sec:#86868b;--t-teal:#3b96a7;--t-border:#d2d2d7}}
+        /* ── Navbar override ── */
+        .site-header{
+            max-width:1080px;margin:0 auto;
+            padding:0 40px;height:56px;
         }
-        .w { max-width: 1120px; margin: 0 auto; padding: 0 40px; }
-        @media (max-width: 600px) { .w { padding: 0 20px; } }
-
-        /* Hero */
-        .hero {
-            padding: 72px 0 0;
-            position: relative;
+        .site-logo{
+            font-family:'Pacifico',cursive !important;
+            font-size:22px !important;font-weight:400 !important;
+            color:#3b96a7 !important;letter-spacing:0 !important;
         }
-        .hero-inner {
-            display: flex;
-            align-items: flex-start;
-            gap: 48px;
-        }
-        .hero-text { flex: 1; padding-top: 24px; }
-        .hero-img {
-            flex: 0 0 440px;
-            height: 480px;
-            background: linear-gradient(155deg, #d6ece8, #a3d4cc, #6dbfb7);
-            border-radius: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-            color: rgba(0,0,0,0.25);
-            font-weight: 500;
-        }
-        @media (max-width: 900px) {
-            .hero-inner { flex-direction: column; gap: 32px; }
-            .hero-text { padding-top: 0; text-align: center; }
-            .hero-img { flex: none; width: 100%; height: 320px; }
-            .hero-text p { margin-left: auto; margin-right: auto; }
-            .hero-actions { justify-content: center; }
-        }
-        .hero h1 {
-            font-size: clamp(2.4rem, 5vw, 3.6rem);
-            font-weight: 700;
-            letter-spacing: -0.035em;
-            line-height: 1.06;
-            margin-bottom: 18px;
-        }
-        .hero h1 span { color: var(--t-teal); }
-        .hero-text p {
-            font-size: 18px;
-            line-height: 1.55;
-            color: var(--t-text-sec);
-            max-width: 460px;
-            margin-bottom: 28px;
-        }
-        .hero-actions { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
-        .cta {
-            display: inline-block;
-            padding: 14px 32px;
-            font-size: 15px;
-            font-weight: 600;
-            color: #fff;
-            background: var(--t-teal);
-            border-radius: 12px;
-            text-decoration: none;
-            transition: transform 150ms ease, box-shadow 150ms ease;
-            backface-visibility: hidden;
-        }
-        .cta:hover { transform: scale(1.02); box-shadow: 0 4px 20px rgba(74,157,154,0.3); }
-        .cta:active { transform: scale(0.98); }
-        .cta-note { font-size: 13px; color: var(--t-text-sec); }
-
-        /* What it does — tight 3-col */
-        .what {
-            padding: 64px 0;
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 32px;
-        }
-        @media (max-width: 700px) { .what { grid-template-columns: 1fr; gap: 20px; } }
-        .what h3 { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
-        .what p { font-size: 15px; line-height: 1.55; color: var(--t-text-sec); }
-
-        /* Showcase sections — image with overlapping text */
-        .show {
-            padding: 40px 0;
-            position: relative;
-        }
-        .show-img {
-            width: 100%;
-            height: 400px;
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-            color: rgba(255,255,255,0.4);
-            font-weight: 500;
-        }
-        @media (max-width: 600px) { .show-img { height: 280px; } }
-        .show-img-1 { background: linear-gradient(145deg, #1a3a38, #2a5a56, #3a7a74); }
-        .show-img-2 { background: linear-gradient(145deg, #2a3a50, #3a5a7a, #4a7a9a); }
-        .show-caption {
-            position: relative;
-            margin-top: -48px;
-            margin-left: 32px;
-            margin-right: 32px;
-            background: var(--t-bg);
-            border: 1px solid var(--t-border);
-            border-radius: 16px;
-            padding: 28px 32px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.06);
-            max-width: 480px;
-        }
-        @media (prefers-color-scheme: dark) {
-            .show-caption { box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
-        }
-        .show-caption.right { margin-left: auto; }
-        @media (max-width: 600px) {
-            .show-caption { margin-left: 16px; margin-right: 16px; margin-top: -36px; padding: 20px 24px; }
-        }
-        .show-caption h3 {
-            font-size: 20px;
-            font-weight: 650;
-            letter-spacing: -0.02em;
-            margin-bottom: 8px;
-        }
-        .show-caption p {
-            font-size: 15px;
-            line-height: 1.55;
-            color: var(--t-text-sec);
+        @media(max-width:600px){
+            .site-header{padding:0 20px}
         }
 
-        /* Bottom CTA */
-        .bottom {
-            padding: 64px 0;
-            text-align: center;
-            border-top: 1px solid var(--t-border);
-        }
-        .bottom h2 {
-            font-size: 28px;
-            font-weight: 700;
-            letter-spacing: -0.02em;
-            margin-bottom: 10px;
-        }
-        .bottom p {
-            font-size: 15px;
-            color: var(--t-text-sec);
-            margin-bottom: 24px;
+        *{margin:0;padding:0;box-sizing:border-box}
+        html{scroll-behavior:smooth}
+        body{
+            font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",system-ui,sans-serif;
+            background:#ffffff;color:#1c1c1e;
+            -webkit-font-smoothing:antialiased;overflow-x:hidden;
         }
 
-        /* Invite */
-        .invite {
-            display: none;
-            margin-bottom: 28px;
-            padding: 18px 22px;
-            background: rgba(74,157,154,0.04);
-            border: 1px solid rgba(74,157,154,0.12);
-            border-radius: 14px;
-            max-width: 460px;
+        /* ── Hero ── */
+        .hero{
+            min-height:52vh;display:flex;flex-direction:column;
+            align-items:center;justify-content:center;text-align:center;
+            padding:120px 24px 64px;
         }
-        .invite p { font-size: 16px; margin: 0 0 14px; }
-        .invite .cta { font-size: 14px; padding: 11px 24px; }
-        .invite-status { font-size: 13px; color: var(--t-text-sec); margin-top: 10px; }
-        .has-invite .invite { display: block; margin-left: auto; margin-right: auto; }
-        .has-invite .hero-default { display: none; }
-        .has-invite .hero-img { display: none; }
-        .has-invite .hero-inner { justify-content: center; }
-        .has-invite .hero-text { text-align: center; padding-top: 48px; }
+        .hero-name{
+            font-family:'Pacifico',cursive;font-size:28px;font-weight:400;
+            color:#3b96a7;letter-spacing:0;text-transform:none;margin-bottom:20px;
+        }
+        .hero h1{
+            font-size:clamp(2.4rem,5.5vw,3.8rem);font-weight:700;
+            letter-spacing:-0.04em;line-height:1.06;margin-bottom:20px;
+            max-width:640px;
+        }
+        .hero-sub{
+            font-size:17px;color:#86868b;line-height:1.6;
+            max-width:420px;margin:0 auto;text-align:center;
+        }
+
+        /* ── Invite ── */
+        .invite-banner{
+            display:none;margin:28px auto 0;padding:20px 28px;
+            background:rgba(74,157,154,0.05);border:1px solid rgba(74,157,154,0.12);
+            border-radius:16px;max-width:400px;text-align:center;
+        }
+        .invite-banner p{font-size:17px;margin:0 0 16px;font-weight:500}
+        .invite-status{font-size:13px;color:var(--t-text-sec);margin-top:10px}
+        .has-invite .invite-banner{display:block}
+        .has-invite .hero-default{display:none}
+
+        /* ── Problem Sections ── */
+        .prob{
+            display:grid;grid-template-columns:1.4fr 0.8fr;align-items:center;
+            gap:48px;max-width:1080px;margin:0 auto;
+            padding:56px 40px;min-height:78vh;
+            scroll-margin-top:48px;
+            opacity:0;transform:translateY(32px);
+            transition:opacity 0.7s ease,transform 0.7s ease;
+        }
+        .prob.visible{opacity:1;transform:translateY(0)}
+        .prob-num{
+            font-size:12px;font-weight:700;color:#3b96a7;
+            letter-spacing:0.1em;margin-bottom:20px;
+        }
+        .prob h2{
+            font-size:clamp(1.6rem,3vw,2.4rem);font-weight:700;
+            letter-spacing:-0.025em;line-height:1.18;margin-bottom:20px;
+        }
+        .prob-sol{
+            font-size:16px;color:#3b96a7;line-height:1.6;
+            font-weight:500;
+        }
+
+        /* ── Carousel ── */
+        .carousel{position:relative;width:100%;max-width:320px;margin:0 auto}
+        .carousel-track{
+            display:flex;overflow-x:auto;scroll-snap-type:x mandatory;
+            scrollbar-width:none;-ms-overflow-style:none;
+        }
+        .carousel-track::-webkit-scrollbar{display:none}
+        .slide{
+            flex:0 0 100%;scroll-snap-align:center;
+            display:flex;flex-direction:column;align-items:center;
+            padding:0 16px;
+        }
+        .step{
+            margin-top:16px;font-size:14px;color:var(--t-text-sec);
+            font-weight:500;text-align:center;letter-spacing:-0.01em;
+        }
+        .carousel-nav{
+            display:flex;justify-content:center;gap:8px;margin-top:20px;
+        }
+        .dot{
+            width:8px;height:8px;border-radius:50%;background:#d2d2d7;
+            border:none;padding:0;cursor:pointer;
+            transition:background 0.25s,transform 0.25s;
+        }
+        .dot.active{background:#3b96a7;transform:scale(1.25)}
+        .arr{
+            position:absolute;top:44%;transform:translateY(-50%);
+            width:32px;height:32px;border-radius:50%;
+            border:1px solid #d2d2d7;background:#fff;
+            color:#86868b;font-size:17px;cursor:pointer;
+            display:flex;align-items:center;justify-content:center;
+            transition:border-color 0.2s,color 0.2s;z-index:3;
+            line-height:1;
+        }
+        .arr:hover{border-color:#3b96a7;color:#3b96a7}
+        .arr-prev{left:-18px}
+        .arr-next{right:-18px}
+
+        /* ── Mockup Image ── */
+        .mockup{
+            width:260px;flex-shrink:0;
+        }
+        .mockup img{
+            width:100%;height:auto;display:block;
+        }
+        /* ── CTA Section ── */
+        .cta-end{
+            text-align:center;padding:80px 24px 96px;
+        }
+        .cta-end h2{
+            font-size:clamp(1.5rem,3vw,2.2rem);font-weight:700;
+            letter-spacing:-0.02em;line-height:1.2;margin-bottom:10px;
+        }
+        .cta-sub{
+            font-size:17px;color:#86868b;line-height:1.6;
+            margin-bottom:32px;
+        }
+        .cta-btn{
+            display:inline-block;padding:14px 36px;font-size:15px;
+            font-weight:600;color:#fff;background:#3b96a7;
+            border-radius:12px;text-decoration:none;
+            transition:transform 150ms ease,box-shadow 150ms ease;
+        }
+        .cta-btn:hover{transform:scale(1.02);box-shadow:0 4px 20px rgba(74,157,154,0.3)}
+        .cta-btn:active{transform:scale(0.98)}
+        .cta-note{display:block;font-size:13px;color:#86868b;margin-top:12px}
+
+        /* ── Responsive ── */
+        @media(max-width:960px){
+            .prob{
+                grid-template-columns:1fr;min-height:auto;
+                padding:48px 24px;gap:36px;
+            }
+            .prob-text{text-align:center}
+            .carousel{max-width:300px}
+        }
+        @media(max-width:600px){
+            .hero{min-height:40vh;padding:88px 20px 48px}
+            .prob{padding:36px 16px;gap:28px}
+            .carousel{max-width:260px}
+            .mockup{width:200px}
+            .arr{width:28px;height:28px;font-size:14px}
+            .arr-prev{left:-16px}
+            .arr-next{right:-16px}
+        }
     </style>
 </head>
 <body>
 
 <div id="site-nav"></div>
 
-<!-- Hero: what is it + why download -->
-<div class="hero">
-    <div class="w">
-        <div class="hero-inner" id="hero">
-            <div class="hero-text">
-                <div class="hero-default">
-                    <h1>Group travel,<br><span>organized.</span></h1>
-                    <p>Shared timeline, trip memories, expense splitting. One app instead of group chats, spreadsheets, and shared albums.</p>
-                    <div class="hero-actions">
-                        <a class="cta" href="https://apps.apple.com/app/triovel/id000000000" id="open-btn">Download for iOS</a>
-                        <span class="cta-note">Free during beta</span>
-                    </div>
-                </div>
-                <div class="invite" id="invite-bar">
-                    <p>You've been invited to a trip.</p>
-                    <a class="cta" href="#" id="invite-btn">Open in Triovel</a>
-                    <div class="invite-status" id="status"></div>
-                </div>
+<!-- ── Hero ── -->
+<section class="hero" id="hero">
+    <div class="hero-default">
+        <div class="hero-name">Triovel</div>
+        <h1>Keep your trip together.</h1>
+        <p class="hero-sub">Plan lightly. Capture easily. Revisit anytime.</p>
+    </div>
+    <div class="invite-banner" id="invite-bar">
+        <p>You've been invited to a trip.</p>
+        <a class="cta-btn" href="#" id="invite-btn">Open in Triovel</a>
+        <div class="invite-status" id="status"></div>
+    </div>
+</section>
+
+<!-- ── 01: Scattered Trip ── -->
+<section class="prob" id="s1">
+    <div class="prob-text">
+        <div class="prob-num">01</div>
+        <h2>Plans in one app. Photos in another. Bills in a spreadsheet. The trip was never in one place.</h2>
+        <p class="prob-sol">One shared timeline. Every moment has its place.</p>
+    </div>
+    <div class="carousel">
+        <div class="carousel-track">
+            <div class="slide">
+                <div class="mockup"><img src="screenshots/01-home.png" alt="Home screen showing all trips"></div>
+                <p class="step">All your trips, one place</p>
             </div>
-            <div class="hero-img">App screenshot here</div>
+            <div class="slide">
+                <div class="mockup"><img src="screenshots/01-create.png" alt="Create a new trip"></div>
+                <p class="step">Create in seconds</p>
+            </div>
+            <div class="slide">
+                <div class="mockup"><img src="screenshots/01-timeline.png" alt="Day-by-day trip timeline"></div>
+                <p class="step">Day-by-day timeline</p>
+            </div>
         </div>
+        <div class="carousel-nav">
+            <button class="dot active" aria-label="Slide 1"></button>
+            <button class="dot" aria-label="Slide 2"></button>
+            <button class="dot" aria-label="Slide 3"></button>
+        </div>
+        <button class="arr arr-prev" aria-label="Previous">&#x2039;</button>
+        <button class="arr arr-next" aria-label="Next">&#x203a;</button>
     </div>
-</div>
+</section>
 
-<!-- What it does — 3 short points -->
-<div class="w">
-    <div class="what">
-        <div>
-            <h3>Shared timeline</h3>
-            <p>Plan day by day. Everyone sees the same schedule and adds activities — online or offline.</p>
-        </div>
-        <div>
-            <h3>Trip memories</h3>
-            <p>Post photos and notes to each moment. Private entries stay private. The journal writes itself.</p>
-        </div>
-        <div>
-            <h3>Expense splitting</h3>
-            <p>Log who paid. Balances per currency, no spreadsheets. Settle up when you're ready.</p>
-        </div>
+<!-- ── 02: Lost Moments ── -->
+<section class="prob" id="s2">
+    <div class="prob-text">
+        <div class="prob-num">02</div>
+        <h2>Photos buried in camera rolls. Notes lost in chat. Two months later, you can barely remember day three.</h2>
+        <p class="prob-sol">Post memories right where they happened. Shared with the people who were there.</p>
     </div>
-</div>
+    <div class="carousel">
+        <div class="carousel-track">
+            <div class="slide">
+                <div class="mockup"><img src="screenshots/02-block.png" alt="Open a moment on the timeline"></div>
+                <p class="step">Open any moment</p>
+            </div>
+            <div class="slide">
+                <div class="mockup"><img src="screenshots/02-composer.png" alt="Post shared or private memories"></div>
+                <p class="step">Shared or just yours</p>
+            </div>
+            <div class="slide">
+                <div class="mockup"><img src="screenshots/02-stream.png" alt="Memory stream builds itself"></div>
+                <p class="step">The trip journal builds itself</p>
+            </div>
+        </div>
+        <div class="carousel-nav">
+            <button class="dot active" aria-label="Slide 1"></button>
+            <button class="dot" aria-label="Slide 2"></button>
+            <button class="dot" aria-label="Slide 3"></button>
+        </div>
+        <button class="arr arr-prev" aria-label="Previous">&#x2039;</button>
+        <button class="arr arr-next" aria-label="Next">&#x203a;</button>
+    </div>
+</section>
 
-<!-- Showcase 1: timeline screenshot with overlapping caption -->
-<div class="w">
-    <div class="show">
-        <div class="show-img show-img-1">Timeline screenshot here</div>
-        <div class="show-caption">
-            <h3>Your trip, day by day</h3>
-            <p>Add activities as you plan. Change them as reality happens. The whole group stays in sync across timezones.</p>
+<!-- ── 03: Money Chaos ── -->
+<section class="prob" id="s3">
+    <div class="prob-text">
+        <div class="prob-num">03</div>
+        <h2>Someone covered dinner. Someone got the cab. By the last day, everyone's guessing who owes what.</h2>
+        <p class="prob-sol">Log expenses at the moment. Balances sorted, per currency. Settle when ready.</p>
+    </div>
+    <div class="carousel">
+        <div class="carousel-track">
+            <div class="slide">
+                <div class="mockup"><img src="screenshots/03-bill.png" alt="Add a bill to the moment"></div>
+                <p class="step">Log it at the moment</p>
+            </div>
+            <div class="slide">
+                <div class="mockup"><img src="screenshots/03-split.png" alt="Bill appears in the stream"></div>
+                <p class="step">Bills live with the moment</p>
+            </div>
+            <div class="slide">
+                <div class="mockup"><img src="screenshots/03-summary.png" alt="Balances grouped per currency"></div>
+                <p class="step">Balances per currency</p>
+            </div>
         </div>
-    </div>
-</div>
-
-<!-- Showcase 2: expense screenshot with overlapping caption (right-aligned) -->
-<div class="w">
-    <div class="show">
-        <div class="show-img show-img-2">Expense split screenshot here</div>
-        <div class="show-caption right">
-            <h3>Who owes what? Sorted.</h3>
-            <p>Track expenses per currency. Triovel does the math so you don't have to. No converting, no arguments.</p>
+        <div class="carousel-nav">
+            <button class="dot active" aria-label="Slide 1"></button>
+            <button class="dot" aria-label="Slide 2"></button>
+            <button class="dot" aria-label="Slide 3"></button>
         </div>
+        <button class="arr arr-prev" aria-label="Previous">&#x2039;</button>
+        <button class="arr arr-next" aria-label="Next">&#x203a;</button>
     </div>
-</div>
+</section>
 
-<!-- Download -->
-<div class="w">
-    <div class="bottom">
-        <h2>Try it on your next trip</h2>
-        <p>iPhone and iPad. Works offline. Free during beta.</p>
-        <a class="cta" href="https://apps.apple.com/app/triovel/id000000000">Download Triovel</a>
-    </div>
+<!-- ── CTA ── -->
+<div class="cta-end">
+    <h2>Trips end. The memories shouldn't scatter.</h2>
+    <p class="cta-sub">Plan lightly. Capture easily. Revisit anytime.</p>
+    <a class="cta-btn" href="https://apps.apple.com/app/triovel/id6746262519">Download for iOS</a>
+    <span class="cta-note">Free during beta</span>
 </div>
 
 <div id="site-footer"></div>
 
 <script src="shared.js"></script>
 <script>
+/* ── Carousel ── */
+document.querySelectorAll('.carousel').forEach(function(c) {
+    var track = c.querySelector('.carousel-track');
+    var dots = c.querySelectorAll('.dot');
+    var prev = c.querySelector('.arr-prev');
+    var next = c.querySelector('.arr-next');
+
+    function getActive() {
+        return Math.round(track.scrollLeft / track.clientWidth);
+    }
+    function goTo(i) {
+        track.scrollTo({ left: i * track.clientWidth, behavior: 'smooth' });
+    }
+    function sync() {
+        var idx = getActive();
+        dots.forEach(function(d, i) { d.classList.toggle('active', i === idx); });
+    }
+
+    track.addEventListener('scroll', sync);
+    dots.forEach(function(d, i) { d.addEventListener('click', function() { goTo(i); }); });
+    if (prev) prev.addEventListener('click', function() {
+        var idx = getActive();
+        goTo(idx <= 0 ? dots.length - 1 : idx - 1);
+    });
+    if (next) next.addEventListener('click', function() {
+        var idx = getActive();
+        goTo(idx >= dots.length - 1 ? 0 : idx + 1);
+    });
+});
+
+/* ── Reveal ── */
+var observer = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.12 });
+document.querySelectorAll('.prob').forEach(function(s) { observer.observe(s); });
+
+/* ── Invite ── */
 (function() {
     var code = new URLSearchParams(window.location.search).get('code');
     if (!code) return;
@@ -271,7 +349,7 @@
     var status = document.getElementById('status');
     if (/iphone|ipad|ipod|android/i.test(navigator.userAgent)) {
         window.location.href = deep;
-        setTimeout(function() { status.textContent = 'Didn\'t open? Tap the button above.'; }, 1500);
+        setTimeout(function() { status.textContent = "Didn't open? Tap the button above."; }, 1500);
     }
     document.getElementById('invite-btn').addEventListener('click', function(e) {
         e.preventDefault(); window.location.href = deep;

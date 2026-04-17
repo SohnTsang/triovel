@@ -15,7 +15,8 @@ final class BillRepository: @unchecked Sendable {
         amount: Int,
         currency: String,
         payerId: String,
-        memberIds: [String]
+        memberIds: [String],
+        note: String? = nil
     ) async throws -> Bill {
         let billId = UUID().uuidString.lowercased()
         let now = Self.isoString(from: Date())
@@ -24,10 +25,10 @@ final class BillRepository: @unchecked Sendable {
         try await db.writeTransaction { tx in
             try tx.execute(
                 sql: """
-                    INSERT INTO bills (id, block_id, trip_id, amount, currency, payer_id, created_at)
-                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                    INSERT INTO bills (id, block_id, trip_id, amount, currency, payer_id, note, created_at)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                     """,
-                parameters: [billId, blockId, tripId, amount, currency, payerId, now]
+                parameters: [billId, blockId, tripId, amount, currency, payerId, note, now]
             )
 
             for memberId in memberIds {
@@ -52,6 +53,7 @@ final class BillRepository: @unchecked Sendable {
             amount: amount,
             currency: currency,
             payerId: payerId,
+            note: note,
             createdAt: Date()
         )
     }
@@ -139,6 +141,41 @@ final class BillRepository: @unchecked Sendable {
         )
     }
 
+    // MARK: - Update Bill
+
+    func updateBill(
+        billId: String,
+        amount: Int,
+        currency: String,
+        note: String?,
+        memberIds: [String]
+    ) async throws {
+        let shareAmount = amount / max(memberIds.count, 1)
+
+        try await db.writeTransaction { tx in
+            try tx.execute(
+                sql: "UPDATE bills SET amount = ?, currency = ?, note = ? WHERE id = ?",
+                parameters: [amount, currency, note, billId]
+            )
+            // Recreate shares
+            try tx.execute(sql: "DELETE FROM bill_shares WHERE bill_id = ?", parameters: [billId])
+            // Read trip_id from the bill
+            let tripId = try tx.getOptional(
+                sql: "SELECT trip_id FROM bills WHERE id = ?",
+                parameters: [billId]
+            ) { try $0.getString(name: "trip_id") } ?? ""
+
+            for memberId in memberIds {
+                let shareId = UUID().uuidString.lowercased()
+                try tx.execute(
+                    sql: "INSERT INTO bill_shares (id, bill_id, user_id, share_amount, trip_id) VALUES (?, ?, ?, ?, ?)",
+                    parameters: [shareId, billId, memberId, shareAmount, tripId]
+                )
+            }
+        }
+        print("[BillRepo] Updated bill: \(billId)")
+    }
+
     // MARK: - Delete Bill
 
     func deleteBill(billId: String) async throws {
@@ -160,6 +197,7 @@ final class BillRepository: @unchecked Sendable {
             amount: try cursor.getInt(name: "amount"),
             currency: try cursor.getString(name: "currency"),
             payerId: try cursor.getString(name: "payer_id"),
+            note: try cursor.getStringOptional(name: "note"),
             createdAt: parseISO(try cursor.getString(name: "created_at"))
         )
     }

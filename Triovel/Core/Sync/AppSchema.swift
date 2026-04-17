@@ -106,6 +106,7 @@ enum AppSchema {
                 .integer("amount"),
                 .text("currency"),
                 .text("payer_id"),
+                .text("note"),
                 .text("created_at"),
             ],
             indexes: [

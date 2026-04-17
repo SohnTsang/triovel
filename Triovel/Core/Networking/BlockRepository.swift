@@ -154,7 +154,7 @@ final class BlockRepository: @unchecked Sendable {
     // MARK: - Delete Block (local-first, cascade)
 
     /// Permanently deletes a block and all related data inside it.
-    /// Cascade: posts, post_media, bills, bill_shares.
+    /// Cascade: posts, post_media, bills, bill_shares, block_documents.
     func deleteBlock(blockId: String) async throws {
         // 1. Gather media files for cleanup
         let mediaItems: [(id: String, postId: String, mediaType: String)] = try await db.getAll(
@@ -171,6 +171,16 @@ final class BlockRepository: @unchecked Sendable {
             )}
         )
 
+        // 1b. Gather document files for cleanup
+        let docItems: [(id: String, storagePath: String?)] = try await db.getAll(
+            sql: "SELECT id, storage_path FROM block_documents WHERE block_id = ?",
+            parameters: [blockId],
+            mapper: { cursor in (
+                id: try cursor.getString(name: "id"),
+                storagePath: try cursor.getStringOptional(name: "storage_path")
+            )}
+        )
+
         // 2. Delete in dependency order
         try await db.writeTransaction { tx in
             try tx.execute(
@@ -179,6 +189,10 @@ final class BlockRepository: @unchecked Sendable {
             )
             try tx.execute(
                 sql: "DELETE FROM bill_shares WHERE bill_id IN (SELECT id FROM bills WHERE block_id = ?)",
+                parameters: [blockId]
+            )
+            try tx.execute(
+                sql: "DELETE FROM block_documents WHERE block_id = ?",
                 parameters: [blockId]
             )
             try tx.execute(
@@ -195,7 +209,7 @@ final class BlockRepository: @unchecked Sendable {
             )
         }
 
-        // 3. Clean up storage (best-effort)
+        // 3. Clean up media storage (best-effort)
         if !mediaItems.isEmpty {
             let paths = mediaItems.map { item in
                 let ext = item.mediaType == "photo" ? "jpg" : "mp4"
@@ -206,11 +220,16 @@ final class BlockRepository: @unchecked Sendable {
                     .from("trip-media")
                     .remove(paths: paths)
             } catch {
-                print("[BlockRepo] ⚠️ Storage cleanup failed: \(error)")
+                print("[BlockRepo] ⚠️ Media storage cleanup failed: \(error)")
             }
         }
 
-        // 4. Clean up local files
+        // 3b. Clean up document storage (best-effort)
+        for doc in docItems {
+            await DocumentFileManager.shared.deleteDocument(docId: doc.id, storagePath: doc.storagePath)
+        }
+
+        // 4. Clean up local media files
         for item in mediaItems {
             let type: MediaType = item.mediaType == "photo" ? .photo : .video
             MediaFileManager.deleteLocalFiles(for: item.id, type: type)

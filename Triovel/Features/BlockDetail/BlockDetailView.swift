@@ -1,4 +1,5 @@
 import SwiftUI
+import PhotosUI
 import UniformTypeIdentifiers
 
 struct BlockDetailView: View {
@@ -13,6 +14,8 @@ struct BlockDetailView: View {
     @State private var isDeletingBlock = false
     @State private var showingEditSheet = false
     @State private var showingDocumentPicker = false
+    @State private var showingDocumentPhotoPicker = false
+    @State private var documentPhotoItem: PhotosPickerItem?
     @State private var selectedStreamTab: StreamTab = .posts
 
     private enum StreamTab {
@@ -49,14 +52,16 @@ struct BlockDetailView: View {
                         .controlSize(.small)
                 }
             }
-            if #available(iOS 26, *) {
-                ToolbarItem(placement: .topBarTrailing) {
-                    blockMenuButton
-                }
-                .sharedBackgroundVisibility(.hidden)
-            } else {
-                ToolbarItem(placement: .topBarTrailing) {
-                    blockMenuButton
+            if viewModel.canEditHeader {
+                if #available(iOS 26, *) {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        blockMenuButton
+                    }
+                    .sharedBackgroundVisibility(.hidden)
+                } else {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        blockMenuButton
+                    }
                 }
             }
         }
@@ -80,7 +85,11 @@ struct BlockDetailView: View {
                 members: viewModel.allMembers,
                 currentUserId: appState.currentUserId ?? "",
                 onDelete: { viewModel.deleteBill(bill) },
+                onEdit: { amount, currency, note, memberIds in
+                    viewModel.updateBill(bill, amount: amount, currency: currency, note: note, memberIds: memberIds)
+                },
                 canDelete: bill.payerId == appState.currentUserId,
+                canEdit: bill.payerId == appState.currentUserId,
                 onRecordPayment: {
                     selectedBill = nil
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
@@ -127,6 +136,18 @@ struct BlockDetailView: View {
                 print("[BlockDetail] ❌ File import failed: \(error)")
             }
         }
+        .photosPicker(
+            isPresented: $showingDocumentPhotoPicker,
+            selection: $documentPhotoItem,
+            matching: .images
+        )
+        .onChange(of: documentPhotoItem) { _, item in
+            guard let item else { return }
+            documentPhotoItem = nil
+            Task {
+                await processDocumentPhoto(item)
+            }
+        }
         .alert(
             String(localized: "block.delete.title"),
             isPresented: $showingDeleteBlock
@@ -169,6 +190,30 @@ struct BlockDetailView: View {
         }
     }
 
+    private func processDocumentPhoto(_ item: PhotosPickerItem) async {
+        guard let data = try? await item.loadTransferable(type: Data.self) else { return }
+
+        let ext: String
+        let uti = item.supportedContentTypes.first
+        if uti == .png {
+            ext = "png"
+        } else if uti == .heic {
+            ext = "heic"
+        } else {
+            ext = "jpg"
+        }
+
+        let fileName = "photo_\(Date.now.timeIntervalSince1970.formatted(.number.grouping(.never))).\(ext)"
+        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(fileName)
+
+        do {
+            try data.write(to: tempURL)
+            viewModel.addDocument(url: tempURL, fileName: fileName, fileType: .image)
+        } catch {
+            print("[BlockDetail] ❌ Failed to write photo to temp: \(error)")
+        }
+    }
+
     // MARK: - Block Content
 
     @ViewBuilder
@@ -202,6 +247,12 @@ struct BlockDetailView: View {
                         Spacer()
 
                         HStack(spacing: 12) {
+                            // Contextual add button — left of the tab icons
+                            if selectedStreamTab == .bills || selectedStreamTab == .documents {
+                                tabAddButton
+                                    .transition(.scale.combined(with: .opacity))
+                            }
+
                             streamTabIcon("doc.text", tab: .documents, count: viewModel.documents.count)
                             streamTabIcon("banknote", tab: .bills, count: viewModel.bills.count)
                         }
@@ -277,6 +328,46 @@ struct BlockDetailView: View {
         .buttonStyle(.plain)
     }
 
+    // MARK: - Tab Add Button
+
+    private var addButtonStyle: some View {
+        Image(systemName: "plus")
+            .font(.subheadline)
+            .foregroundStyle(Color.accentColor)
+            .frame(width: 32, height: 32)
+            .overlay(
+                Circle()
+                    .stroke(Color.accentColor, lineWidth: 1.5)
+            )
+    }
+
+    @ViewBuilder
+    private var tabAddButton: some View {
+        if selectedStreamTab == .bills {
+            Button {
+                showingBillEntry = true
+            } label: {
+                addButtonStyle
+            }
+            .buttonStyle(.plain)
+        } else if selectedStreamTab == .documents {
+            Menu {
+                Button {
+                    showingDocumentPhotoPicker = true
+                } label: {
+                    Label(String(localized: "document.add.photo"), systemImage: "photo")
+                }
+                Button {
+                    showingDocumentPicker = true
+                } label: {
+                    Label(String(localized: "document.add.file"), systemImage: "doc.badge.plus")
+                }
+            } label: {
+                addButtonStyle
+            }
+        }
+    }
+
     // MARK: - Stream Content (inline, no nested ScrollView)
 
     @ViewBuilder
@@ -323,6 +414,14 @@ struct BlockDetailView: View {
                 Text("block.stream.bills.empty")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
+                Button {
+                    showingBillEntry = true
+                } label: {
+                    Text("bill.add.button")
+                        .font(.subheadline.weight(.medium))
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(Color.accentColor)
             }
             .frame(maxWidth: .infinity)
         } else {
@@ -349,6 +448,22 @@ struct BlockDetailView: View {
                 Text("block.stream.docs.empty")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
+                Menu {
+                    Button {
+                        showingDocumentPhotoPicker = true
+                    } label: {
+                        Label(String(localized: "document.add.photo"), systemImage: "photo")
+                    }
+                    Button {
+                        showingDocumentPicker = true
+                    } label: {
+                        Label(String(localized: "document.add.file"), systemImage: "doc.badge.plus")
+                    }
+                } label: {
+                    Text("document.add.button")
+                        .font(.subheadline.weight(.medium))
+                }
+                .foregroundStyle(Color.accentColor)
             }
             .frame(maxWidth: .infinity)
         } else {
@@ -357,7 +472,8 @@ struct BlockDetailView: View {
                 currentUserId: appState.currentUserId,
                 tripId: block.tripId,
                 onDelete: { viewModel.deleteDocument($0) },
-                onRetry: { viewModel.retryDocumentUpload($0) }
+                onRetry: { viewModel.retryDocumentUpload($0) },
+                onRename: { doc, name in viewModel.renameDocument(doc, newName: name) }
             )
         }
     }
@@ -373,14 +489,7 @@ struct BlockDetailView: View {
     }
 
     private var blockMenuActions: [UIKitMenuButton.MenuAction] {
-        var actions: [UIKitMenuButton.MenuAction] = [
-            .init(String(localized: "bill.add.button"), image: "banknote") {
-                showingBillEntry = true
-            },
-            .init(String(localized: "document.add.button"), image: "doc.badge.plus") {
-                showingDocumentPicker = true
-            },
-        ]
+        var actions: [UIKitMenuButton.MenuAction] = []
 
         if viewModel.canEditHeader {
             actions.append(.init(String(localized: "block.edit.title"), image: "pencil") {

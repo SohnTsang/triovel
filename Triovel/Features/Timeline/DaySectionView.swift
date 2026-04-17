@@ -5,6 +5,9 @@ struct DaySectionView: View {
     let day: TimelineDay
     var tripDisplayTimezone: String = ""
     var creatorNameForBlock: ((Block) -> String?)? = nil
+    var postCounts: [String: Int] = [:]
+    var billCounts: [String: Int] = [:]
+    var docCounts: [String: Int] = [:]
     let onBlockTap: (Block) -> Void
 
     var body: some View {
@@ -25,6 +28,9 @@ struct DaySectionView: View {
                     tripDisplayTimezone: tripDisplayTimezone,
                     dayDate: day.date,
                     creatorNameForBlock: creatorNameForBlock,
+                    postCounts: postCounts,
+                    billCounts: billCounts,
+                    docCounts: docCounts,
                     onBlockTap: onBlockTap
                 )
                 .padding(.horizontal)
@@ -49,6 +55,9 @@ private struct TimeSlotView: View {
     var tripDisplayTimezone: String = ""
     var dayDate: Date
     var creatorNameForBlock: ((Block) -> String?)?
+    var postCounts: [String: Int] = [:]
+    var billCounts: [String: Int] = [:]
+    var docCounts: [String: Int] = [:]
     let onBlockTap: (Block) -> Void
 
     var body: some View {
@@ -58,7 +67,10 @@ private struct TimeSlotView: View {
                     block: block,
                     creatorName: creatorNameForBlock?(block),
                     tripDisplayTimezone: tripDisplayTimezone,
-                    dayDate: dayDate
+                    dayDate: dayDate,
+                    postCount: postCounts[block.id] ?? 0,
+                    billCount: billCounts[block.id] ?? 0,
+                    docCount: docCounts[block.id] ?? 0
                 )
                 .contentShape(Rectangle())
                 .onTapGesture {

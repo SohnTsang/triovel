@@ -56,6 +56,13 @@ final class BlockDocumentRepository: @unchecked Sendable {
         )
     }
 
+    func renameDocument(docId: String, newName: String) async throws {
+        try await db.execute(
+            sql: "UPDATE block_documents SET file_name = ? WHERE id = ?",
+            parameters: [newName, docId]
+        )
+    }
+
     // MARK: - Fetch
 
     func fetchDocuments(blockId: String) async throws -> [BlockDocument] {

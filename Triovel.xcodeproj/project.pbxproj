@@ -70,6 +70,7 @@
 		CE5A0684787CAE287BC64638 /* TripSummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32BDBA7347A3E79312D74A74 /* TripSummaryView.swift */; };
 		D5654F655A54771EA9C40FE0 /* SupabaseConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E33BD05BBE7973E19AFE2A6 /* SupabaseConfig.swift */; };
 		D8A7D4E61A8339904961D6B2 /* BillEntryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 046B24F1977F74C981837C7E /* BillEntryView.swift */; };
+		E1B2C3D4A5B6C7D8E9F0A1B2 /* BillEditSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0A1B2C3D4E5F6A7B8C9D0E1 /* BillEditSheet.swift */; };
 		DB798B9D9DDCD5CDF8DA0AE1 /* BlockRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2DB1DF20856703F1CF41D12 /* BlockRepository.swift */; };
 		DD3025B0C3EBDC789D04A9FE /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 4744E429B9D2984BFAB8747F /* PrivacyInfo.xcprivacy */; };
 		E0E12A3E8B776076166ACA8D /* TriovelApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BB191F7BAA778BACA46EA4D /* TriovelApp.swift */; };
@@ -77,6 +78,7 @@
 		E9AE73965485EECDF30A4643 /* Payment.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9C218D2F661A161061EC46B /* Payment.swift */; };
 		EBA05C9595465B1448441DAC /* TripMembersView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C459CDEFF6D60634C288E360 /* TripMembersView.swift */; };
 		TMGBF001 /* TripMediaView.swift in Sources */ = {isa = PBXBuildFile; fileRef = TMGFR001 /* TripMediaView.swift */; };
+		TFBF0001 /* TripFilesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = TFFR0001 /* TripFilesView.swift */; };
 		EE72C626B58EC3566BFEB125 /* BlockDetailHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72EC929A2DF4723A3383AC0D /* BlockDetailHeaderView.swift */; };
 		TZPKBF01 /* TimezonePickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = TZPKFR01 /* TimezonePickerView.swift */; };
 		EBSHBF01 /* EditBlockSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBSHFR01 /* EditBlockSheet.swift */; };
@@ -84,6 +86,10 @@
 		BDOCBF02 /* BlockDocumentRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDOCFR02 /* BlockDocumentRepository.swift */; };
 		BDOCBF03 /* DocumentFileManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDOCFR03 /* DocumentFileManager.swift */; };
 		BDOCBF04 /* DocumentSectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDOCFR04 /* DocumentSectionView.swift */; };
+		DEMOBF01 /* DemoSeedManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEMOFR01 /* DemoSeedManager.swift */; };
+		DEMOBF02 /* DemoMediaGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEMOFR02 /* DemoMediaGenerator.swift */; };
+		DEMOBF03 /* DemoDocumentGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEMOFR03 /* DemoDocumentGenerator.swift */; };
+		DMOABF01 /* DemoAssets in Resources */ = {isa = PBXBuildFile; fileRef = DMOAFR01 /* DemoAssets */; };
 		EF216AB5A51B71483A566E21 /* ProfileHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D37FA5E2AF68AA27D92708E /* ProfileHeaderView.swift */; };
 		P3BF0001 /* MediaFileManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = P3FR0001 /* MediaFileManager.swift */; };
 		P3BF0002 /* MediaCompressor.swift in Sources */ = {isa = PBXBuildFile; fileRef = P3FR0002 /* MediaCompressor.swift */; };
@@ -111,6 +117,7 @@
 /* Begin PBXFileReference section */
 		00634D136B045793FBB55847 /* TripRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TripRepository.swift; sourceTree = "<group>"; };
 		046B24F1977F74C981837C7E /* BillEntryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BillEntryView.swift; sourceTree = "<group>"; };
+		F0A1B2C3D4E5F6A7B8C9D0E1 /* BillEditSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BillEditSheet.swift; sourceTree = "<group>"; };
 		0659C2FC5017EE92AD8B2119 /* EmailVerificationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmailVerificationView.swift; sourceTree = "<group>"; };
 		0DDCC435E21D2512F84EA1C8 /* DateExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateExtensions.swift; sourceTree = "<group>"; };
 		TZLFR001 /* TimezoneList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimezoneList.swift; sourceTree = "<group>"; };
@@ -150,6 +157,10 @@
 		BDOCFR02 /* BlockDocumentRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockDocumentRepository.swift; sourceTree = "<group>"; };
 		BDOCFR03 /* DocumentFileManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentFileManager.swift; sourceTree = "<group>"; };
 		BDOCFR04 /* DocumentSectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentSectionView.swift; sourceTree = "<group>"; };
+		DEMOFR01 /* DemoSeedManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoSeedManager.swift; sourceTree = "<group>"; };
+		DEMOFR02 /* DemoMediaGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoMediaGenerator.swift; sourceTree = "<group>"; };
+		DEMOFR03 /* DemoDocumentGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoDocumentGenerator.swift; sourceTree = "<group>"; };
+		DMOAFR01 /* DemoAssets */ = {isa = PBXFileReference; lastKnownFileType = folder; path = DemoAssets; sourceTree = "<group>"; };
 		7507D9FC3C3E65332CC48E66 /* FullScreenMediaViewer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FullScreenMediaViewer.swift; sourceTree = "<group>"; };
 		7551EEDD76A7BD21A1C50460 /* Post.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Post.swift; sourceTree = "<group>"; };
 		81C874FF9C71DB8DAAD1121D /* Trip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Trip.swift; sourceTree = "<group>"; };
@@ -172,6 +183,7 @@
 		BFD5CEB34A1587FDEF0F98EA /* Bill.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Bill.swift; sourceTree = "<group>"; };
 		C459CDEFF6D60634C288E360 /* TripMembersView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TripMembersView.swift; sourceTree = "<group>"; };
 		TMGFR001 /* TripMediaView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TripMediaView.swift; sourceTree = "<group>"; };
+		TFFR0001 /* TripFilesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TripFilesView.swift; sourceTree = "<group>"; };
 		C4D9BF81260A890F98551F37 /* EditTripView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EditTripView.swift; sourceTree = "<group>"; };
 		C6A827B2C1B904D67FAB604D /* BillShare.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BillShare.swift; sourceTree = "<group>"; };
 		CA6D67E9A2F09AFBF1DADBE7 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
@@ -267,6 +279,7 @@
 			isa = PBXGroup;
 			children = (
 				CCA7F2C0B765592BBE489BB1 /* Auth */,
+				DEMOGR01 /* Demo */,
 				P3GR0001 /* MediaQueue */,
 				55E15E5CE1D91BA1D8A39394 /* Models */,
 				C713FD5D7EA45D079BEF0378 /* Networking */,
@@ -340,6 +353,7 @@
 			children = (
 				P4FR0004 /* BillCardView.swift */,
 				P4FR0006 /* BillDetailView.swift */,
+				F0A1B2C3D4E5F6A7B8C9D0E1 /* BillEditSheet.swift */,
 				046B24F1977F74C981837C7E /* BillEntryView.swift */,
 				P4FR0005 /* PaymentEntrySheet.swift */,
 			);
@@ -367,6 +381,7 @@
 			isa = PBXGroup;
 			children = (
 				8D7172619DB15AD08404D409 /* Assets.xcassets */,
+				DMOAFR01 /* DemoAssets */,
 				PFNTGR01 /* Fonts */,
 				D041FDB8AE49805E56BF8F72 /* Launch.storyboard */,
 				4F3133CB82A42C2405ECFE76 /* Localizable.xcstrings */,
@@ -516,6 +531,7 @@
 			isa = PBXGroup;
 			children = (
 				TMGFR001 /* TripMediaView.swift */,
+				TFFR0001 /* TripFilesView.swift */,
 			);
 			path = TripMedia;
 			sourceTree = "<group>";
@@ -526,6 +542,16 @@
 				C459CDEFF6D60634C288E360 /* TripMembersView.swift */,
 			);
 			path = TripMembers;
+			sourceTree = "<group>";
+		};
+		DEMOGR01 /* Demo */ = {
+			isa = PBXGroup;
+			children = (
+				DEMOFR01 /* DemoSeedManager.swift */,
+				DEMOFR02 /* DemoMediaGenerator.swift */,
+				DEMOFR03 /* DemoDocumentGenerator.swift */,
+			);
+			path = Demo;
 			sourceTree = "<group>";
 		};
 		P3GR0001 /* MediaQueue */ = {
@@ -615,6 +641,7 @@
 				22EEB4706AB07F00406FFEB8 /* Launch.storyboard in Resources */,
 				7AB84AC4DC6B0A59B113F751 /* Localizable.xcstrings in Resources */,
 				PFNTBF01 /* Pacifico-Regular.ttf in Resources */,
+				DMOABF01 /* DemoAssets in Resources */,
 				PFNTBF02 /* Sacramento-Regular.ttf in Resources */,
 				A74D3F0F546C24E1AD1BFE96 /* Assets.xcassets in Resources */,
 				DD3025B0C3EBDC789D04A9FE /* PrivacyInfo.xcprivacy in Resources */,
@@ -675,12 +702,14 @@
 				CE5A0684787CAE287BC64638 /* TripSummaryView.swift in Sources */,
 				D5654F655A54771EA9C40FE0 /* SupabaseConfig.swift in Sources */,
 				D8A7D4E61A8339904961D6B2 /* BillEntryView.swift in Sources */,
+				E1B2C3D4A5B6C7D8E9F0A1B2 /* BillEditSheet.swift in Sources */,
 				DB798B9D9DDCD5CDF8DA0AE1 /* BlockRepository.swift in Sources */,
 				E0E12A3E8B776076166ACA8D /* TriovelApp.swift in Sources */,
 				E3FC084F3B55DA0CC0685646 /* HomeContentView.swift in Sources */,
 				E9AE73965485EECDF30A4643 /* Payment.swift in Sources */,
 				EBA05C9595465B1448441DAC /* TripMembersView.swift in Sources */,
 				TMGBF001 /* TripMediaView.swift in Sources */,
+				TFBF0001 /* TripFilesView.swift in Sources */,
 				EE72C626B58EC3566BFEB125 /* BlockDetailHeaderView.swift in Sources */,
 				TZPKBF01 /* TimezonePickerView.swift in Sources */,
 				EBSHBF01 /* EditBlockSheet.swift in Sources */,
@@ -688,6 +717,9 @@
 				BDOCBF02 /* BlockDocumentRepository.swift in Sources */,
 				BDOCBF03 /* DocumentFileManager.swift in Sources */,
 				BDOCBF04 /* DocumentSectionView.swift in Sources */,
+				DEMOBF01 /* DemoSeedManager.swift in Sources */,
+				DEMOBF02 /* DemoMediaGenerator.swift in Sources */,
+				DEMOBF03 /* DemoDocumentGenerator.swift in Sources */,
 				122ED21F181CA6F1A6439FE7 /* PostCardView.swift in Sources */,
 				AC2E22D78BF07ABA8DBFAEA0 /* PostComposerView.swift in Sources */,
 				890C4202FF9F332F9F6B10E8 /* PostRepository.swift in Sources */,

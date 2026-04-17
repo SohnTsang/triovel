@@ -10,11 +10,14 @@ struct DocumentSectionView: View {
     let tripId: String
     var onDelete: ((BlockDocument) -> Void)?
     var onRetry: ((BlockDocument) -> Void)?
+    var onRename: ((BlockDocument, String) -> Void)?
 
     @State private var previewURL: URL?
     @State private var isLoadingPreview = false
     @State private var loadingDocId: String?
     @State private var deleteTarget: BlockDocument?
+    @State private var renameTarget: BlockDocument?
+    @State private var renameText = ""
 
     var body: some View {
         if !documents.isEmpty {
@@ -48,6 +51,26 @@ struct DocumentSectionView: View {
                 }
             } message: {
                 Text("document.delete.message")
+            }
+            .alert(String(localized: "document.rename"), isPresented: .init(
+                get: { renameTarget != nil },
+                set: { if !$0 { renameTarget = nil } }
+            )) {
+                TextField(String(localized: "document.rename.placeholder"), text: $renameText)
+                Button(String(localized: "common.cancel"), role: .cancel) { renameTarget = nil }
+                Button(String(localized: "common.save")) {
+                    if let doc = renameTarget {
+                        let trimmed = renameText.trimmingCharacters(in: .whitespacesAndNewlines)
+                        if !trimmed.isEmpty {
+                            let ext = (doc.fileName as NSString).pathExtension
+                            let newName = ext.isEmpty ? trimmed : "\(trimmed).\(ext)"
+                            onRename?(doc, newName)
+                        }
+                        renameTarget = nil
+                    }
+                }
+            } message: {
+                Text("document.rename.message")
             }
             .quickLookPreview($previewURL)
         }
@@ -110,6 +133,13 @@ struct DocumentSectionView: View {
         }
         .contextMenu {
             if doc.userId == currentUserId {
+                Button {
+                    let name = doc.fileName as NSString
+                    renameText = name.deletingPathExtension
+                    renameTarget = doc
+                } label: {
+                    Label(String(localized: "document.rename"), systemImage: "pencil")
+                }
                 Button(role: .destructive) {
                     deleteTarget = doc
                 } label: {

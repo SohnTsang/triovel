@@ -8,5 +8,6 @@ struct Bill: Identifiable, Codable, Hashable, Sendable {
     var amount: Int
     var currency: String
     let payerId: String
+    var note: String?
     let createdAt: Date
 }

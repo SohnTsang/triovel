@@ -11,6 +11,9 @@ struct BlockCardView: View {
     var tripDisplayTimezone: String = ""
     var dayDate: Date? = nil
     var syncState: SyncState = .synced
+    var postCount: Int = 0
+    var billCount: Int = 0
+    var docCount: Int = 0
 
     private var hasEndTime: Bool { block.endAt != nil }
     /* Local timezone display — commented out for now, re-enable later
@@ -61,6 +64,24 @@ struct BlockCardView: View {
                     ContextChip(context: .personal, userName: creatorName)
                         .padding(.top, 2)
                 }
+
+                if postCount > 0 || docCount > 0 || billCount > 0 {
+                    HStack(spacing: 0) {
+                        if postCount > 0 {
+                            contentBadge("text.bubble", count: postCount)
+                        }
+                        Spacer(minLength: 0)
+                        HStack(spacing: 8) {
+                            if docCount > 0 {
+                                contentBadge("doc.text", count: docCount)
+                            }
+                            if billCount > 0 {
+                                contentBadge("banknote", count: billCount)
+                            }
+                        }
+                    }
+                    .padding(.top, 4)
+                }
             }
             .padding(.vertical, 12)
             .padding(.trailing, 14)
@@ -89,7 +110,8 @@ struct BlockCardView: View {
     // MARK: - Time Column
 
     private var isAllDay: Bool {
-        let cal = Calendar.current
+        var cal = Calendar.current
+        cal.timeZone = TimeZone(identifier: block.displayTimezone) ?? .current
         let hour = cal.component(.hour, from: block.startAt)
         let minute = cal.component(.minute, from: block.startAt)
         return hour == 0 && minute == 0 && block.endAt == nil
@@ -174,6 +196,18 @@ struct BlockCardView: View {
         }
         .frame(maxHeight: .infinity)
         .padding(.leading, 12)
+    }
+
+    // MARK: - Content Badge
+
+    private func contentBadge(_ icon: String, count: Int) -> some View {
+        HStack(spacing: 3) {
+            Image(systemName: icon)
+                .font(.system(size: 10))
+            Text("\(count)")
+                .font(.system(size: 10, weight: .medium))
+        }
+        .foregroundStyle(.secondary)
     }
 
     // MARK: - Helpers

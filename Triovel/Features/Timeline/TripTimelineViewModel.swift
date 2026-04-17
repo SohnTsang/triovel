@@ -1,5 +1,6 @@
 import Foundation
 import Observation
+import PowerSync
 
 /// Drives the trip timeline: day generation, block grouping, filtering.
 /// Watches blocks reactively — timeline updates when blocks change locally.
@@ -16,6 +17,11 @@ final class TripTimelineViewModel {
 
     /// All blocks for the trip, before filtering.
     private var allBlocks: [Block] = []
+
+    /// Per-block content counts for card badges.
+    private(set) var postCounts: [String: Int] = [:]
+    private(set) var billCounts: [String: Int] = [:]
+    private(set) var docCounts: [String: Int] = [:]
 
     /// Block IDs hidden from UI until loading finishes (write-immediately + hide pattern).
     private var pendingBlockIds: Set<String> = []
@@ -36,6 +42,7 @@ final class TripTimelineViewModel {
     private var currentUserId: String?
     @ObservationIgnored private var loadTask: Task<Void, Never>?
     @ObservationIgnored private var blockWatchTask: Task<Void, Never>?
+    @ObservationIgnored private var countWatchTask: Task<Void, Never>?
 
     // MARK: - Load
 
@@ -52,11 +59,17 @@ final class TripTimelineViewModel {
         blockWatchTask = Task { [weak self] in
             await self?.startWatchingBlocks(tripId: tripId)
         }
+
+        countWatchTask?.cancel()
+        countWatchTask = Task { [weak self] in
+            await self?.startWatchingCounts(tripId: tripId)
+        }
     }
 
     deinit {
         loadTask?.cancel()
         blockWatchTask?.cancel()
+        countWatchTask?.cancel()
     }
 
     /// Find creator display name for a block.
@@ -158,6 +171,83 @@ final class TripTimelineViewModel {
                 print("[Timeline] ❌ Block watch error: \(error)")
             }
         }
+    }
+
+    // MARK: - Content Count Watch
+
+    private func startWatchingCounts(tripId: String) async {
+        let db = SyncManager.shared.db
+
+        // Watch posts count per block (shared + user's own private)
+        let userId = currentUserId ?? ""
+        let postTask = Task { [weak self] in
+            do {
+                let stream = try db.watch(
+                    sql: """
+                        SELECT p.block_id, COUNT(*) as cnt FROM posts p
+                        JOIN blocks b ON p.block_id = b.id
+                        WHERE b.trip_id = ? AND (p.visibility = 'shared' OR p.user_id = ?)
+                        GROUP BY p.block_id
+                        """,
+                    parameters: [tripId, userId]
+                ) { cursor in
+                    (try cursor.getString(name: "block_id"), try cursor.getInt(name: "cnt"))
+                }
+                for try await rows in stream {
+                    guard !Task.isCancelled else { break }
+                    self?.postCounts = Dictionary(rows, uniquingKeysWith: { _, b in b })
+                }
+            } catch {
+                if !(error is CancellationError) {
+                    print("[Timeline] ❌ Post count watch error: \(error)")
+                }
+            }
+        }
+
+        // Watch bills count per block
+        let billTask = Task { [weak self] in
+            do {
+                let stream = try db.watch(
+                    sql: "SELECT block_id, COUNT(*) as cnt FROM bills WHERE trip_id = ? GROUP BY block_id",
+                    parameters: [tripId]
+                ) { cursor in
+                    (try cursor.getString(name: "block_id"), try cursor.getInt(name: "cnt"))
+                }
+                for try await rows in stream {
+                    guard !Task.isCancelled else { break }
+                    self?.billCounts = Dictionary(rows, uniquingKeysWith: { _, b in b })
+                }
+            } catch {
+                if !(error is CancellationError) {
+                    print("[Timeline] ❌ Bill count watch error: \(error)")
+                }
+            }
+        }
+
+        // Watch documents count per block
+        let docTask = Task { [weak self] in
+            do {
+                let stream = try db.watch(
+                    sql: "SELECT block_id, COUNT(*) as cnt FROM block_documents WHERE block_id IN (SELECT id FROM blocks WHERE trip_id = ?) GROUP BY block_id",
+                    parameters: [tripId]
+                ) { cursor in
+                    (try cursor.getString(name: "block_id"), try cursor.getInt(name: "cnt"))
+                }
+                for try await rows in stream {
+                    guard !Task.isCancelled else { break }
+                    self?.docCounts = Dictionary(rows, uniquingKeysWith: { _, b in b })
+                }
+            } catch {
+                if !(error is CancellationError) {
+                    print("[Timeline] ❌ Doc count watch error: \(error)")
+                }
+            }
+        }
+
+        // Keep alive until cancelled
+        _ = await postTask.result
+        billTask.cancel()
+        docTask.cancel()
     }
 
     // MARK: - Day Generation

@@ -21,6 +21,8 @@ struct HomeView: View {
                         TripMembersView(tripId: tripId, members: members, inviteLink: inviteLink)
                     case .tripMedia(let tripId):
                         TripMediaView(tripId: tripId)
+                    case .tripFiles(let tripId):
+                        TripFilesView(tripId: tripId)
                     case .archivedTrips:
                         ArchivedTripsView(trips: viewModel.archivedTrips)
                     case .settings:
@@ -30,6 +32,11 @@ struct HomeView: View {
         }
         .environment(router)
         .task {
+            if let userId = appState.currentUserId {
+                viewModel.load(userId: userId)
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .demoDataChanged)) { _ in
             if let userId = appState.currentUserId {
                 viewModel.load(userId: userId)
             }

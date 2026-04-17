@@ -1273,6 +1273,33 @@
         }
       }
     },
+    "bill.edit" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Edit bill" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "請求を編集" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "编辑账单" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "編輯帳單" } }
+      }
+    },
+    "bill.note" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Note" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "メモ" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "备注" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "備註" } }
+      }
+    },
+    "bill.note.placeholder" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Add a note (optional)" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "メモを追加（任意）" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "添加备注（可选）" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "新增備註（可選）" } }
+      }
+    },
     "bill.error.create" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -2971,6 +2998,64 @@
         }
       }
     },
+    "document.add.file" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add file"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ファイルを追加"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "添加文件"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "添加檔案"
+          }
+        }
+      }
+    },
+    "document.add.photo" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add photo"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "写真を追加"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "添加照片"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "添加照片"
+          }
+        }
+      }
+    },
     "document.delete.message" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3142,6 +3227,57 @@
             "state" : "translated",
             "value" : "不支援的檔案格式。"
           }
+        }
+      }
+    },
+    "document.rename" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : { "state" : "translated", "value" : "Rename" }
+        },
+        "ja" : {
+          "stringUnit" : { "state" : "translated", "value" : "名前を変更" }
+        },
+        "zh-Hans" : {
+          "stringUnit" : { "state" : "translated", "value" : "重命名" }
+        },
+        "zh-Hant" : {
+          "stringUnit" : { "state" : "translated", "value" : "重新命名" }
+        }
+      }
+    },
+    "document.rename.message" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : { "state" : "translated", "value" : "Enter a new name for this file." }
+        },
+        "ja" : {
+          "stringUnit" : { "state" : "translated", "value" : "このファイルの新しい名前を入力してください。" }
+        },
+        "zh-Hans" : {
+          "stringUnit" : { "state" : "translated", "value" : "请输入此文件的新名称。" }
+        },
+        "zh-Hant" : {
+          "stringUnit" : { "state" : "translated", "value" : "請輸入此檔案的新名稱。" }
+        }
+      }
+    },
+    "document.rename.placeholder" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : { "state" : "translated", "value" : "File name" }
+        },
+        "ja" : {
+          "stringUnit" : { "state" : "translated", "value" : "ファイル名" }
+        },
+        "zh-Hans" : {
+          "stringUnit" : { "state" : "translated", "value" : "文件名" }
+        },
+        "zh-Hant" : {
+          "stringUnit" : { "state" : "translated", "value" : "檔案名稱" }
         }
       }
     },
@@ -6660,6 +6796,24 @@
             "value" : "旅行媒體"
           }
         }
+      }
+    },
+    "trip.files.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Trip Files" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "旅行ファイル" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "旅行文件" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "旅行檔案" } }
+      }
+    },
+    "trip.files.empty" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "No files yet" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "ファイルはまだありません" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "暂无文件" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "尚無檔案" } }
       }
     },
     "trip.members.copy.link" : {

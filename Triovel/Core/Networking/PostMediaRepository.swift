@@ -120,6 +120,34 @@ final class PostMediaRepository: @unchecked Sendable {
         )
     }
 
+    /// Media with block date for day grouping in Trip Media screen.
+    func fetchMediaWithBlockDate(tripId: String, currentUserId: String) async throws -> [(media: PostMedia, blockStartAt: Date)] {
+        try await db.getAll(
+            sql: """
+                SELECT pm.*, b.start_at as block_start_at FROM post_media pm
+                JOIN posts p ON pm.post_id = p.id
+                JOIN blocks b ON p.block_id = b.id
+                WHERE b.trip_id = ?
+                  AND pm.upload_status = 'uploaded'
+                  AND (p.visibility = 'shared' OR p.user_id = ?)
+                ORDER BY b.start_at ASC, pm.created_at ASC
+                """,
+            parameters: [tripId, currentUserId]
+        ) { cursor in
+            let media = PostMedia(
+                id: try cursor.getString(name: "id"),
+                postId: try cursor.getString(name: "post_id"),
+                storagePath: try cursor.getStringOptional(name: "storage_path"),
+                mediaType: MediaType(rawValue: try cursor.getString(name: "media_type")) ?? .photo,
+                uploadStatus: UploadStatus(rawValue: try cursor.getString(name: "upload_status")) ?? .queued,
+                thumbnailPath: try cursor.getStringOptional(name: "thumbnail_path"),
+                createdAt: parseISO(try cursor.getString(name: "created_at"))
+            )
+            let blockStart = parseISO(try cursor.getString(name: "block_start_at"))
+            return (media: media, blockStartAt: blockStart)
+        }
+    }
+
     // MARK: - Helpers
 
     private static func isoString(from date: Date) -> String {

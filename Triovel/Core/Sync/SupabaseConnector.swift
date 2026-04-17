@@ -32,6 +32,12 @@ final class SupabaseConnector: PowerSyncBackendConnectorProtocol {
         let client = SupabaseConfig.client
         do {
             for entry in transaction.crud {
+                // Skip demo data — d0-prefixed IDs are local-only marketing data
+                // that shouldn't sync to Supabase (RLS would block most of them).
+                if entry.id.hasPrefix("d0") {
+                    continue
+                }
+
                 let typed = TypedCrudData(
                     data: (entry.opData ?? [:]).merging(["id": entry.id]) { _, new in new },
                     table: entry.table

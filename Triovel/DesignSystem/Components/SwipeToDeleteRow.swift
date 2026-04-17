@@ -35,17 +35,9 @@ struct SwipeToDeleteRow<Content: View>: View {
                 .background(Color.red)
             }
 
-            // Content with swipe hint
+            // Content
             HStack(spacing: 0) {
                 content()
-
-                // Subtle swipe hint chevron
-                if !showDelete && offset == 0 {
-                    Image(systemName: "chevron.compact.left")
-                        .font(.caption2)
-                        .foregroundStyle(Color(.systemGray3))
-                        .padding(.trailing, 4)
-                }
             }
             .frame(maxWidth: .infinity)
             .background(Color(.systemBackground))

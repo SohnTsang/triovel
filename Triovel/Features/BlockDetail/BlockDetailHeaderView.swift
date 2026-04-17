@@ -10,7 +10,8 @@ struct BlockDetailHeaderView: View {
     var onEditTap: (() -> Void)?
 
     private var isTBDBlock: Bool {
-        let cal = Calendar.current
+        var cal = Calendar.current
+        cal.timeZone = TimeZone(identifier: block.displayTimezone) ?? .current
         let hour = cal.component(.hour, from: block.startAt)
         let minute = cal.component(.minute, from: block.startAt)
         return hour == 0 && minute == 0 && block.endAt == nil

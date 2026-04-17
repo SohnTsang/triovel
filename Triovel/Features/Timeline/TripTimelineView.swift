@@ -73,6 +73,9 @@ struct TripTimelineView: View {
                                 day: selectedDay,
                                 tripDisplayTimezone: viewModel.trip?.displayTimezone ?? "",
                                 creatorNameForBlock: { viewModel.creatorName(for: $0) },
+                                postCounts: viewModel.postCounts,
+                                billCounts: viewModel.billCounts,
+                                docCounts: viewModel.docCounts,
                                 onBlockTap: { block in
                                     router.push(.blockDetail(blockId: block.id))
                                 }
@@ -239,7 +242,7 @@ struct TripTimelineView: View {
                 tripId: tripId,
                 defaultDay: dayIndex + 1,
                 dayDate: dayDate,
-                displayTimezone: TimeZone.current.identifier,
+                displayTimezone: viewModel.trip?.displayTimezone ?? TimeZone.current.identifier,
                 onBlockCreated: { blockId in
                     router.push(.blockDetail(blockId: blockId))
                 },
@@ -296,6 +299,9 @@ struct TripTimelineView: View {
             },
             .init(String(localized: "trip.media.title"), image: "photo.on.rectangle.angled") {
                 router.push(.tripMedia(tripId: tripId))
+            },
+            .init(String(localized: "trip.files.title"), image: "doc.text") {
+                router.push(.tripFiles(tripId: tripId))
             },
         ]
 

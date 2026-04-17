@@ -10,11 +10,14 @@ struct BillDetailView: View {
     var currentUserId: String = ""
     var blockTitle: String? = nil
     var onDelete: (() -> Void)?
+    var onEdit: ((Int, String, String?, [String]) -> Void)?
     var canDelete: Bool = false
+    var canEdit: Bool = false
     var onRecordPayment: (() -> Void)?
 
     @Environment(\.dismiss) private var dismiss
     @State private var showingDeleteConfirmation = false
+    @State private var showingEditSheet = false
     @State private var isDeleting = false
 
     var body: some View {
@@ -22,12 +25,9 @@ struct BillDetailView: View {
             ScrollView {
                 VStack(spacing: 20) {
                     amountHeader
+
                     payerSection
                     splitSection
-
-                    if canDelete {
-                        deleteSection
-                    }
                 }
                 .padding(.top, 12)
                 .padding(.bottom, 40)
@@ -40,11 +40,32 @@ struct BillDetailView: View {
                         Button(String(localized: "common.done")) { dismiss() }
                     }
                     .sharedBackgroundVisibility(.hidden)
+                    if canEdit || canDelete {
+                        ToolbarItem(placement: .topBarTrailing) {
+                            billMenu
+                        }
+                        .sharedBackgroundVisibility(.hidden)
+                    }
                 } else {
                     ToolbarItem(placement: .cancellationAction) {
                         Button(String(localized: "common.done")) { dismiss() }
                     }
+                    if canEdit || canDelete {
+                        ToolbarItem(placement: .topBarTrailing) {
+                            billMenu
+                        }
+                    }
                 }
+            }
+            .sheet(isPresented: $showingEditSheet) {
+                BillEditSheet(
+                    bill: bill,
+                    members: members,
+                    onSave: { amount, currency, note, memberIds in
+                        onEdit?(amount, currency, note, memberIds)
+                        dismiss()
+                    }
+                )
             }
             .alert(
                 String(localized: "bill.delete.confirm.title"),
@@ -90,9 +111,17 @@ struct BillDetailView: View {
             Text(formattedDate)
                 .font(.caption)
                 .foregroundStyle(.tertiary)
+
+            if let note = bill.note, !note.isEmpty {
+                Text(note)
+                    .font(.subheadline)
+                    .foregroundStyle(.primary)
+                    .padding(.top, 4)
+            }
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 24)
+        .padding(.bottom, 4)
     }
 
     // MARK: - Payer
@@ -141,6 +170,30 @@ struct BillDetailView: View {
                 .padding(.horizontal, 20)
                 .padding(.vertical, 8)
             }
+        }
+    }
+
+    // MARK: - Menu
+
+    private var billMenu: some View {
+        Menu {
+            if canEdit {
+                Button {
+                    showingEditSheet = true
+                } label: {
+                    Label(String(localized: "bill.edit"), systemImage: "pencil")
+                }
+            }
+            if canDelete {
+                Button(role: .destructive) {
+                    showingDeleteConfirmation = true
+                } label: {
+                    Label(String(localized: "common.delete"), systemImage: "trash")
+                }
+            }
+        } label: {
+            Image(systemName: "ellipsis.circle")
+                .font(.body)
         }
     }
 
@@ -200,27 +253,6 @@ struct BillDetailView: View {
             .shadow(color: .black.opacity(0.06), radius: 2, x: 0, y: 2)
             .padding(.horizontal)
         }
-    }
-
-    // MARK: - Delete
-
-    private var deleteSection: some View {
-        Button(role: .destructive) {
-            showingDeleteConfirmation = true
-        } label: {
-            if isDeleting {
-                ProgressView()
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 12)
-            } else {
-                Text("bill.delete")
-                    .font(.body)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 12)
-            }
-        }
-        .disabled(isDeleting)
-        .padding(.horizontal)
     }
 
     // MARK: - Helpers

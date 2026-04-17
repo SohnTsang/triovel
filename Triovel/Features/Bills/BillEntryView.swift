@@ -13,10 +13,12 @@ struct BillEntryView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.horizontalSizeClass) private var sizeClass
 
+    @FocusState private var isAnyFieldFocused: Bool
     @State private var amountText = ""
     @State private var currency: String
     @State private var payerId: String
     @State private var includedMemberIds: Set<String>
+    @State private var noteText = ""
     @State private var isSaving = false
     @State private var errorMessage: String?
 
@@ -60,6 +62,7 @@ struct BillEntryView: View {
                         TextField("0", text: $amountText)
                             .font(.title2.weight(.semibold))
                             .keyboardType(.decimalPad)
+                            .focused($isAnyFieldFocused)
                     }
                 } header: {
                     Text("bill.amount")
@@ -114,6 +117,15 @@ struct BillEntryView: View {
                     }
                 }
 
+                // Note (optional)
+                Section {
+                    TextField(String(localized: "bill.note.placeholder"), text: $noteText, axis: .vertical)
+                        .lineLimit(1...3)
+                        .focused($isAnyFieldFocused)
+                } header: {
+                    Text("bill.note")
+                }
+
                 if let error = errorMessage {
                     Section {
                         Text(error)
@@ -155,6 +167,8 @@ struct BillEntryView: View {
                     }
                 }
             }
+            .scrollDismissesKeyboard(.interactively)
+            .onTapGesture { isAnyFieldFocused = false }
             .interactiveDismissDisabled(isSaving)
         }
         .presentationDetents(sizeClass == .regular ? [.large] : [.large])
@@ -172,13 +186,15 @@ struct BillEntryView: View {
         Task {
             let start = ContinuousClock.now
             do {
+                let trimmedNote = noteText.trimmingCharacters(in: .whitespacesAndNewlines)
                 _ = try await billRepository.createBill(
                     blockId: blockId,
                     tripId: tripId,
                     amount: amount,
                     currency: currency,
                     payerId: payerId,
-                    memberIds: Array(includedMemberIds)
+                    memberIds: Array(includedMemberIds),
+                    note: trimmedNote.isEmpty ? nil : trimmedNote
                 )
 
                 let elapsed = ContinuousClock.now - start

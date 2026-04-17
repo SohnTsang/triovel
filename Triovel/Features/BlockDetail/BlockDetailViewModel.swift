@@ -543,6 +543,21 @@ final class BlockDetailViewModel {
         }
     }
 
+    func renameDocument(_ doc: BlockDocument, newName: String) {
+        guard !newName.isEmpty else { return }
+        Task { [weak self] in
+            guard let self else { return }
+            do {
+                try await self.documentRepository.renameDocument(docId: doc.id, newName: newName)
+                if let index = self.documents.firstIndex(where: { $0.id == doc.id }) {
+                    self.documents[index].fileName = newName
+                }
+            } catch {
+                print("[BlockDetail] ❌ renameDocument failed: \(error)")
+            }
+        }
+    }
+
     func retryDocumentUpload(_ doc: BlockDocument) {
         guard let block else { return }
         Task {
@@ -590,6 +605,23 @@ final class BlockDetailViewModel {
                 displayName: memberNames[share.userId] ?? String(localized: "post.author.unknown"),
                 shareAmount: share.shareAmount
             )
+        }
+    }
+
+    func updateBill(_ bill: Bill, amount: Int, currency: String, note: String?, memberIds: [String]) {
+        Task { [weak self] in
+            guard let self else { return }
+            do {
+                try await self.billRepository.updateBill(
+                    billId: bill.id,
+                    amount: amount,
+                    currency: currency,
+                    note: note,
+                    memberIds: memberIds
+                )
+            } catch {
+                print("[BlockDetail] ❌ updateBill failed: \(error)")
+            }
         }
     }
 

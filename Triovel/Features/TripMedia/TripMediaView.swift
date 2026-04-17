@@ -1,14 +1,14 @@
 import SwiftUI
 
-/// Grid gallery of all media in a trip. Tap to open full-screen viewer.
-/// Sort by newest or oldest.
+/// Grid gallery of all media in a trip, grouped by day.
+/// Each day section shows "Day N · MMM d" header, then a 3-column grid.
 struct TripMediaView: View {
     let tripId: String
 
     @Environment(AppState.self) private var appState
-    @State private var media: [PostMedia] = []
+    @State private var daySections: [MediaDaySection] = []
+    @State private var flatMedia: [PostMedia] = []
     @State private var isLoading = false
-    @State private var sortNewestFirst = true
     @State private var fullScreenIndex: Int?
 
     private let repository = PostMediaRepository()
@@ -19,14 +19,6 @@ struct TripMediaView: View {
         GridItem(.flexible(), spacing: 2),
     ]
 
-    private var sortedMedia: [PostMedia] {
-        if sortNewestFirst {
-            return media.sorted { $0.createdAt > $1.createdAt }
-        } else {
-            return media.sorted { $0.createdAt < $1.createdAt }
-        }
-    }
-
     var body: some View {
         Group {
             if isLoading {
@@ -36,7 +28,7 @@ struct TripMediaView: View {
                         .controlSize(.regular)
                     Spacer()
                 }
-            } else if media.isEmpty {
+            } else if flatMedia.isEmpty {
                 VStack(spacing: 12) {
                     Spacer()
                     Image(systemName: "photo.on.rectangle.angled")
@@ -49,22 +41,33 @@ struct TripMediaView: View {
                 }
             } else {
                 GeometryReader { geo in
-                    let cellSize = (geo.size.width - 4) / 3 // 3 columns, 2pt spacing each
+                    let cellSize = (geo.size.width - 4) / 3
 
                     ScrollView {
-                        LazyVGrid(columns: columns, spacing: 2) {
-                            ForEach(Array(sortedMedia.enumerated()), id: \.element.id) { index, item in
-                                Button {
-                                    fullScreenIndex = index
-                                } label: {
-                                    MediaThumbnailCell(
-                                        item: item,
-                                        size: cellSize
-                                    )
+                        LazyVStack(alignment: .leading, spacing: 16) {
+                            ForEach(daySections) { section in
+                                // Day header
+                                Text(section.title)
+                                    .font(.footnote.weight(.semibold))
+                                    .foregroundStyle(.secondary)
+                                    .textCase(.uppercase)
+                                    .padding(.horizontal, 16)
+                                    .padding(.top, section.id == daySections.first?.id ? 0 : 8)
+
+                                // Media grid for this day
+                                LazyVGrid(columns: columns, spacing: 2) {
+                                    ForEach(section.items) { item in
+                                        Button {
+                                            fullScreenIndex = item.flatIndex
+                                        } label: {
+                                            MediaThumbnailCell(item: item.media, size: cellSize)
+                                        }
+                                        .buttonStyle(.plain)
+                                    }
                                 }
-                                .buttonStyle(.plain)
                             }
                         }
+                        .padding(.top, 8)
                     }
                 }
             }
@@ -72,43 +75,14 @@ struct TripMediaView: View {
         .navigationTitle(String(localized: "trip.media.title"))
         .navigationBarTitleDisplayMode(.inline)
         .plainBackButton()
-        .toolbar {
-            if #available(iOS 26, *) {
-                ToolbarItem(placement: .topBarTrailing) {
-                    sortButton
-                }
-                .sharedBackgroundVisibility(.hidden)
-            } else {
-                ToolbarItem(placement: .topBarTrailing) {
-                    sortButton
-                }
-            }
-        }
         .fullScreenCover(item: fullScreenBinding) { wrapper in
             FullScreenMediaViewer(
-                media: sortedMedia,
+                media: flatMedia,
                 initialIndex: wrapper.index
             )
         }
         .task {
             await loadMedia()
-        }
-    }
-
-    // MARK: - Sort Button
-
-    private var sortButton: some View {
-        Menu {
-            Picker(selection: $sortNewestFirst) {
-                Text("trip.media.sort.newest").tag(true)
-                Text("trip.media.sort.oldest").tag(false)
-            } label: {
-                EmptyView()
-            }
-        } label: {
-            Image(systemName: "arrow.up.arrow.down")
-                .font(.body.weight(.semibold))
-                .foregroundStyle(Color(.label))
         }
     }
 
@@ -119,7 +93,43 @@ struct TripMediaView: View {
         isLoading = true
         let start = ContinuousClock.now
         do {
-            media = try await repository.fetchMediaForTrip(tripId: tripId, currentUserId: userId)
+            let blockRepo = BlockRepository()
+            let trip = try await blockRepo.fetchTrip(tripId: tripId)
+            let items = try await repository.fetchMediaWithBlockDate(tripId: tripId, currentUserId: userId)
+
+            let tz = TimeZone(identifier: trip.displayTimezone) ?? .current
+            var cal = Calendar.current
+            cal.timeZone = tz
+            let tripStart = cal.startOfDay(for: trip.startDate)
+
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "MMM d"
+            dateFormatter.timeZone = tz
+
+            // Group by day number
+            var dayMap: [Int: [MediaDayItem]] = [:]
+            var flat: [PostMedia] = []
+
+            for (index, item) in items.enumerated() {
+                let blockDay = cal.startOfDay(for: item.blockStartAt)
+                let dayNumber = max(1, cal.dateComponents([.day], from: tripStart, to: blockDay).day! + 1)
+                let dayItem = MediaDayItem(media: item.media, flatIndex: index)
+                dayMap[dayNumber, default: []].append(dayItem)
+                flat.append(item.media)
+            }
+
+            let sections = dayMap.sorted { $0.key < $1.key }.map { dayNum, items in
+                let dayDate = cal.date(byAdding: .day, value: dayNum - 1, to: tripStart) ?? tripStart
+                let dateStr = dateFormatter.string(from: dayDate)
+                return MediaDaySection(
+                    dayNumber: dayNum,
+                    title: String(localized: "timeline.day \(dayNum)") + " · " + dateStr,
+                    items: items
+                )
+            }
+
+            daySections = sections
+            flatMedia = flat
         } catch {
             print("[TripMedia] ❌ Failed to load media: \(error)")
         }
@@ -140,11 +150,23 @@ struct TripMediaView: View {
     }
 }
 
+// MARK: - Models
+
+private struct MediaDaySection: Identifiable {
+    let dayNumber: Int
+    let title: String
+    let items: [MediaDayItem]
+    var id: Int { dayNumber }
+}
+
+private struct MediaDayItem: Identifiable {
+    let media: PostMedia
+    let flatIndex: Int
+    var id: String { media.id }
+}
+
 // MARK: - Thumbnail Cell
 
-/// Fixed-size square cell. Shows a gray placeholder immediately,
-/// then loads the image async. No layout shift because the frame
-/// is locked before the image arrives.
 private struct MediaThumbnailCell: View {
     let item: PostMedia
     let size: CGFloat
@@ -161,7 +183,6 @@ private struct MediaThumbnailCell: View {
     }
 }
 
-/// Identifiable wrapper so fullScreenCover(item:) works with an index.
 private struct IndexWrapper: Identifiable {
     let index: Int
     var id: Int { index }

@@ -216,6 +216,10 @@ struct TripSummaryView: View {
             Text(amount)
                 .font(.subheadline.weight(.medium))
                 .foregroundStyle(color)
+            Image(systemName: "chevron.right")
+                .font(.caption2.weight(.semibold))
+                .foregroundStyle(.tertiary)
+                .padding(.top, 2)
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 10)
