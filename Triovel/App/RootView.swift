@@ -13,7 +13,10 @@ struct RootView: View {
                     .ignoresSafeArea()
                     .overlay {
                         Image("LaunchIcon")
-                            .offset(y: -20)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 90, height: 60)
+                            .offset(y: -35)
                     }
             case .signedOut:
                 AuthView()

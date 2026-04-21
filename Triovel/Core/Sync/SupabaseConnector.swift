@@ -34,7 +34,12 @@ final class SupabaseConnector: PowerSyncBackendConnectorProtocol {
             for entry in transaction.crud {
                 // Skip demo data — d0-prefixed IDs are local-only marketing data
                 // that shouldn't sync to Supabase (RLS would block most of them).
+                // Also skip entries that reference demo blocks/trips in their data.
                 if entry.id.hasPrefix("d0") {
+                    continue
+                }
+                let refValues = (entry.opData ?? [:]).values
+                if refValues.contains(where: { $0?.hasPrefix("d0") == true }) {
                     continue
                 }
 
