@@ -29,7 +29,8 @@ struct AuthView: View {
                     // Top section — branding
                     VStack(spacing: 8) {
                         Text("Triovel")
-                            .font(.title.bold())
+                            .font(.custom("Pacifico-Regular", size: 32))
+                            .foregroundStyle(Color.accentColor)
 
                         Text("auth.subtitle")
                             .font(.subheadline)
