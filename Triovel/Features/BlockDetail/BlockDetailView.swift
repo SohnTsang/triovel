@@ -159,6 +159,19 @@ struct BlockDetailView: View {
         } message: {
             Text("block.delete.description")
         }
+        .alert(
+            String(localized: "common.error"),
+            isPresented: .init(
+                get: { viewModel.block != nil && viewModel.errorMessage != nil },
+                set: { if !$0 { viewModel.errorMessage = nil } }
+            )
+        ) {
+            Button(String(localized: "common.ok"), role: .cancel) { viewModel.errorMessage = nil }
+        } message: {
+            if let msg = viewModel.errorMessage {
+                Text(msg)
+            }
+        }
         .overlay {
             if isDeletingBlock {
                 Color.black.opacity(0.3).ignoresSafeArea()
@@ -193,21 +206,12 @@ struct BlockDetailView: View {
     private func processDocumentPhoto(_ item: PhotosPickerItem) async {
         guard let data = try? await item.loadTransferable(type: Data.self) else { return }
 
-        let ext: String
-        let uti = item.supportedContentTypes.first
-        if uti == .png {
-            ext = "png"
-        } else if uti == .heic {
-            ext = "heic"
-        } else {
-            ext = "jpg"
-        }
-
-        let fileName = "photo_\(Date.now.timeIntervalSince1970.formatted(.number.grouping(.never))).\(ext)"
+        let fileName = "photo_\(Date.now.timeIntervalSince1970.formatted(.number.grouping(.never))).jpg"
         let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(fileName)
 
         do {
             try data.write(to: tempURL)
+            // Compression happens in DocumentFileManager.importFile
             viewModel.addDocument(url: tempURL, fileName: fileName, fileType: .image)
         } catch {
             print("[BlockDetail] ❌ Failed to write photo to temp: \(error)")

@@ -1,4 +1,6 @@
 import Foundation
+import UIKit
+import CoreGraphics
 import Supabase
 
 /// Handles local file storage and Supabase Storage upload/download for block documents.
@@ -28,7 +30,8 @@ actor DocumentFileManager {
     // MARK: - Import (copy picked file to local storage)
 
     /// Copy a file from the picker URL to local app storage.
-    /// Returns the file size in bytes. Throws if file is too large.
+    /// Compresses images (JPEG target 1.5 MB) and PDFs (re-render to strip bloat).
+    /// Returns the file size in bytes. Throws if file is too large after compression.
     func importFile(from sourceURL: URL, docId: String, fileName: String) throws -> Int {
         let dir = localDir(for: docId)
         try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
@@ -39,7 +42,20 @@ actor DocumentFileManager {
         let accessing = sourceURL.startAccessingSecurityScopedResource()
         defer { if accessing { sourceURL.stopAccessingSecurityScopedResource() } }
 
-        let data = try Data(contentsOf: sourceURL)
+        var data = try Data(contentsOf: sourceURL)
+        let ext = (fileName as NSString).pathExtension.lowercased()
+
+        // Compress images
+        if ["jpg", "jpeg", "png", "heic", "heif"].contains(ext), let image = UIImage(data: data) {
+            data = Self.compressImage(image, targetBytes: 1_500_000)
+        }
+
+        // Compress PDFs by re-rendering pages (strips previews, recompresses images)
+        if ext == "pdf" && data.count > 2_000_000 {
+            if let compressed = Self.compressPDF(data: data) {
+                data = compressed
+            }
+        }
 
         guard data.count <= maxFileSize else {
             throw DocumentError.fileTooLarge
@@ -47,6 +63,43 @@ actor DocumentFileManager {
 
         try data.write(to: destination)
         return data.count
+    }
+
+    // MARK: - Compression
+
+    private static func compressImage(_ image: UIImage, targetBytes: Int) -> Data {
+        var quality: CGFloat = 0.8
+        var data = image.jpegData(compressionQuality: quality) ?? Data()
+        while data.count > targetBytes && quality > 0.1 {
+            quality -= 0.1
+            data = image.jpegData(compressionQuality: quality) ?? data
+        }
+        return data
+    }
+
+    private static func compressPDF(data: Data) -> Data? {
+        guard let provider = CGDataProvider(data: data as CFData),
+              let pdf = CGPDFDocument(provider) else { return nil }
+
+        let pageCount = pdf.numberOfPages
+        guard pageCount > 0 else { return nil }
+
+        let mutableData = NSMutableData()
+        guard let consumer = CGDataConsumer(data: mutableData),
+              let context = CGContext(consumer: consumer, mediaBox: nil, nil) else { return nil }
+
+        for i in 1...pageCount {
+            guard let page = pdf.page(at: i) else { continue }
+            var mediaBox = page.getBoxRect(.mediaBox)
+            context.beginPage(mediaBox: &mediaBox)
+            context.drawPDFPage(page)
+            context.endPage()
+        }
+        context.closePDF()
+
+        let result = mutableData as Data
+        // Only use compressed version if it's actually smaller
+        return result.count < data.count ? result : nil
     }
 
     // MARK: - Upload

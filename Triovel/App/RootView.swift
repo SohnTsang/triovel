@@ -8,8 +8,13 @@ struct RootView: View {
         Group {
             switch appState.authStatus {
             case .unknown:
+                // Match launch screen exactly — no blank flash
                 Color(.systemBackground)
                     .ignoresSafeArea()
+                    .overlay {
+                        Image("LaunchIcon")
+                            .offset(y: -20)
+                    }
             case .signedOut:
                 AuthView()
             case .verificationPending(let email):

@@ -41,7 +41,7 @@ struct AuthView: View {
                     SignInWithAppleButton(.signIn) { request in
                         request.requestedScopes = [.fullName, .email]
                     } onCompletion: { _ in }
-                    .signInWithAppleButtonStyle(.white)
+                    .signInWithAppleButtonStyle(.black)
                     .frame(height: 50)
                     .clipShape(RoundedRectangle(cornerRadius: 14))
                     .padding(.horizontal, 32)
