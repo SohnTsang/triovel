@@ -30,7 +30,7 @@
         '<nav class="site-links">' +
           '<a href="' + root + 'privacy-policy">Privacy</a>' +
           '<a href="' + root + 'terms-and-conditions">Terms</a>' +
-          '<a href="https://apps.apple.com/app/triovel/id6746262519" class="site-cta">Get the app</a>' +
+          '<a href="https://apps.apple.com/app/triovel/id6761365602" class="site-cta">Get the app</a>' +
         '</nav>' +
       '</header>';
   }
