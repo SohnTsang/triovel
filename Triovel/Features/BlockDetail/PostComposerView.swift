@@ -27,7 +27,7 @@ struct PostComposerView: View {
             Divider()
 
             // Visibility toggle
-            Picker("Visibility", selection: $visibility) {
+            Picker("post.visibility.label", selection: $visibility) {
                 Text("post.visibility.shared").tag(PostVisibility.shared)
                 Text("post.visibility.just.me").tag(PostVisibility.private)
             }

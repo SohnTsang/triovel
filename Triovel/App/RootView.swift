@@ -8,16 +8,22 @@ struct RootView: View {
         Group {
             switch appState.authStatus {
             case .unknown:
-                // Match launch screen exactly — no blank flash
-                Color(.systemBackground)
-                    .ignoresSafeArea()
-                    .overlay {
-                        Image("LaunchIcon")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 90, height: 60)
-                            .offset(y: -35)
-                    }
+                // Match launch screen storyboard: centerX, centerY - 20pt
+                GeometryReader { geo in
+                    Color(.systemBackground)
+                        .ignoresSafeArea()
+                        .overlay {
+                            Image("LaunchIcon")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 90, height: 60)
+                                .position(
+                                    x: geo.size.width / 2,
+                                    y: geo.size.height / 2 - 20
+                                )
+                        }
+                }
+                .ignoresSafeArea()
             case .signedOut:
                 AuthView()
             case .verificationPending(let email):

@@ -38,6 +38,7 @@
 		76C5BCD62F614AE418563899 /* PostMedia.swift in Sources */ = {isa = PBXBuildFile; fileRef = 595582A9F7359CD124EB2B37 /* PostMedia.swift */; };
 		77FFB96D7FCEF361F1561049 /* Bill.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFD5CEB34A1587FDEF0F98EA /* Bill.swift */; };
 		7AB84AC4DC6B0A59B113F751 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 4F3133CB82A42C2405ECFE76 /* Localizable.xcstrings */; };
+		IPLSBF01 /* InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = IPLSFR01 /* InfoPlist.xcstrings */; };
 		PFNTBF01 /* Pacifico-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = PFNTFR01 /* Pacifico-Regular.ttf */; };
 		SWDLBF01 /* SwipeToDeleteRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = SWDLFR01 /* SwipeToDeleteRow.swift */; };
 		PFNTBF02 /* Sacramento-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = PFNTFR02 /* Sacramento-Regular.ttf */; };
@@ -86,10 +87,6 @@
 		BDOCBF02 /* BlockDocumentRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDOCFR02 /* BlockDocumentRepository.swift */; };
 		BDOCBF03 /* DocumentFileManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDOCFR03 /* DocumentFileManager.swift */; };
 		BDOCBF04 /* DocumentSectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDOCFR04 /* DocumentSectionView.swift */; };
-		DEMOBF01 /* DemoSeedManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEMOFR01 /* DemoSeedManager.swift */; };
-		DEMOBF02 /* DemoMediaGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEMOFR02 /* DemoMediaGenerator.swift */; };
-		DEMOBF03 /* DemoDocumentGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEMOFR03 /* DemoDocumentGenerator.swift */; };
-		DMOABF01 /* DemoAssets in Resources */ = {isa = PBXBuildFile; fileRef = DMOAFR01 /* DemoAssets */; };
 		EF216AB5A51B71483A566E21 /* ProfileHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D37FA5E2AF68AA27D92708E /* ProfileHeaderView.swift */; };
 		P3BF0001 /* MediaFileManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = P3FR0001 /* MediaFileManager.swift */; };
 		P3BF0002 /* MediaCompressor.swift in Sources */ = {isa = PBXBuildFile; fileRef = P3FR0002 /* MediaCompressor.swift */; };
@@ -111,6 +108,7 @@
 		PS01BF0002000002A0000002 /* PowerSyncConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = PS01FR0002000002A0000002 /* PowerSyncConfig.swift */; };
 		PS01BF0003000003A0000003 /* SupabaseConnector.swift in Sources */ = {isa = PBXBuildFile; fileRef = PS01FR0003000003A0000003 /* SupabaseConnector.swift */; };
 		PS01BF0004000004A0000004 /* SyncManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = PS01FR0004000004A0000004 /* SyncManager.swift */; };
+		PS01BF0006000006A0000006 /* SyncQuarantineRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = PS01FR0006000006A0000006 /* SyncQuarantineRepository.swift */; };
 		PS01BF0005000005A0000005 /* PowerSync in Frameworks */ = {isa = PBXBuildFile; productRef = PS01PD0001000001A0000001 /* PowerSync */; };
 /* End PBXBuildFile section */
 
@@ -139,6 +137,7 @@
 		4D37FA5E2AF68AA27D92708E /* ProfileHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileHeaderView.swift; sourceTree = "<group>"; };
 		4DB17EE1B5470619A4A394AE /* TripSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TripSetupView.swift; sourceTree = "<group>"; };
 		4F3133CB82A42C2405ECFE76 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
+		IPLSFR01 /* InfoPlist.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = InfoPlist.xcstrings; sourceTree = "<group>"; };
 		PFNTFR01 /* Pacifico-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Pacifico-Regular.ttf"; sourceTree = "<group>"; };
 		SWDLFR01 /* SwipeToDeleteRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwipeToDeleteRow.swift; sourceTree = "<group>"; };
 		PFNTFR02 /* Sacramento-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Sacramento-Regular.ttf"; sourceTree = "<group>"; };
@@ -157,10 +156,6 @@
 		BDOCFR02 /* BlockDocumentRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockDocumentRepository.swift; sourceTree = "<group>"; };
 		BDOCFR03 /* DocumentFileManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentFileManager.swift; sourceTree = "<group>"; };
 		BDOCFR04 /* DocumentSectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentSectionView.swift; sourceTree = "<group>"; };
-		DEMOFR01 /* DemoSeedManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoSeedManager.swift; sourceTree = "<group>"; };
-		DEMOFR02 /* DemoMediaGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoMediaGenerator.swift; sourceTree = "<group>"; };
-		DEMOFR03 /* DemoDocumentGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoDocumentGenerator.swift; sourceTree = "<group>"; };
-		DMOAFR01 /* DemoAssets */ = {isa = PBXFileReference; lastKnownFileType = folder; path = DemoAssets; sourceTree = "<group>"; };
 		7507D9FC3C3E65332CC48E66 /* FullScreenMediaViewer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FullScreenMediaViewer.swift; sourceTree = "<group>"; };
 		7551EEDD76A7BD21A1C50460 /* Post.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Post.swift; sourceTree = "<group>"; };
 		81C874FF9C71DB8DAAD1121D /* Trip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Trip.swift; sourceTree = "<group>"; };
@@ -219,6 +214,7 @@
 		PS01FR0002000002A0000002 /* PowerSyncConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PowerSyncConfig.swift; sourceTree = "<group>"; };
 		PS01FR0003000003A0000003 /* SupabaseConnector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseConnector.swift; sourceTree = "<group>"; };
 		PS01FR0004000004A0000004 /* SyncManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncManager.swift; sourceTree = "<group>"; };
+		PS01FR0006000006A0000006 /* SyncQuarantineRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncQuarantineRepository.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -279,7 +275,6 @@
 			isa = PBXGroup;
 			children = (
 				CCA7F2C0B765592BBE489BB1 /* Auth */,
-				DEMOGR01 /* Demo */,
 				P3GR0001 /* MediaQueue */,
 				55E15E5CE1D91BA1D8A39394 /* Models */,
 				C713FD5D7EA45D079BEF0378 /* Networking */,
@@ -381,10 +376,10 @@
 			isa = PBXGroup;
 			children = (
 				8D7172619DB15AD08404D409 /* Assets.xcassets */,
-				DMOAFR01 /* DemoAssets */,
 				PFNTGR01 /* Fonts */,
 				D041FDB8AE49805E56BF8F72 /* Launch.storyboard */,
 				4F3133CB82A42C2405ECFE76 /* Localizable.xcstrings */,
+				IPLSFR01 /* InfoPlist.xcstrings */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -544,16 +539,6 @@
 			path = TripMembers;
 			sourceTree = "<group>";
 		};
-		DEMOGR01 /* Demo */ = {
-			isa = PBXGroup;
-			children = (
-				DEMOFR01 /* DemoSeedManager.swift */,
-				DEMOFR02 /* DemoMediaGenerator.swift */,
-				DEMOFR03 /* DemoDocumentGenerator.swift */,
-			);
-			path = Demo;
-			sourceTree = "<group>";
-		};
 		P3GR0001 /* MediaQueue */ = {
 			isa = PBXGroup;
 			children = (
@@ -573,6 +558,7 @@
 				PS01FR0002000002A0000002 /* PowerSyncConfig.swift */,
 				PS01FR0003000003A0000003 /* SupabaseConnector.swift */,
 				PS01FR0004000004A0000004 /* SyncManager.swift */,
+				PS01FR0006000006A0000006 /* SyncQuarantineRepository.swift */,
 			);
 			path = Sync;
 			sourceTree = "<group>";
@@ -640,8 +626,8 @@
 			files = (
 				22EEB4706AB07F00406FFEB8 /* Launch.storyboard in Resources */,
 				7AB84AC4DC6B0A59B113F751 /* Localizable.xcstrings in Resources */,
+				IPLSBF01 /* InfoPlist.xcstrings in Resources */,
 				PFNTBF01 /* Pacifico-Regular.ttf in Resources */,
-				DMOABF01 /* DemoAssets in Resources */,
 				PFNTBF02 /* Sacramento-Regular.ttf in Resources */,
 				A74D3F0F546C24E1AD1BFE96 /* Assets.xcassets in Resources */,
 				DD3025B0C3EBDC789D04A9FE /* PrivacyInfo.xcprivacy in Resources */,
@@ -717,9 +703,6 @@
 				BDOCBF02 /* BlockDocumentRepository.swift in Sources */,
 				BDOCBF03 /* DocumentFileManager.swift in Sources */,
 				BDOCBF04 /* DocumentSectionView.swift in Sources */,
-				DEMOBF01 /* DemoSeedManager.swift in Sources */,
-				DEMOBF02 /* DemoMediaGenerator.swift in Sources */,
-				DEMOBF03 /* DemoDocumentGenerator.swift in Sources */,
 				122ED21F181CA6F1A6439FE7 /* PostCardView.swift in Sources */,
 				AC2E22D78BF07ABA8DBFAEA0 /* PostComposerView.swift in Sources */,
 				890C4202FF9F332F9F6B10E8 /* PostRepository.swift in Sources */,
@@ -746,6 +729,7 @@
 				PS01BF0002000002A0000002 /* PowerSyncConfig.swift in Sources */,
 				PS01BF0003000003A0000003 /* SupabaseConnector.swift in Sources */,
 				PS01BF0004000004A0000004 /* SyncManager.swift in Sources */,
+				PS01BF0006000006A0000006 /* SyncQuarantineRepository.swift in Sources */,
 				196252E38E1C17111E683C29 /* CachedMediaView.swift in Sources */,
 				72C354386B30614FE8AAC353 /* ImageCache.swift in Sources */,
 				578F6D56FEBA9C8CF05C5714 /* FullScreenMediaViewer.swift in Sources */,
@@ -898,7 +882,7 @@
 				CLANG_ENABLE_OBJC_WEAK = NO;
 				CODE_SIGN_ENTITLEMENTS = Triovel/Triovel.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 5;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Triovel/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Triovel;
@@ -908,7 +892,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.1.0;
+				MARKETING_VERSION = 1.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.triovel.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -928,7 +912,7 @@
 				CLANG_ENABLE_OBJC_WEAK = NO;
 				CODE_SIGN_ENTITLEMENTS = Triovel/Triovel.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 5;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Triovel/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Triovel;
@@ -938,7 +922,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.1.0;
+				MARKETING_VERSION = 1.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.triovel.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;

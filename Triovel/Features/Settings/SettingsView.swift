@@ -11,6 +11,8 @@ struct SettingsView: View {
     @State private var safariURL: URL?
     @State private var displayName = ""
     @State private var isSavingName = false
+    @State private var quarantineCount = 0
+    @State private var isRetryingSync = false
     @AppStorage("appearanceMode") private var appearanceMode: AppearanceMode = .system
     @FocusState private var nameFocused: Bool
 
@@ -66,6 +68,48 @@ struct SettingsView: View {
             // Account info
             Section(String(localized: "settings.account")) {
                 SignInMethodRow(user: authService.currentUser)
+            }
+
+            // Sync issues — only shown when the server permanently rejected writes.
+            // After the fix this should stay empty; it's a safety net so rejected
+            // data is visible and retryable rather than silently lost.
+            if quarantineCount > 0 {
+                Section(String(localized: "settings.sync.section")) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        HStack {
+                            Label(String(localized: "settings.sync.failed.title"), systemImage: "exclamationmark.arrow.triangle.2.circlepath")
+                                .font(.subheadline)
+                            Spacer()
+                            Text("\(quarantineCount)")
+                                .font(.subheadline.bold())
+                                .foregroundStyle(.secondary)
+                        }
+                        Text(String(localized: "settings.sync.failed.detail"))
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding(.vertical, 2)
+
+                    Button {
+                        retrySync()
+                    } label: {
+                        HStack {
+                            Label(String(localized: "settings.sync.retry"), systemImage: "arrow.clockwise")
+                            if isRetryingSync {
+                                Spacer()
+                                ProgressView().controlSize(.small)
+                            }
+                        }
+                    }
+                    .disabled(isRetryingSync)
+
+                    Button(role: .destructive) {
+                        dismissSyncIssues()
+                    } label: {
+                        Label(String(localized: "settings.sync.dismiss"), systemImage: "trash")
+                    }
+                    .disabled(isRetryingSync)
+                }
             }
 
             // Appearance
@@ -157,6 +201,34 @@ struct SettingsView: View {
         }
         .task {
             await loadDisplayName()
+            await refreshQuarantineCount()
+        }
+    }
+
+    // MARK: - Sync Quarantine
+
+    private func refreshQuarantineCount() async {
+        quarantineCount = await SyncQuarantineRepository().count()
+    }
+
+    private func retrySync() {
+        isRetryingSync = true
+        Task {
+            let start = ContinuousClock.now
+            await SyncQuarantineRepository().retryAll()
+            let elapsed = ContinuousClock.now - start
+            if elapsed < .milliseconds(500) {
+                try? await Task.sleep(for: .milliseconds(500) - elapsed)
+            }
+            await refreshQuarantineCount()
+            isRetryingSync = false
+        }
+    }
+
+    private func dismissSyncIssues() {
+        Task {
+            try? await SyncQuarantineRepository().clearAll()
+            await refreshQuarantineCount()
         }
     }
 
@@ -221,6 +293,7 @@ struct SettingsView: View {
             }
         }
     }
+
 }
 
 // MARK: - Appearance Mode

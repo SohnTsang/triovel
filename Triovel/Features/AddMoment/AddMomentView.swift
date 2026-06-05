@@ -170,7 +170,7 @@ struct AddMomentView: View {
                         Text("block.add.title")
                             .font(.headline)
                         if let dayDate {
-                            Text("Day \(defaultDay) · \(dayDate, format: .dateTime.month(.abbreviated).day())")
+                            (Text("timeline.day \(defaultDay)") + Text(verbatim: " · ") + Text(dayDate, format: .dateTime.month(.abbreviated).day()))
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }

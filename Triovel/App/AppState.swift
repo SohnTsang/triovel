@@ -120,8 +120,20 @@ final class AppState {
     }
 
     func signOut() async {
-        // Disconnect sync and clear local data before signing out
-        await disconnectSync()
+        // Drain pending uploads BEFORE clearing local data, so sign-out can never
+        // destroy writes that haven't reached Supabase yet.
+        syncStatusTask?.cancel()
+        let drained = await SyncManager.shared.waitForUploadsToComplete()
+        if drained {
+            await SyncManager.shared.disconnectAndClear()
+            await ImageCache.shared.clearAll()
+        } else {
+            // Unsynced data remains — keep it on device rather than lose it.
+            // It finishes uploading the next time this user signs in.
+            await SyncManager.shared.disconnect()
+            print("[Auth] ⚠️ Signed out with unsynced data retained locally")
+        }
+        resetSyncState()
         await authService.signOut()
         currentUserId = nil
         authStatus = .signedOut
@@ -130,8 +142,13 @@ final class AppState {
     /// Permanently delete the current user's account.
     /// Clears all local data and navigates to auth screen.
     func deleteAccount() async throws {
+        // Account is being deleted server-side, so there is nothing to preserve —
+        // clear all local data unconditionally.
         try await authService.deleteAccount()
-        await disconnectSync()
+        syncStatusTask?.cancel()
+        await SyncManager.shared.disconnectAndClear()
+        await ImageCache.shared.clearAll()
+        resetSyncState()
         currentUserId = nil
         authStatus = .signedOut
     }
@@ -170,10 +187,7 @@ final class AppState {
         }
     }
 
-    private func disconnectSync() async {
-        syncStatusTask?.cancel()
-        await SyncManager.shared.disconnectAndClear()
-        await ImageCache.shared.clearAll()
+    private func resetSyncState() {
         isSyncConnected = false
         hasSynced = false
         lastSyncedAt = nil

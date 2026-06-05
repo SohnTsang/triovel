@@ -37,8 +37,13 @@ final class HomeViewModel {
     }
 
     func refresh() async {
-        guard let userId = currentUserId else { return }
+        guard let userId = currentUserId else {
+            print("[Home] ❌ refresh: no userId")
+            return
+        }
+        print("[Home] Refreshing trips for userId: \(userId)")
         await fetchOnce(userId: userId)
+        print("[Home] Refresh complete: \(activeTrips.count) active, \(archivedTrips.count) archived")
     }
 
     deinit {

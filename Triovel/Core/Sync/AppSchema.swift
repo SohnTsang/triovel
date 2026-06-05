@@ -157,6 +157,22 @@ enum AppSchema {
             indexes: [
                 Index.ascending(name: "idx_payments_trip", column: "trip_id"),
             ]
+        ),
+        // Local-only quarantine for writes the server permanently rejected.
+        // Never synced — it captures rows the upload queue had to skip (RLS/FK/
+        // constraint failures) so they can be surfaced in-app and retried instead
+        // of vanishing silently. `payload` holds the JSON opData for retry.
+        Table(
+            name: "sync_quarantine",
+            columns: [
+                .text("table_name"),
+                .text("row_id"),
+                .text("op"),
+                .text("payload"),
+                .text("error"),
+                .text("created_at"),
+            ],
+            localOnly: true
         )
     )
 }

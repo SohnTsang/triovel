@@ -23,7 +23,7 @@ struct FilterBarView: View {
 
     var body: some View {
         VStack(spacing: 8) {
-            Picker("Filter", selection: $activeFilter) {
+            Picker("timeline.filter.label", selection: $activeFilter) {
                 ForEach(TimelineFilter.allCases, id: \.self) { filter in
                     Text(filter.localizedName).tag(filter)
                 }

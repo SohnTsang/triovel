@@ -80,6 +80,36 @@ final class SyncManager: @unchecked Sendable {
         }
     }
 
+    /// True if there are local writes still waiting to upload to Supabase.
+    func hasPendingUploads() async -> Bool {
+        do {
+            let batch = try await db.getCrudBatch(limit: 1)
+            return batch != nil
+        } catch {
+            return false
+        }
+    }
+
+    /// Wait until the local upload (CRUD) queue has fully drained to Supabase, so
+    /// that clearing local data on sign-out can never destroy unsynced writes.
+    /// Returns true if the queue drained, false if it timed out with work remaining.
+    func waitForUploadsToComplete(timeout: TimeInterval = 20) async -> Bool {
+        // If we're offline there's nothing that can drain — report honestly.
+        guard db.currentStatus.connected else {
+            return !(await hasPendingUploads())
+        }
+        let deadline = Date().addingTimeInterval(timeout)
+        while Date() < deadline {
+            if !(await hasPendingUploads()) {
+                print("[Sync] ✓ Upload queue drained")
+                return true
+            }
+            try? await Task.sleep(for: .milliseconds(300))
+        }
+        print("[Sync] ⚠️ Upload queue did not drain within \(Int(timeout))s")
+        return false
+    }
+
     /// Disconnect from PowerSync. Call on sign-out.
     func disconnect() async {
         do {

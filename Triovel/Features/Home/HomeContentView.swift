@@ -38,6 +38,9 @@ struct HomeContentView: View {
                     .frame(maxWidth: sizeClass == .regular ? 600 : .infinity)
                     .frame(maxWidth: .infinity)
                 }
+                .refreshable {
+                    await viewModel.refresh()
+                }
             }
 
             // Floating + New Trip button

@@ -36,11 +36,6 @@ struct HomeView: View {
                 viewModel.load(userId: userId)
             }
         }
-        .onReceive(NotificationCenter.default.publisher(for: .demoDataChanged)) { _ in
-            if let userId = appState.currentUserId {
-                viewModel.load(userId: userId)
-            }
-        }
         .onChange(of: appState.pendingNavigateTripId) { _, tripId in
             if let tripId {
                 appState.pendingNavigateTripId = nil

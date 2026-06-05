@@ -168,7 +168,6 @@ struct BillEntryView: View {
                 }
             }
             .scrollDismissesKeyboard(.interactively)
-            .onTapGesture { isAnyFieldFocused = false }
             .interactiveDismissDisabled(isSaving)
         }
         .presentationDetents(sizeClass == .regular ? [.large] : [.large])
